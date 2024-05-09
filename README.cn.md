@@ -9,7 +9,7 @@ npx jsr add @happy-ts/fetch-t
 
 或者直接使用 npm
 ```
-npm install --save fetch-t
+npm install --save @happy-ts/fetch-t
 ```
 
 通过 deno

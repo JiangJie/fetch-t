@@ -13,7 +13,7 @@ npx jsr add @happy-ts/fetch-t
 
 or just from npm
 ```
-npm install --save fetch-t
+npm install --save @happy-ts/fetch-t
 ```
 
 for deno
