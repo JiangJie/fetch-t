@@ -78,6 +78,14 @@ export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
 }): FetchTask<Response>;
 /**
+ * Return `FetchResponse<Response>`.
+ * @param url
+ * @param init
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    abortable: false;
+}): FetchResponse<Response>;
+/**
  * Return `FetchTask<T>` or `FetchResponse<T>`.
  * @param url
  * @param init
