@@ -13,14 +13,6 @@ export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'text',
 }): FetchTask<string>;
 /**
- * Return `FetchResponse<string>`.
- * @param url
- * @param init
- */
-export function fetchT(url: string | URL, init: FetchInit & {
-    responseType: 'text',
-}): FetchResponse<string>;
-/**
  * Return `FetchTask<ArrayBuffer>`.
  * @param url
  * @param init
@@ -29,14 +21,6 @@ export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true,
     responseType: 'arraybuffer',
 }): FetchTask<ArrayBuffer>;
-/**
- * Return `FetchResponse<ArrayBuffer>`.
- * @param url
- * @param init
- */
-export function fetchT(url: string | URL, init: FetchInit & {
-    responseType: 'arraybuffer',
-}): FetchResponse<ArrayBuffer>;
 /**
  * Return `FetchTask<Blob>`.
  * @param url
@@ -47,6 +31,29 @@ export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'blob',
 }): FetchTask<Blob>;
 /**
+ * Return `FetchTask<T>`.
+ */
+export function fetchT<T = any>(url: string | URL, init: FetchInit & {
+    abortable: true,
+    responseType: 'json',
+}): FetchTask<T>;
+/**
+ * Return `FetchResponse<string>`.
+ * @param url
+ * @param init
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    responseType: 'text',
+}): FetchResponse<string>;
+/**
+ * Return `FetchResponse<ArrayBuffer>`.
+ * @param url
+ * @param init
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    responseType: 'arraybuffer',
+}): FetchResponse<ArrayBuffer>;
+/**
  * Return `FetchResponse<Blob>`.
  * @param url
  * @param init
@@ -54,13 +61,6 @@ export function fetchT(url: string | URL, init: FetchInit & {
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'blob',
 }): FetchResponse<Blob>;
-/**
- * Return `FetchTask<T>`.
- */
-export function fetchT<T = any>(url: string | URL, init: FetchInit & {
-    abortable: true,
-    responseType: 'json',
-}): FetchTask<T>;
 /**
  * Return `FetchResponse<T>`.
  * @param url
