@@ -106,14 +106,12 @@ describe('fetch', () => {
         expect(data).toBe(`{}`);
     });
 
-    test('maybe get invalid json', async () => {
+    test('get invalid json', async () => {
         const res = (await fetchT('https://jsonplaceholder.typicode.com/', {
             responseType: 'json',
         }));
 
-        if (res.isErr()) {
-            expect((res.err() as Error).message.includes(`Response is invalid json`)).toBe(true);
-        }
+        expect((res.err() as Error).message.includes(`Response is invalid json`)).toBe(true);
     });
 
     test('abort fetch by default', async () => {
@@ -123,7 +121,7 @@ describe('fetch', () => {
 
         setTimeout(() => {
             fetchTask.abort();
-        }, 10);
+        }, 0);
 
         const res = await fetchTask.response;
         expect((res.err() as Error).name).toBe('AbortError');
