@@ -1,0 +1,53 @@
+{
+  "name": "fetch-t",
+  "description": "Cancelable fetch wrapper with the ability to specify the return type.",
+  "author": "jiang115jie@gmail.com",
+  "license": "GPL-3.0",
+  "version": "1.0.0",
+  "type": "module",
+  "source": "./src/mod.ts",
+  "main": "./dist/main.cjs",
+  "module": "./dist/main.mjs",
+  "types": "./dist/types.d.ts",
+  "exports": "./src/mod.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "README.cn.md",
+    "package.json",
+    "src",
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "check": "npx tsc --noEmit",
+    "lint": "npx eslint src/",
+    "prebuild": "npx rimraf dist && npm run check && npm run lint",
+    "build": "npx rollup --config rollup.config.mjs",
+    "test": "bun test",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JiangJie/fetch-t.git"
+  },
+  "keywords": [
+    "fetch",
+    "abort",
+    "responseType"
+  ],
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.17.2",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@happy-js/happy-rusty": "npm:@jsr/happy-js__happy-rusty@^1.0.7"
+  }
+}
