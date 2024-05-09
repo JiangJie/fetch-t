@@ -2,10 +2,18 @@ import { describe, expect, test } from '@jest/globals';
 import { fetchT } from '../src/mod.ts';
 
 describe('fetch', () => {
-    test('get text by default', async () => {
+    test('get Response by default', async () => {
         const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1')).unwrap();
 
-        expect(data.includes(`"userId": 1`)).toBe(true);
+        expect(data.url).toBe('https://jsonplaceholder.typicode.com/posts/1');
+    });
+
+    test('get Response by RequestInit', async () => {
+        const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+            mode: 'no-cors',
+        } as RequestInit)).unwrap();
+
+        expect(data.url).toBe('https://jsonplaceholder.typicode.com/posts/1');
     });
 
     test('get text by response type', async () => {
@@ -100,6 +108,7 @@ describe('fetch', () => {
 
     test('delete json', async () => {
         const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+            responseType: 'text',
             method: 'DELETE',
         })).unwrap();
 
@@ -135,7 +144,7 @@ describe('fetch', () => {
 
         setTimeout(() => {
             fetchTask.abort('cancel');
-        }, 1000);
+        }, 500);
 
         const res = await fetchTask.response;
         if (res.isErr()) {
