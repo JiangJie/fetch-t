@@ -1,19 +1,42 @@
-<p align="center">
-    <a href="README.cn.md">[中文]</a>
-</p>
-
 # fetchT
+
+[![NPM version](http://img.shields.io/npm/v/@happy-ts/fetch-t.svg)](https://npmjs.org/package/fetch-t)
+[![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
+[![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
+[![Build Status](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml/badge.svg)](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml)
+
+---
+
+<a href="README.cn.md">[中文]</a>
+
+---
+
+## Abortable && Predictable
+
+The return value of fetchT includes an `abort` method.
+
+The return data of fetchT is of a specific type, which can be either `string`, `ArrayBuffer`, `Blob`, or `<T>(generic)`.
 
 ## Installation
 
-Via [JSR](https://jsr.io/@happy-ts/fetch-t) (**recommand**)
+via pnpm
 ```
-npx jsr add @happy-ts/fetch-t
+pnpm add happy-rusty
+```
+
+or via yarn
+```
+yarn add @happy-ts/fetch-t
 ```
 
 or just from npm
 ```
 npm install --save @happy-ts/fetch-t
+```
+
+via JSR
+```
+jsr add @happy-ts/fetch-t
 ```
 
 for deno

@@ -1,15 +1,38 @@
 # fetchT
 
+[![NPM version](http://img.shields.io/npm/v/@happy-ts/fetch-t.svg)](https://npmjs.org/package/fetch-t)
+[![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
+[![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
+[![Build Status](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml/badge.svg)](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml)
+
+---
+
+## 可终止 && 可预测
+
+fetchT 的返回值包含一个可以 abort 的方法。
+
+fetchT 的返回数据是一个明确的类型，可以是 `string` `ArrayBuffer` `Blob` `<T>(泛型)`。
+
 ## 安装
 
-通过 [JSR](https://jsr.io/@happy-ts/fetch-t) (**推荐**)
+pnpm
 ```
-npx jsr add @happy-ts/fetch-t
+pnpm add @happy-ts/fetch-t
 ```
 
-或者直接使用 npm
+yarn
+```
+yarn add @happy-ts/fetch-t
+```
+
+npm
 ```
 npm install --save @happy-ts/fetch-t
+```
+
+通过 JSR
+```
+jsr add @happy-ts/fetch-t
 ```
 
 通过 deno
