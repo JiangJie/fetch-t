@@ -1,6 +1,6 @@
 # fetchT
 
-[![NPM version](http://img.shields.io/npm/v/@happy-ts/fetch-t.svg)](https://npmjs.org/package/fetch-t)
+[![NPM version](http://img.shields.io/npm/v/@happy-ts/fetch-t.svg)](https://npmjs.org/package/@happy-ts/fetch-t)
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 [![Build Status](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml/badge.svg)](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml)
