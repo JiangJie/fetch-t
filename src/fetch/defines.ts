@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { AsyncResult } from '@happy-js/happy-rusty';
+import type { AsyncResult } from 'happy-rusty';
 
 /**
  * Response generic type.

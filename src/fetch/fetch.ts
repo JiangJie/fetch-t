@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Err, Ok } from '@happy-js/happy-rusty';
+import { Err, Ok } from 'happy-rusty';
 import { assertUrl } from './assertions.ts';
 import type { FetchInit, FetchResponse, FetchTask } from './defines.ts';
 

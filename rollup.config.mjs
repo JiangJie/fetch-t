@@ -3,7 +3,7 @@ import esbuild from 'rollup-plugin-esbuild';
 
 const input = 'src/mod.ts';
 const external = [
-    '@happy-js/happy-rusty',
+    'happy-rusty',
 ];
 
 /**
