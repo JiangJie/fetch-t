@@ -3,7 +3,7 @@
   "description": "Cancelable fetch wrapper with the ability to specify the return type.",
   "author": "jiang115jie@gmail.com",
   "license": "GPL-3.0",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "source": "src/mod.ts",
   "main": "dist/main.cjs",
