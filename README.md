@@ -21,7 +21,7 @@ The return data of fetchT is of a specific type, which can be either `string`, `
 
 via pnpm
 ```
-pnpm add happy-rusty
+pnpm add @happy-ts/fetch-t
 ```
 
 or via yarn
