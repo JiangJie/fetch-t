@@ -10,10 +10,10 @@ function invariant(expr: unknown, createMsg: () => string): void {
 }
 
 /**
- * assert url is a string
+ * assert url is an URL object
  *
  * @param url
  */
-export function assertUrl(url: string): void {
-    invariant(typeof url === 'string', () => `Url must be a string. Received ${ JSON.stringify(url) }`);
+export function assertURL(url: URL): void {
+    invariant(url instanceof URL, () => `Url must be an URL object. Received ${ JSON.stringify(url) }`);
 }

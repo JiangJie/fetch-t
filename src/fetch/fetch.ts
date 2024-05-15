@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Err, Ok } from 'happy-rusty';
-import { assertUrl } from './assertions.ts';
+import { assertURL } from './assertions.ts';
 import type { FetchInit, FetchResponse, FetchTask } from './defines.ts';
 
 /**
@@ -104,8 +104,8 @@ export function fetchT(url: string | URL, init?: RequestInit): FetchResponse<Res
  * @returns {FetchTask<T> | FetchResponse<T>} an abort able fetch task or just response
  */
 export function fetchT<T = any>(url: string | URL, init?: FetchInit): FetchTask<T> | FetchResponse<T> {
-    if (typeof url === 'string') {
-        assertUrl(url);
+    if (typeof url !== 'string') {
+        assertURL(url);
     }
 
     // default not abort able

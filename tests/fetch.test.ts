@@ -2,6 +2,11 @@ import { describe, expect, test } from '@jest/globals';
 import { fetchT } from '../src/mod.ts';
 
 describe('fetch', () => {
+    test('invalid url will throw', async () => {
+        const url = null;
+        expect(fetchT.bind(null, url!)).toThrowError(TypeError);
+    });
+
     test('get Response by default', async () => {
         const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1')).unwrap();
 
