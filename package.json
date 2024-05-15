@@ -1,6 +1,6 @@
 {
   "name": "@happy-ts/fetch-t",
-  "description": "Cancelable fetch wrapper with the ability to specify the return type.",
+  "description": "Abortable fetch wrapper with the ability to specify the return type.",
   "author": "jiang115jie@gmail.com",
   "license": "GPL-3.0",
   "version": "1.0.8",
@@ -33,6 +33,7 @@
   "keywords": [
     "fetch",
     "abort",
+    "cancel",
     "responseType"
   ],
   "devDependencies": {
