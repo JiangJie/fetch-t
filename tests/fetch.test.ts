@@ -1,135 +1,143 @@
-import { describe, expect, test } from '@jest/globals';
+import { assert, assertThrows } from '@std/assert';
 import { fetchT } from '../src/mod.ts';
 
-describe('fetch', () => {
-    test('invalid url will throw', async () => {
+Deno.test('fetch', async (t) => {
+    const mockServer = 'https://16a6dafa-2258-4a83-88fa-31a409e42b17.mock.pstmn.io';
+    const mockTodos = `${ mockServer }/todos`;
+    const mockTodo1 = `${ mockTodos }/1`;
+    const mockInvalidJson = `${ mockServer }/invalid_json`;
+    const mockNotFound = `${ mockServer }/not_found`;
+
+    await t.step('Invalid url will throw', () => {
         const url = null;
-        expect(fetchT.bind(null, url!)).toThrowError(TypeError);
+        assertThrows(() => fetchT(url!), TypeError);
     });
 
-    test('get Response by default', async () => {
-        const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1')).unwrap();
+    await t.step('Get Response by default', async () => {
+        const res = (await fetchT(mockTodos)).unwrap();
+        const data = await res.text();
 
-        expect(data.url).toBe('https://jsonplaceholder.typicode.com/posts/1');
+        assert(data.includes(`"id": 1`));
     });
 
-    test('get Response by RequestInit', async () => {
-        const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+    await t.step('Get Response by RequestInit', async () => {
+        const res = (await fetchT(mockTodo1, {
             mode: 'no-cors',
         } as RequestInit)).unwrap();
+        const data = await res.text();
 
-        expect(data.url).toBe('https://jsonplaceholder.typicode.com/posts/1');
+        assert(data.includes(`"id": 1`));
     });
 
-    test('get text by response type', async () => {
-        const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+    await t.step('Get text by response type', async () => {
+        const data = (await fetchT(mockTodo1, {
             responseType: 'text',
         })).unwrap();
 
-        expect(data.includes(`"userId": 1`)).toBe(true);
+        assert(data.includes(`"id": 1`));
     });
 
-    test('get arraybuffer by response type', async () => {
-        const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+    await t.step('Get arraybuffer by response type', async () => {
+        const data = (await fetchT(mockTodo1, {
             responseType: 'arraybuffer',
         })).unwrap();
 
-        expect(data.byteLength).toBe(292);
+        assert(data.byteLength === 37);
     });
 
-    test('get blob by response type', async () => {
-        const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+    await t.step('Get blob by response type', async () => {
+        const data = (await fetchT(mockTodo1, {
             responseType: 'blob',
         })).unwrap();
 
-        expect(data.size).toBe(292);
+        assert(data.size === 37);
     });
 
-    test('get json by response type', async () => {
-        const data = (await fetchT<{ userId: number }[]>('https://jsonplaceholder.typicode.com/posts', {
+    await t.step('Get json by response type', async () => {
+        const data = (await fetchT<{ id: number }[]>(mockTodos, {
             responseType: 'json',
             method: 'GET',
         })).unwrap();
 
-        expect(data.length).toBe(100);
-        expect(data[0].userId).toBe(1);
+        assert(data.length === 1);
+        assert(data[0].id === 1);
     });
 
-    test('post json', async () => {
+    await t.step('Post json', async () => {
         const data = (await fetchT<{
             id: number;
-        }>('https://jsonplaceholder.typicode.com/posts', {
+        }>(mockTodos, {
             responseType: 'json',
             method: 'POST',
             body: JSON.stringify({
-                title: 'foo',
-                body: 'bar',
-                userId: 1,
+                title: 'happy-2',
             }),
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
             },
         })).unwrap();
 
-        expect(data.id).toBe(101);
+        assert(data.id === 2);
     });
 
-    test('put json', async () => {
+    await t.step('Put json', async () => {
         const data = (await fetchT<{
+            id: number;
             title: string;
-        }>('https://jsonplaceholder.typicode.com/posts/1', {
+        }>(mockTodo1, {
             responseType: 'json',
             method: 'PUT',
             body: JSON.stringify({
-                id: 1,
-                title: 'foo',
-                body: 'bar',
-                userId: 1,
+                id: 100,
+                title: 'happy-new',
             }),
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
             },
         })).unwrap();
 
-        expect(data.title).toBe('foo');
+        assert(data.id === 100);
+        assert(data.title === 'happy-new');
     });
 
-    test('patch json', async () => {
+    await t.step('Patch json', async () => {
         const data = (await fetchT<{
             title: string;
-        }>('https://jsonplaceholder.typicode.com/posts/1', {
+        }>(mockTodo1, {
             responseType: 'json',
             method: 'PATCH',
             body: JSON.stringify({
-                title: 'foo',
+                title: 'happy-new',
             }),
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
             },
         })).unwrap();
 
-        expect(data.title).toBe('foo');
+        assert(data.title === 'happy-new');
     });
 
-    test('delete json', async () => {
-        const data = (await fetchT('https://jsonplaceholder.typicode.com/posts/1', {
-            responseType: 'text',
+    await t.step('Delete json', async () => {
+        const data = (await fetchT<{
+            success: boolean;
+        }>(mockTodo1, {
+            responseType: 'json',
             method: 'DELETE',
         })).unwrap();
 
-        expect(data).toBe(`{}`);
+        assert(data.success);
     });
 
-    test('get invalid json', async () => {
-        const res = (await fetchT('https://jsonplaceholder.typicode.com/', {
+    await t.step('Get invalid json', async () => {
+        const res = (await fetchT(mockInvalidJson, {
             responseType: 'json',
         }));
 
-        expect((res.err() as Error).message.includes(`Response is invalid json`)).toBe(true);
+        assert((res.unwrapErr() as Error).message.includes(`Response is invalid json`));
     });
 
-    test('abort fetch by default', async () => {
-        const fetchTask = fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+    await t.step('Abort fetch by default', async () => {
+        const fetchTask = fetchT(mockTodo1, {
             abortable: true,
         });
 
@@ -138,24 +146,31 @@ describe('fetch', () => {
         }, 0);
 
         const res = await fetchTask.response;
-        expect((res.err() as Error).name).toBe('AbortError');
-        expect(fetchTask.aborted).toBe(true);
+        assert((res.unwrapErr() as Error).name === 'AbortError');
+        assert(fetchTask.aborted);
     });
 
-    test('abort fetch by custom', async () => {
-        const fetchTask = fetchT('https://jsonplaceholder.typicode.com/posts/1', {
+    await t.step('Abort fetch by custom', async () => {
+        const fetchTask = fetchT(mockTodo1, {
             abortable: true,
         });
 
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             fetchTask.abort('cancel');
         }, 500);
 
         const res = await fetchTask.response;
         if (res.isErr()) {
-            expect(res.err()).toBe('cancel');
+            assert((res.unwrapErr() as string) === 'cancel');
         } else {
-            expect(res.isOk()).toBe(true);
+            clearTimeout(timer);
+            assert(res.isOk());
+            await res.unwrap().body?.cancel();
         }
+    });
+
+    await t.step('Fetch fail', async () => {
+        const err: Error = (await fetchT(mockNotFound)).unwrapErr();
+        assert(err.message.includes('404'));
     });
 });
