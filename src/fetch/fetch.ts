@@ -90,7 +90,7 @@ export function fetchT(url: string | URL, init: FetchInit & {
  * @param url
  * @param init
  */
-export function fetchT<T = any>(url: string | URL, init: FetchInit): FetchTask<T> | FetchResponse<T>;
+export function fetchT<T>(url: string | URL, init: FetchInit): FetchTask<T> | FetchResponse<T>;
 /**
  * Return `FetchResponse<Response>`.
  * @param url
@@ -103,7 +103,7 @@ export function fetchT(url: string | URL, init?: RequestInit): FetchResponse<Res
  * @param init fetch init
  * @returns {FetchTask<T> | FetchResponse<T>} an abort able fetch task or just response
  */
-export function fetchT<T = any>(url: string | URL, init?: FetchInit): FetchTask<T> | FetchResponse<T> {
+export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | FetchResponse<T> {
     if (typeof url !== 'string') {
         assertURL(url);
     }
@@ -120,6 +120,7 @@ export function fetchT<T = any>(url: string | URL, init?: FetchInit): FetchTask<
 
     const response: FetchResponse<T> = fetch(url, rest).then(async (res): FetchResponse<T> => {
         if (!res.ok) {
+            await res.body?.cancel();
             return Err(new Error(`fetch status: ${ res.status }`));
         }
 
