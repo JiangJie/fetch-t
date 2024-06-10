@@ -3,9 +3,7 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"
     },
-    "cSpell.words": [
-        "abortable",
-        "bunx",
-        "deno"
+    "deno.disablePaths": [
+        "./src"
     ]
 }
