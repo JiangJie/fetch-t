@@ -21,9 +21,12 @@
   "scripts": {
     "check": "pnpm exec tsc --noEmit",
     "lint": "pnpm exec eslint src/",
-    "prebuild": "pnpm exec rimraf dist && pnpm run check && pnpm run lint",
+    "prebuild": "pnpm dlx rimraf dist && pnpm run check && pnpm run lint",
     "build": "pnpm exec rollup --config rollup.config.mjs",
-    "test": "bun test --coverage",
+    "pretest": "pnpm dlx rimraf coverage",
+    "test": "deno test -A --coverage && deno coverage coverage && deno coverage coverage --lcov --output=coverage/cov_profile.lcov",
+    "pretest:html": "pnpm run pretest",
+    "test:html": "deno test -A --coverage && deno coverage coverage && deno coverage coverage --html",
     "prepublishOnly": "pnpm run build"
   },
   "repository": {
@@ -37,18 +40,16 @@
     "responseType"
   ],
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
-    "@typescript-eslint/eslint-plugin": "^7.9.0",
-    "@typescript-eslint/parser": "^7.9.0",
+    "@typescript-eslint/eslint-plugin": "^7.12.0",
+    "@typescript-eslint/parser": "^7.12.0",
     "eslint": "^8.57.0",
-    "rimraf": "^5.0.7",
-    "rollup": "^4.17.2",
-    "rollup-plugin-dts": "^6.1.0",
+    "rollup": "^4.18.0",
+    "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-esbuild": "^6.1.1",
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "happy-rusty": "^1.0.9"
+    "happy-rusty": "^1.1.0"
   },
-  "packageManager": "pnpm@9.1.1+sha512.14e915759c11f77eac07faba4d019c193ec8637229e62ec99eefb7cf3c3b75c64447882b7c485142451ee3a6b408059cdfb7b7fa0341b975f12d0f7629c71195"
+  "packageManager": "pnpm@9.2.0"
 }
