@@ -8,6 +8,7 @@ const input = 'src/mod.ts';
  */
 const external = [
     'happy-rusty',
+    'tiny-invariant',
 ];
 
 /**
