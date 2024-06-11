@@ -1,111 +1,156 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Err, Ok } from 'happy-rusty';
-import { assertURL } from './assertions.ts';
+import invariant from 'tiny-invariant';
 import type { FetchInit, FetchResponse, FetchTask } from './defines.ts';
 
 /**
- * Return `FetchTask<string>`.
- * @param url
- * @param init
+ * Fetches a resource from the network as a text string and returns a `FetchTask` representing the operation.
+ *
+ * @typeParam T - The expected type of the response data.
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
+ * @returns A `FetchTask` representing the operation with a `string` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'text';
 }): FetchTask<string>;
+
 /**
- * Return `FetchTask<ArrayBuffer>`.
- * @param url
- * @param init
+ * Fetches a resource from the network as an ArrayBuffer and returns a `FetchTask` representing the operation.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
+ * @returns A `FetchTask` representing the operation with an `ArrayBuffer` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'arraybuffer';
 }): FetchTask<ArrayBuffer>;
+
 /**
- * Return `FetchTask<Blob>`.
- * @param url
- * @param init
+ * Fetches a resource from the network as a Blob and returns a `FetchTask` representing the operation.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
+ * @returns A `FetchTask` representing the operation with a `Blob` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'blob';
 }): FetchTask<Blob>;
+
 /**
- * Return `FetchTask<T>`.
+ * Fetches a resource from the network and parses it as JSON, returning a `FetchTask` representing the operation.
+ *
+ * @typeParam T - The expected type of the parsed JSON data.
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
+ * @returns A `FetchTask` representing the operation with a response parsed as JSON.
  */
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'json';
 }): FetchTask<T>;
+
 /**
- * Return `FetchResponse<string>`.
- * @param url
- * @param init
+ * Fetches a resource from the network as a text string and returns a `FetchResponse` representing the operation.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, specifying the response type as 'text'.
+ * @returns A `FetchResponse` representing the operation with a `string` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'text';
 }): FetchResponse<string>;
+
 /**
- * Return `FetchResponse<ArrayBuffer>`.
- * @param url
- * @param init
+ * Fetches a resource from the network as an ArrayBuffer and returns a `FetchResponse` representing the operation.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, specifying the response type as 'arraybuffer'.
+ * @returns A `FetchResponse` representing the operation with an `ArrayBuffer` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'arraybuffer';
 }): FetchResponse<ArrayBuffer>;
+
 /**
- * Return `FetchResponse<Blob>`.
- * @param url
- * @param init
+ * Fetches a resource from the network as a Blob and returns a `FetchResponse` representing the operation.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, specifying the response type as 'blob'.
+ * @returns A `FetchResponse` representing the operation with a `Blob` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'blob';
 }): FetchResponse<Blob>;
+
 /**
- * Return `FetchResponse<T>`.
- * @param url
- * @param init
+ * Fetches a resource from the network and parses it as JSON, returning a `FetchResponse` representing the operation.
+ *
+ * @typeParam T - The expected type of the parsed JSON data.
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, specifying the response type as 'json'.
+ * @returns A `FetchResponse` representing the operation with a response parsed as JSON.
  */
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     responseType: 'json';
 }): FetchResponse<T>;
+
 /**
- * Return `FetchTask<Response>`.
- * @param url
- * @param init
+ * Fetches a resource from the network and returns a `FetchTask` representing the operation with a generic `Response`.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, indicating that the operation should be abortable.
+ * @returns A `FetchTask` representing the operation with a generic `Response`.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
 }): FetchTask<Response>;
+
 /**
- * Return `FetchResponse<Response>`.
- * @param url
- * @param init
+ * Fetches a resource from the network and returns a `FetchResponse` representing the operation with a generic `Response`.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, indicating that the operation should not be abortable.
+ * @returns A `FetchResponse` representing the operation with a generic `Response`.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: false;
 }): FetchResponse<Response>;
+
 /**
- * Return `FetchTask<T>` or `FetchResponse<T>`.
- * @param url
- * @param init
+ * Fetches a resource from the network and returns a `FetchResponse` or `FetchTask` based on the provided options.
+ *
+ * @typeParam T - The expected type of the response data when not using a specific `responseType`.
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
+ * @returns A `FetchResponse` or `FetchTask` depending on the `abortable` option in `init`.
  */
 export function fetchT<T>(url: string | URL, init: FetchInit): FetchTask<T> | FetchResponse<T>;
+
 /**
- * Return `FetchResponse<Response>`.
- * @param url
- * @param init
+ * Fetches a resource from the network and returns a `FetchResponse` representing the operation.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Standard `RequestInit` options for the fetch operation.
+ * @returns A `FetchResponse` representing the operation with a `Response` object.
  */
 export function fetchT(url: string | URL, init?: RequestInit): FetchResponse<Response>;
+
 /**
- * Request the url and return the corresponding type based on the responseType.
- * @param url url to fetch
- * @param init fetch init
- * @returns {FetchTask<T> | FetchResponse<T>} an abort able fetch task or just response
+ * Fetches a resource from the network and returns either a `FetchTask` or `FetchResponse` based on the provided options.
+ *
+ * @typeParam T - The expected type of the response data when not using a specific `responseType`.
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
+ * @returns A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
  */
 export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | FetchResponse<T> {
+    // most cases
     if (typeof url !== 'string') {
-        assertURL(url);
+        invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }.`);
     }
 
     // default not abort able

@@ -10,7 +10,7 @@ Deno.test('fetch', async (t) => {
 
     await t.step('Invalid url will throw', () => {
         const url = null;
-        assertThrows(() => fetchT(url!), TypeError);
+        assertThrows(() => fetchT(url!), Error);
     });
 
     await t.step('Get Response by default', async () => {

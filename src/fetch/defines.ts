@@ -2,39 +2,47 @@
 import type { AsyncResult } from 'happy-rusty';
 
 /**
- * Response generic type.
+ * Represents the response of a fetch operation, encapsulating the result data or any error that occurred.
+ *
+ * @typeParam T - The type of the data expected in the response.
  */
 export type FetchResponse<T> = AsyncResult<T, any>;
 
 /**
- * Return type of fetchT when abortable.
+ * Defines the structure and behavior of a fetch task, including the ability to abort the task and check its status.
+ *
+ * @typeParam T - The type of the data expected in the response.
  */
 export interface FetchTask<T> {
     /**
-     * Aborts the request.
-     * @param reason The reason for aborting the request.
+     * Aborts the fetch task, optionally with a reason for the abortion.
+     *
+     * @param reason - An optional parameter to indicate why the task was aborted.
      */
     abort(reason?: any): void;
+
     /**
-     * Returns true if inner AbortSignal's AbortController has signaled to abort, and false otherwise.
+     * Indicates whether the fetch task has been aborted.
      */
     aborted: boolean;
+
     /**
-     * The response of the request.
+     * The response of the fetch task, represented as an `AsyncResult`.
      */
     response: FetchResponse<T>;
 }
 
 /**
- * Parameters for fetchT.
+ * Extends the standard `RequestInit` interface from the Fetch API to include additional custom options.
  */
 export interface FetchInit extends RequestInit {
     /**
-     * true well return abort method.
+     * Indicates whether the fetch request should be abortable.
      */
     abortable?: boolean;
+
     /**
-     * The response type of the request.
+     * Specifies the expected response type of the fetch request.
      */
     responseType?: 'text' | 'arraybuffer' | 'blob' | 'json';
 }
