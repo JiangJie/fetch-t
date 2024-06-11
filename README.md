@@ -5,10 +5,11 @@
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 [![Build Status](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml/badge.svg)](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/JiangJie/fetch-t/graph/badge.svg)](https://codecov.io/gh/JiangJie/fetch-t)
 
 ---
 
-<a href="README.cn.md">[中文]</a>
+## [中文](README.cn.md)
 
 ---
 
@@ -81,10 +82,12 @@ somethingHappenAsync(() => {
 
 const res = await fetchTask.response;
 if (res.isErr()) {
-    console.assert(res.err() === 'cancel');
+    console.assert(res.unwrapErr() === 'cancel');
 } else {
     console.log(res.unwrap());
 }
 ```
 
 For more examples, please refer to test case <a href="tests/fetch.test.ts">fetch.test.ts</a>.
+
+## [Docs](docs/index.md)
