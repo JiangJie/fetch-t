@@ -3,7 +3,7 @@
   "description": "Abortable fetch wrapper with the ability to specify the return type.",
   "author": "jiang115jie@gmail.com",
   "license": "GPL-3.0",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "type": "module",
   "source": "src/mod.ts",
   "main": "dist/main.cjs",
@@ -43,8 +43,8 @@
     "responseType"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.12.0",
-    "@typescript-eslint/parser": "^7.12.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
     "eslint": "^8.57.0",
     "rollup": "^4.18.0",
     "rollup-plugin-dts": "^6.1.1",
@@ -57,5 +57,5 @@
     "happy-rusty": "^1.1.0",
     "tiny-invariant": "^1.3.3"
   },
-  "packageManager": "pnpm@9.2.0"
+  "packageManager": "pnpm@9.3.0"
 }
