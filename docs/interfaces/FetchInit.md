@@ -1,8 +1,8 @@
-[**@happy-ts/fetch-t**](../index.md) • **Docs**
+[**@happy-ts/fetch-t**](../README.md) • **Docs**
 
 ***
 
-[@happy-ts/fetch-t](../index.md) / FetchInit
+[@happy-ts/fetch-t](../README.md) / FetchInit
 
 # Interface: FetchInit
 

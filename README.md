@@ -90,4 +90,4 @@ if (res.isErr()) {
 
 For more examples, please refer to test case <a href="tests/fetch.test.ts">fetch.test.ts</a>.
 
-## [Docs](docs/index.md)
+## [Docs](docs/README.md)

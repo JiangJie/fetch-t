@@ -79,4 +79,4 @@ if (res.isErr()) {
 
 更多示例可参见测试用例 <a href="tests/fetch.test.ts">fetch.test.ts</a>。
 
-## [文档](docs/index.md)
+## [文档](docs/README.md)
