@@ -6,6 +6,20 @@
 
 # Function: fetchT()
 
+Fetches a resource from the network and returns either a `FetchTask` or `FetchResponse` based on the provided options.
+
+## Type Param
+
+The expected type of the response data when not using a specific `responseType`.
+
+## Param
+
+The resource to fetch. Can be a URL object or a string representing a URL.
+
+## Param
+
+Additional options for the fetch operation, including custom `FetchInit` properties.
+
 ## fetchT(url, init)
 
 ```ts
@@ -17,7 +31,7 @@ Fetches a resource from the network as a text string and returns a `FetchTask` r
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `abortable`: `true`; `responseType`: `"text"`; \} | Additional options for the fetch operation, including custom `FetchInit` properties. |
 
@@ -27,9 +41,9 @@ Fetches a resource from the network as a text string and returns a `FetchTask` r
 
 A `FetchTask` representing the operation with a `string` response.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L14)
+[src/fetch/fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L14)
 
 ## fetchT(url, init)
 
@@ -42,7 +56,7 @@ Fetches a resource from the network as an ArrayBuffer and returns a `FetchTask` 
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `abortable`: `true`; `responseType`: `"arraybuffer"`; \} | Additional options for the fetch operation, including custom `FetchInit` properties. |
 
@@ -52,9 +66,9 @@ Fetches a resource from the network as an ArrayBuffer and returns a `FetchTask` 
 
 A `FetchTask` representing the operation with an `ArrayBuffer` response.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L26)
+[src/fetch/fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L26)
 
 ## fetchT(url, init)
 
@@ -67,7 +81,7 @@ Fetches a resource from the network as a Blob and returns a `FetchTask` represen
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `abortable`: `true`; `responseType`: `"blob"`; \} | Additional options for the fetch operation, including custom `FetchInit` properties. |
 
@@ -77,9 +91,9 @@ Fetches a resource from the network as a Blob and returns a `FetchTask` represen
 
 A `FetchTask` representing the operation with a `Blob` response.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L38)
+[src/fetch/fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L38)
 
 ## fetchT(url, init)
 
@@ -89,16 +103,16 @@ function fetchT<T>(url, init): FetchTask<T>
 
 Fetches a resource from the network and parses it as JSON, returning a `FetchTask` representing the operation.
 
-### Type parameters
+### Type Parameters
 
-| Type parameter | Description |
-| :------ | :------ |
+| Type Parameter | Description |
+| ------ | ------ |
 | `T` | The expected type of the parsed JSON data. |
 
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `abortable`: `true`; `responseType`: `"json"`; \} | Additional options for the fetch operation, including custom `FetchInit` properties. |
 
@@ -108,9 +122,9 @@ Fetches a resource from the network and parses it as JSON, returning a `FetchTas
 
 A `FetchTask` representing the operation with a response parsed as JSON.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L51)
+[src/fetch/fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L51)
 
 ## fetchT(url, init)
 
@@ -123,7 +137,7 @@ Fetches a resource from the network as a text string and returns a `FetchRespons
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `responseType`: `"text"`; \} | Additional options for the fetch operation, specifying the response type as 'text'. |
 
@@ -133,9 +147,9 @@ Fetches a resource from the network as a text string and returns a `FetchRespons
 
 A `FetchResponse` representing the operation with a `string` response.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L63)
+[src/fetch/fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L63)
 
 ## fetchT(url, init)
 
@@ -148,7 +162,7 @@ Fetches a resource from the network as an ArrayBuffer and returns a `FetchRespon
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `responseType`: `"arraybuffer"`; \} | Additional options for the fetch operation, specifying the response type as 'arraybuffer'. |
 
@@ -158,9 +172,9 @@ Fetches a resource from the network as an ArrayBuffer and returns a `FetchRespon
 
 A `FetchResponse` representing the operation with an `ArrayBuffer` response.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L74)
+[src/fetch/fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L74)
 
 ## fetchT(url, init)
 
@@ -173,7 +187,7 @@ Fetches a resource from the network as a Blob and returns a `FetchResponse` repr
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `responseType`: `"blob"`; \} | Additional options for the fetch operation, specifying the response type as 'blob'. |
 
@@ -183,9 +197,9 @@ Fetches a resource from the network as a Blob and returns a `FetchResponse` repr
 
 A `FetchResponse` representing the operation with a `Blob` response.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L85)
+[src/fetch/fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L85)
 
 ## fetchT(url, init)
 
@@ -195,16 +209,16 @@ function fetchT<T>(url, init): FetchResponse<T>
 
 Fetches a resource from the network and parses it as JSON, returning a `FetchResponse` representing the operation.
 
-### Type parameters
+### Type Parameters
 
-| Type parameter | Description |
-| :------ | :------ |
+| Type Parameter | Description |
+| ------ | ------ |
 | `T` | The expected type of the parsed JSON data. |
 
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `responseType`: `"json"`; \} | Additional options for the fetch operation, specifying the response type as 'json'. |
 
@@ -214,9 +228,9 @@ Fetches a resource from the network and parses it as JSON, returning a `FetchRes
 
 A `FetchResponse` representing the operation with a response parsed as JSON.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L97)
+[src/fetch/fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L97)
 
 ## fetchT(url, init)
 
@@ -229,7 +243,7 @@ Fetches a resource from the network and returns a `FetchTask` representing the o
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `abortable`: `true`; \} | Additional options for the fetch operation, indicating that the operation should be abortable. |
 
@@ -239,9 +253,9 @@ Fetches a resource from the network and returns a `FetchTask` representing the o
 
 A `FetchTask` representing the operation with a generic `Response`.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L108)
+[src/fetch/fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L108)
 
 ## fetchT(url, init)
 
@@ -254,7 +268,7 @@ Fetches a resource from the network and returns a `FetchResponse` representing t
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) & \{ `abortable`: `false`; \} | Additional options for the fetch operation, indicating that the operation should not be abortable. |
 
@@ -264,9 +278,9 @@ Fetches a resource from the network and returns a `FetchResponse` representing t
 
 A `FetchResponse` representing the operation with a generic `Response`.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:119](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L119)
+[src/fetch/fetch.ts:119](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L119)
 
 ## fetchT(url, init)
 
@@ -276,16 +290,16 @@ function fetchT<T>(url, init): FetchTask<T> | FetchResponse<T>
 
 Fetches a resource from the network and returns a `FetchResponse` or `FetchTask` based on the provided options.
 
-### Type parameters
+### Type Parameters
 
-| Type parameter | Description |
-| :------ | :------ |
+| Type Parameter | Description |
+| ------ | ------ |
 | `T` | The expected type of the response data when not using a specific `responseType`. |
 
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init` | [`FetchInit`](../interfaces/FetchInit.md) | Additional options for the fetch operation, including custom `FetchInit` properties. |
 
@@ -295,9 +309,9 @@ Fetches a resource from the network and returns a `FetchResponse` or `FetchTask`
 
 A `FetchResponse` or `FetchTask` depending on the `abortable` option in `init`.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:131](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L131)
+[src/fetch/fetch.ts:131](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L131)
 
 ## fetchT(url, init)
 
@@ -310,7 +324,7 @@ Fetches a resource from the network and returns a `FetchResponse` representing t
 ### Parameters
 
 | Parameter | Type | Description |
-| :------ | :------ | :------ |
+| ------ | ------ | ------ |
 | `url` | `string` \| `URL` | The resource to fetch. Can be a URL object or a string representing a URL. |
 | `init`? | `RequestInit` | Standard `RequestInit` options for the fetch operation. |
 
@@ -320,6 +334,6 @@ Fetches a resource from the network and returns a `FetchResponse` representing t
 
 A `FetchResponse` representing the operation with a `Response` object.
 
-### Source
+### Defined in
 
-[src/fetch/fetch.ts:140](https://github.com/JiangJie/fetch-t/blob/6a5239d36df6ec2fbc78b194fa1370d9bdc8caa2/src/fetch/fetch.ts#L140)
+[src/fetch/fetch.ts:140](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L140)
