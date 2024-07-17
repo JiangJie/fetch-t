@@ -43,7 +43,7 @@ A `FetchTask` representing the operation with a `string` response.
 
 ### Defined in
 
-[src/fetch/fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L14)
+[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L14)
 
 ## fetchT(url, init)
 
@@ -68,7 +68,7 @@ A `FetchTask` representing the operation with an `ArrayBuffer` response.
 
 ### Defined in
 
-[src/fetch/fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L26)
+[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L26)
 
 ## fetchT(url, init)
 
@@ -93,7 +93,7 @@ A `FetchTask` representing the operation with a `Blob` response.
 
 ### Defined in
 
-[src/fetch/fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L38)
+[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L38)
 
 ## fetchT(url, init)
 
@@ -124,7 +124,7 @@ A `FetchTask` representing the operation with a response parsed as JSON.
 
 ### Defined in
 
-[src/fetch/fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L51)
+[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L51)
 
 ## fetchT(url, init)
 
@@ -149,7 +149,7 @@ A `FetchResponse` representing the operation with a `string` response.
 
 ### Defined in
 
-[src/fetch/fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L63)
+[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L63)
 
 ## fetchT(url, init)
 
@@ -174,7 +174,7 @@ A `FetchResponse` representing the operation with an `ArrayBuffer` response.
 
 ### Defined in
 
-[src/fetch/fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L74)
+[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L74)
 
 ## fetchT(url, init)
 
@@ -199,7 +199,7 @@ A `FetchResponse` representing the operation with a `Blob` response.
 
 ### Defined in
 
-[src/fetch/fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L85)
+[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L85)
 
 ## fetchT(url, init)
 
@@ -230,7 +230,7 @@ A `FetchResponse` representing the operation with a response parsed as JSON.
 
 ### Defined in
 
-[src/fetch/fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L97)
+[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L97)
 
 ## fetchT(url, init)
 
@@ -255,7 +255,7 @@ A `FetchTask` representing the operation with a generic `Response`.
 
 ### Defined in
 
-[src/fetch/fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L108)
+[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L108)
 
 ## fetchT(url, init)
 
@@ -280,7 +280,7 @@ A `FetchResponse` representing the operation with a generic `Response`.
 
 ### Defined in
 
-[src/fetch/fetch.ts:119](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L119)
+[fetch.ts:119](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L119)
 
 ## fetchT(url, init)
 
@@ -311,7 +311,7 @@ A `FetchResponse` or `FetchTask` depending on the `abortable` option in `init`.
 
 ### Defined in
 
-[src/fetch/fetch.ts:131](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L131)
+[fetch.ts:131](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L131)
 
 ## fetchT(url, init)
 
@@ -336,4 +336,4 @@ A `FetchResponse` representing the operation with a `Response` object.
 
 ### Defined in
 
-[src/fetch/fetch.ts:140](https://github.com/JiangJie/fetch-t/blob/9e5c4ce034f7bf6add07f55044bccbb16a68960c/src/fetch/fetch.ts#L140)
+[fetch.ts:140](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/fetch.ts#L140)
