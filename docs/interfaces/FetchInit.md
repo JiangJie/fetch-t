@@ -16,5 +16,6 @@ Extends the standard `RequestInit` interface from the Fetch API to include addit
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| `abortable?` | `boolean` | Indicates whether the fetch request should be abortable. | [defines.ts:42](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/defines.ts#L42) |
-| `responseType?` | `"text"` \| `"arraybuffer"` \| `"blob"` \| `"json"` | Specifies the expected response type of the fetch request. | [defines.ts:47](https://github.com/JiangJie/fetch-t/blob/e5aa635435bb73b90ba7373357fa4cc6928da1b3/src/fetch/defines.ts#L47) |
+| `abortable?` | `boolean` | Indicates whether the fetch request should be abortable. | [defines.ts:42](https://github.com/JiangJie/fetch-t/blob/ab9a610ee9b332a4dd133c29ce0932dbdbc0353d/src/fetch/defines.ts#L42) |
+| `responseType?` | `"text"` \| `"arraybuffer"` \| `"blob"` \| `"json"` | Specifies the expected response type of the fetch request. | [defines.ts:47](https://github.com/JiangJie/fetch-t/blob/ab9a610ee9b332a4dd133c29ce0932dbdbc0353d/src/fetch/defines.ts#L47) |
+| `timeout?` | `number` | Specifies the maximum time in milliseconds to wait for the fetch request to complete. | [defines.ts:52](https://github.com/JiangJie/fetch-t/blob/ab9a610ee9b332a4dd133c29ce0932dbdbc0353d/src/fetch/defines.ts#L52) |

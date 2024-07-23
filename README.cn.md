@@ -14,6 +14,8 @@ fetchT 的返回值包含一个可以 abort 的方法。
 
 fetchT 的返回数据是一个明确的类型，可以是 `string` `ArrayBuffer` `Blob` `<T>(泛型)`。
 
+支持超时自动取消请求。
+
 ## 安装
 
 pnpm
@@ -63,6 +65,7 @@ import { fetchT } from '@happy-ts/fetch-t';
 const fetchTask = fetchT('https://example.com', {
     abortable: true,
     responseType: 'json',
+    timeout: 3000,
 });
 
 somethingHappenAsync(() => {

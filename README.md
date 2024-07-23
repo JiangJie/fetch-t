@@ -19,6 +19,8 @@ The return value of fetchT includes an `abort` method.
 
 The return data of fetchT is of a specific type, which can be either `string`, `ArrayBuffer`, `Blob`, or `<T>(generic)`.
 
+Support `timeout`.
+
 ## Installation
 
 via pnpm
@@ -74,6 +76,7 @@ import { fetchT } from '@happy-ts/fetch-t';
 const fetchTask = fetchT('https://example.com', {
     abortable: true,
     responseType: 'json',
+    timeout: 3000,
 });
 
 somethingHappenAsync(() => {
