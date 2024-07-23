@@ -121,6 +121,17 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchResponse<Response>;
 
 /**
+ * Fetches a resource from the network and returns a `FetchResponse` representing the operation with a generic `Response`.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, indicating that the operation should not be abortable.
+ * @returns A `FetchResponse` representing the operation with a generic `Response`.
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    timeout: number;
+}): FetchResponse<Response>;
+
+/**
  * Fetches a resource from the network and returns a `FetchResponse` or `FetchTask` based on the provided options.
  *
  * @typeParam T - The expected type of the response data when not using a specific `responseType`.
@@ -153,12 +164,23 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }.`);
     }
 
-    // default not abort able
-    const { abortable = false, responseType, ...rest } = init ?? {};
+    const {
+        // default not abort able
+        abortable = false,
+        responseType,
+        timeout,
+        ...rest
+    } = init ?? {};
+
+    const shouldWaitTimeout = timeout != null;
+
+    if (shouldWaitTimeout) {
+        invariant(typeof timeout === 'number' && timeout > 0, () => `Timeout must be a number greater than 0 but received ${ timeout }.`);
+    }
 
     let controller: AbortController;
 
-    if (abortable) {
+    if (abortable || shouldWaitTimeout) {
         controller = new AbortController();
         rest.signal = controller.signal;
     }
@@ -194,6 +216,16 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     }).catch((err) => {
         return Err(err);
     });
+
+    if (shouldWaitTimeout) {
+        setTimeout(() => {
+            if (!controller.signal.aborted) {
+                const error = new Error();
+                error.name = 'TimeoutError';
+                controller.abort(error);
+            }
+        }, timeout);
+    }
 
     if (abortable) {
         return {

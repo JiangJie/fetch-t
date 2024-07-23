@@ -169,6 +169,24 @@ Deno.test('fetch', async (t) => {
         }
     });
 
+    await t.step('Invalid timeout', () => {
+        assertThrows(() => fetchT(mockTodo1, {
+            timeout: -1,
+        }), Error);
+    });
+
+    await t.step('Abort fetch by timeout', async () => {
+        const res = await fetchT(mockTodo1, {
+            timeout: 1,
+        });
+
+        if (res.isErr()) {
+            assert((res.unwrapErr() as Error).name === 'TimeoutError');
+        } else {
+            assert(res.isOk());
+        }
+    });
+
     await t.step('Fetch fail', async () => {
         const err: Error = (await fetchT(mockNotFound)).unwrapErr();
         assert(err.message.includes('404'));

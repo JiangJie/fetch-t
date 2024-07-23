@@ -45,4 +45,9 @@ export interface FetchInit extends RequestInit {
      * Specifies the expected response type of the fetch request.
      */
     responseType?: 'text' | 'arraybuffer' | 'blob' | 'json';
+
+    /**
+     * Specifies the maximum time in milliseconds to wait for the fetch request to complete.
+     */
+    timeout?: number;
 }
