@@ -14,4 +14,4 @@ Name of abort error;
 
 ## Defined in
 
-[defines.ts:58](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L58)
+[defines.ts:58](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/defines.ts#L58)

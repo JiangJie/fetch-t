@@ -16,6 +16,6 @@ Extends the standard `RequestInit` interface from the Fetch API to include addit
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| `abortable?` | `boolean` | Indicates whether the fetch request should be abortable. | [defines.ts:42](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L42) |
-| `responseType?` | `"text"` \| `"arraybuffer"` \| `"blob"` \| `"json"` | Specifies the expected response type of the fetch request. | [defines.ts:47](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L47) |
-| `timeout?` | `number` | Specifies the maximum time in milliseconds to wait for the fetch request to complete. | [defines.ts:52](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L52) |
+| `abortable?` | `boolean` | Indicates whether the fetch request should be abortable. | [defines.ts:42](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/defines.ts#L42) |
+| `responseType?` | `"text"` \| `"arraybuffer"` \| `"blob"` \| `"json"` | Specifies the expected response type of the fetch request. | [defines.ts:47](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/defines.ts#L47) |
+| `timeout?` | `number` | Specifies the maximum time in milliseconds to wait for the fetch request to complete. | [defines.ts:52](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/defines.ts#L52) |

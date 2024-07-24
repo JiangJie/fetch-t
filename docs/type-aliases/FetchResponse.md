@@ -20,4 +20,4 @@ Represents the response of a fetch operation, encapsulating the result data or a
 
 ## Defined in
 
-[defines.ts:9](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L9)
+[defines.ts:9](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/defines.ts#L9)
