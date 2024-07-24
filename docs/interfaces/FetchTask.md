@@ -18,8 +18,8 @@ Defines the structure and behavior of a fetch task, including the ability to abo
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| `aborted` | `boolean` | Indicates whether the fetch task has been aborted. | [defines.ts:27](https://github.com/JiangJie/fetch-t/blob/ab9a610ee9b332a4dd133c29ce0932dbdbc0353d/src/fetch/defines.ts#L27) |
-| `response` | [`FetchResponse`](../type-aliases/FetchResponse.md)\<`T`\> | The response of the fetch task, represented as an `AsyncResult`. | [defines.ts:32](https://github.com/JiangJie/fetch-t/blob/ab9a610ee9b332a4dd133c29ce0932dbdbc0353d/src/fetch/defines.ts#L32) |
+| `aborted` | `boolean` | Indicates whether the fetch task has been aborted. | [defines.ts:27](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L27) |
+| `response` | [`FetchResponse`](../type-aliases/FetchResponse.md)\<`T`\> | The response of the fetch task, represented as an `AsyncResult`. | [defines.ts:32](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L32) |
 
 ## Methods
 
@@ -43,4 +43,4 @@ Aborts the fetch task, optionally with a reason for the abortion.
 
 #### Defined in
 
-[defines.ts:22](https://github.com/JiangJie/fetch-t/blob/ab9a610ee9b332a4dd133c29ce0932dbdbc0353d/src/fetch/defines.ts#L22)
+[defines.ts:22](https://github.com/JiangJie/fetch-t/blob/c5e0121b76a0dea415931120c31c2d070cc2469d/src/fetch/defines.ts#L22)

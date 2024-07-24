@@ -17,6 +17,13 @@
 | ------ | ------ |
 | [FetchResponse](type-aliases/FetchResponse.md) | Represents the response of a fetch operation, encapsulating the result data or any error that occurred. |
 
+## Variables
+
+| Variable | Description |
+| ------ | ------ |
+| [ABORT\_ERROR](variables/ABORT_ERROR.md) | Name of abort error; |
+| [TIMEOUT\_ERROR](variables/TIMEOUT_ERROR.md) | Name of timeout error; |
+
 ## Functions
 
 | Function | Description |
