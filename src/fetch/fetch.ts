@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Err, Ok } from 'happy-rusty';
 import invariant from 'tiny-invariant';
-import type { FetchInit, FetchResponse, FetchTask } from './defines.ts';
+import { TIMEOUT_ERROR, type FetchInit, type FetchResponse, type FetchTask } from './defines.ts';
 
 /**
  * Fetches a resource from the network as a text string and returns a `FetchTask` representing the operation.
@@ -221,7 +221,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         setTimeout(() => {
             if (!controller.signal.aborted) {
                 const error = new Error();
-                error.name = 'TimeoutError';
+                error.name = TIMEOUT_ERROR;
                 controller.abort(error);
             }
         }, timeout);

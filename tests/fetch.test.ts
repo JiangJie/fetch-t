@@ -1,4 +1,5 @@
 import { assert, assertThrows } from '@std/assert';
+import { ABORT_ERROR, TIMEOUT_ERROR } from "../src/fetch/defines.ts";
 import { fetchT } from '../src/mod.ts';
 
 Deno.test('fetch', async (t) => {
@@ -146,7 +147,7 @@ Deno.test('fetch', async (t) => {
         }, 0);
 
         const res = await fetchTask.response;
-        assert((res.unwrapErr() as Error).name === 'AbortError');
+        assert((res.unwrapErr() as Error).name === ABORT_ERROR);
         assert(fetchTask.aborted);
     });
 
@@ -181,7 +182,7 @@ Deno.test('fetch', async (t) => {
         });
 
         if (res.isErr()) {
-            assert((res.unwrapErr() as Error).name === 'TimeoutError');
+            assert((res.unwrapErr() as Error).name === TIMEOUT_ERROR);
         } else {
             assert(res.isOk());
         }
