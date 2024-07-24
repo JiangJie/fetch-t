@@ -113,23 +113,9 @@ export function fetchT(url: string | URL, init: FetchInit & {
  * Fetches a resource from the network and returns a `FetchResponse` representing the operation with a generic `Response`.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, indicating that the operation should not be abortable.
  * @returns A `FetchResponse` representing the operation with a generic `Response`.
  */
-export function fetchT(url: string | URL, init: FetchInit & {
-    abortable: false;
-}): FetchResponse<Response>;
-
-/**
- * Fetches a resource from the network and returns a `FetchResponse` representing the operation with a generic `Response`.
- *
- * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, indicating that the operation should not be abortable.
- * @returns A `FetchResponse` representing the operation with a generic `Response`.
- */
-export function fetchT(url: string | URL, init: FetchInit & {
-    timeout: number;
-}): FetchResponse<Response>;
+export function fetchT(url: string | URL): FetchResponse<Response>;
 
 /**
  * Fetches a resource from the network and returns a `FetchResponse` or `FetchTask` based on the provided options.
@@ -137,18 +123,9 @@ export function fetchT(url: string | URL, init: FetchInit & {
  * @typeParam T - The expected type of the response data when not using a specific `responseType`.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
  * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
- * @returns A `FetchResponse` or `FetchTask` depending on the `abortable` option in `init`.
- */
-export function fetchT<T>(url: string | URL, init: FetchInit): FetchTask<T> | FetchResponse<T>;
-
-/**
- * Fetches a resource from the network and returns a `FetchResponse` representing the operation.
- *
- * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Standard `RequestInit` options for the fetch operation.
  * @returns A `FetchResponse` representing the operation with a `Response` object.
  */
-export function fetchT(url: string | URL, init?: RequestInit): FetchResponse<Response>;
+export function fetchT(url: string | URL, init: FetchInit): FetchResponse<Response>;
 
 /**
  * Fetches a resource from the network and returns either a `FetchTask` or `FetchResponse` based on the provided options.
