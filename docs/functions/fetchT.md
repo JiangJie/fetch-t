@@ -41,6 +41,8 @@ Fetches a resource from the network as a text string and returns a `FetchTask` r
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchTask` representing the operation with a `string` response.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -55,7 +57,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L14)
+[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L14)
 
 ## fetchT(url, init)
 
@@ -78,6 +80,8 @@ Fetches a resource from the network as an ArrayBuffer and returns a `FetchTask` 
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchTask` representing the operation with an `ArrayBuffer` response.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -92,7 +96,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L26)
+[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L26)
 
 ## fetchT(url, init)
 
@@ -115,6 +119,8 @@ Fetches a resource from the network as a Blob and returns a `FetchTask` represen
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchTask` representing the operation with a `Blob` response.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -129,7 +135,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L38)
+[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L38)
 
 ## fetchT(url, init)
 
@@ -158,6 +164,8 @@ Fetches a resource from the network and parses it as JSON, returning a `FetchTas
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchTask` representing the operation with a response parsed as JSON.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -172,7 +180,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L51)
+[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L51)
 
 ## fetchT(url, init)
 
@@ -195,6 +203,8 @@ Fetches a resource from the network as a text string and returns a `FetchRespons
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchResponse` representing the operation with a `string` response.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -209,7 +219,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L63)
+[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L63)
 
 ## fetchT(url, init)
 
@@ -232,6 +242,8 @@ Fetches a resource from the network as an ArrayBuffer and returns a `FetchRespon
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchResponse` representing the operation with an `ArrayBuffer` response.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -246,7 +258,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L74)
+[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L74)
 
 ## fetchT(url, init)
 
@@ -269,6 +281,8 @@ Fetches a resource from the network as a Blob and returns a `FetchResponse` repr
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchResponse` representing the operation with a `Blob` response.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -283,7 +297,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L85)
+[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L85)
 
 ## fetchT(url, init)
 
@@ -312,6 +326,8 @@ Fetches a resource from the network and parses it as JSON, returning a `FetchRes
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchResponse` representing the operation with a response parsed as JSON.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -326,7 +342,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L97)
+[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L97)
 
 ## fetchT(url, init)
 
@@ -349,6 +365,8 @@ Fetches a resource from the network and returns a `FetchTask` representing the o
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchTask` representing the operation with a generic `Response`.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -363,7 +381,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L108)
+[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L108)
 
 ## fetchT(url)
 
@@ -385,6 +403,8 @@ Fetches a resource from the network and returns a `FetchResponse` representing t
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchResponse` representing the operation with a generic `Response`.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -399,7 +419,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:118](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L118)
+[fetch.ts:118](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L118)
 
 ## fetchT(url, init)
 
@@ -422,6 +442,8 @@ Fetches a resource from the network and returns a `FetchResponse` or `FetchTask`
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
+A `FetchResponse` representing the operation with a `Response` object.
+
 ### Type Param
 
 The expected type of the response data when not using a specific `responseType`.
@@ -436,4 +458,4 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:128](https://github.com/JiangJie/fetch-t/blob/e31c84b39da301aedb3faeb020c606fa1a2c6bcb/src/fetch/fetch.ts#L128)
+[fetch.ts:128](https://github.com/JiangJie/fetch-t/blob/9e5d8bc709fe9cc1630d97e0ca16ef403ee959bb/src/fetch/fetch.ts#L128)
