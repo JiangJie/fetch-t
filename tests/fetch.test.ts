@@ -140,6 +140,7 @@ Deno.test('fetch', async (t) => {
     await t.step('Abort fetch by default', async () => {
         const fetchTask = fetchT(mockTodo1, {
             abortable: true,
+            timeout: 1000,
         });
 
         setTimeout(() => {
@@ -154,6 +155,7 @@ Deno.test('fetch', async (t) => {
     await t.step('Abort fetch by custom', async () => {
         const fetchTask = fetchT(mockTodo1, {
             abortable: true,
+            timeout: 1000,
         });
 
         const timer = setTimeout(() => {

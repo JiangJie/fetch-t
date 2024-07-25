@@ -150,6 +150,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     } = init ?? {};
 
     const shouldWaitTimeout = timeout != null;
+    let cancelTimer: (() => void) | null;
 
     if (shouldWaitTimeout) {
         invariant(typeof timeout === 'number' && timeout > 0, () => `Timeout must be a number greater than 0 but received ${ timeout }.`);
@@ -163,6 +164,8 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     }
 
     const response: FetchResponse<T> = fetch(url, rest).then(async (res): FetchResponse<T> => {
+        cancelTimer?.();
+
         if (!res.ok) {
             await res.body?.cancel();
             return Err(new Error(`fetch status: ${ res.status }`));
@@ -191,22 +194,33 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
             }
         }
     }).catch((err) => {
+        cancelTimer?.();
+
         return Err(err);
     });
 
     if (shouldWaitTimeout) {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             if (!controller.signal.aborted) {
                 const error = new Error();
                 error.name = TIMEOUT_ERROR;
                 controller.abort(error);
             }
         }, timeout);
+
+        cancelTimer = (): void => {
+            if (timer) {
+                clearTimeout(timer);
+            }
+
+            cancelTimer = null;
+        };
     }
 
     if (abortable) {
         return {
             abort(reason?: any): void {
+                cancelTimer?.();
                 controller.abort(reason);
             },
             get aborted(): boolean {
