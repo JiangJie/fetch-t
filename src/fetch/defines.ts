@@ -24,12 +24,12 @@ export interface FetchTask<T> {
     /**
      * Indicates whether the fetch task has been aborted.
      */
-    aborted: boolean;
+    readonly aborted: boolean;
 
     /**
      * The response of the fetch task, represented as an `AsyncResult`.
      */
-    response: FetchResponse<T>;
+    readonly response: FetchResponse<T>;
 }
 
 /**

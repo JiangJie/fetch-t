@@ -226,7 +226,9 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
             get aborted(): boolean {
                 return controller.signal.aborted;
             },
-            response,
+            get response(): FetchResponse<T> {
+                return response;
+            },
         };
     } else {
         return response;
