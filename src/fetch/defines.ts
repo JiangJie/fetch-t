@@ -55,9 +55,9 @@ export interface FetchInit extends RequestInit {
 /**
  * Name of abort error;
  */
-export const ABORT_ERROR = 'AbortError';
+export const ABORT_ERROR = 'AbortError' as const;
 
 /**
  * Name of timeout error;
  */
-export const TIMEOUT_ERROR = 'TimeoutError';
+export const TIMEOUT_ERROR = 'TimeoutError' as const;
