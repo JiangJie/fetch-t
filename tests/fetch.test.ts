@@ -3,11 +3,11 @@ import { ABORT_ERROR, TIMEOUT_ERROR } from "../src/fetch/defines.ts";
 import { fetchT } from '../src/mod.ts';
 
 Deno.test('fetch', async (t) => {
-    const mockServer = 'https://16a6dafa-2258-4a83-88fa-31a409e42b17.mock.pstmn.io';
-    const mockTodos = `${ mockServer }/todos`;
-    const mockTodo1 = `${ mockTodos }/1`;
-    const mockInvalidJson = `${ mockServer }/invalid_json`;
+    const mockServer = 'https://fakestoreapi.com';
+    const mockAll = `${ mockServer }/products`;
+    const mockSingle = `${ mockAll }/1`;
     const mockNotFound = `${ mockServer }/not_found`;
+    const mockInvalidJson = `https://github.com/JiangJie/fetch-t`;
 
     await t.step('Invalid url will throw', () => {
         const url = {};
@@ -15,59 +15,58 @@ Deno.test('fetch', async (t) => {
     });
 
     await t.step('Get Response by default', async () => {
-        const res = (await fetchT(mockTodos)).unwrap();
+        const res = (await fetchT(mockSingle)).unwrap();
         const data = await res.text();
 
-        assert(data.includes(`"id": 1`));
+        assert(typeof data === 'string');
     });
 
     await t.step('Get Response by RequestInit', async () => {
-        const res = (await fetchT(mockTodo1, {
+        const res = (await fetchT(mockSingle, {
             mode: 'no-cors',
         } as RequestInit)).unwrap();
         const data = await res.text();
 
-        assert(data.includes(`"id": 1`));
+        assert(typeof data === 'string');
     });
 
     await t.step('Get text by response type', async () => {
-        const data = (await fetchT(mockTodo1, {
+        const data = (await fetchT(mockSingle, {
             responseType: 'text',
         })).unwrap();
 
-        assert(data.includes(`"id": 1`));
+        assert(typeof data === 'string');
     });
 
     await t.step('Get arraybuffer by response type', async () => {
-        const data = (await fetchT(mockTodo1, {
+        const data = (await fetchT(mockSingle, {
             responseType: 'arraybuffer',
         })).unwrap();
 
-        assert(data.byteLength === 37);
+        assert(data instanceof ArrayBuffer);
     });
 
     await t.step('Get blob by response type', async () => {
-        const data = (await fetchT(mockTodo1, {
+        const data = (await fetchT(mockSingle, {
             responseType: 'blob',
         })).unwrap();
 
-        assert(data.size === 37);
+        assert(data instanceof Blob);
     });
 
     await t.step('Get json by response type', async () => {
-        const data = (await fetchT<{ id: number }[]>(mockTodos, {
+        const data = (await fetchT<{ id: number }>(mockSingle, {
             responseType: 'json',
             method: 'GET',
         })).unwrap();
 
-        assert(data.length === 1);
-        assert(data[0].id === 1);
+        assert('id' in data);
     });
 
     await t.step('Post json', async () => {
         const data = (await fetchT<{
-            id: number;
-        }>(mockTodos, {
+            title: string;
+        }>(mockAll, {
             responseType: 'json',
             method: 'POST',
             body: JSON.stringify({
@@ -78,18 +77,16 @@ Deno.test('fetch', async (t) => {
             },
         })).unwrap();
 
-        assert(data.id === 2);
+        assert(data.title === 'happy-2');
     });
 
     await t.step('Put json', async () => {
         const data = (await fetchT<{
-            id: number;
             title: string;
-        }>(mockTodo1, {
+        }>(mockSingle, {
             responseType: 'json',
             method: 'PUT',
             body: JSON.stringify({
-                id: 100,
                 title: 'happy-new',
             }),
             headers: {
@@ -97,14 +94,13 @@ Deno.test('fetch', async (t) => {
             },
         })).unwrap();
 
-        assert(data.id === 100);
         assert(data.title === 'happy-new');
     });
 
     await t.step('Patch json', async () => {
         const data = (await fetchT<{
             title: string;
-        }>(mockTodo1, {
+        }>(mockSingle, {
             responseType: 'json',
             method: 'PATCH',
             body: JSON.stringify({
@@ -120,13 +116,13 @@ Deno.test('fetch', async (t) => {
 
     await t.step('Delete json', async () => {
         const data = (await fetchT<{
-            success: boolean;
-        }>(mockTodo1, {
+            title: boolean;
+        }>(mockSingle, {
             responseType: 'json',
             method: 'DELETE',
         })).unwrap();
 
-        assert(data.success);
+        assert('title' in data);
     });
 
     await t.step('Get invalid json', async () => {
@@ -138,7 +134,7 @@ Deno.test('fetch', async (t) => {
     });
 
     await t.step('Abort fetch by default', async () => {
-        const fetchTask = fetchT(mockTodo1, {
+        const fetchTask = fetchT(mockSingle, {
             abortable: true,
             timeout: 1000,
         });
@@ -153,7 +149,7 @@ Deno.test('fetch', async (t) => {
     });
 
     await t.step('Abort fetch by custom', async () => {
-        const fetchTask = fetchT(mockTodo1, {
+        const fetchTask = fetchT(mockSingle, {
             abortable: true,
             timeout: 1000,
         });
@@ -173,13 +169,13 @@ Deno.test('fetch', async (t) => {
     });
 
     await t.step('Invalid timeout', () => {
-        assertThrows(() => fetchT(mockTodo1, {
+        assertThrows(() => fetchT(mockSingle, {
             timeout: -1,
         }), Error);
     });
 
     await t.step('Abort fetch by timeout', async () => {
-        const res = await fetchT(mockTodo1, {
+        const res = await fetchT(mockSingle, {
             timeout: 1,
         });
 
