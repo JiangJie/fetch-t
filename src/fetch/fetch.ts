@@ -110,14 +110,6 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchTask<Response>;
 
 /**
- * Fetches a resource from the network and returns a `FetchResponse` representing the operation with a generic `Response`.
- *
- * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @returns A `FetchResponse` representing the operation with a generic `Response`.
- */
-export function fetchT(url: string | URL): FetchResponse<Response>;
-
-/**
  * Fetches a resource from the network and returns a `FetchResponse` or `FetchTask` based on the provided options.
  *
  * @typeParam T - The expected type of the response data when not using a specific `responseType`.
@@ -125,7 +117,7 @@ export function fetchT(url: string | URL): FetchResponse<Response>;
  * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
  * @returns A `FetchResponse` representing the operation with a `Response` object.
  */
-export function fetchT(url: string | URL, init: FetchInit): FetchResponse<Response>;
+export function fetchT(url: string | URL, init?: FetchInit): FetchResponse<Response>;
 
 /**
  * Fetches a resource from the network and returns either a `FetchTask` or `FetchResponse` based on the provided options.

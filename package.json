@@ -21,7 +21,7 @@
   "sideEffects": false,
   "scripts": {
     "check": "pnpm exec tsc --noEmit",
-    "lint": "pnpm exec eslint src/",
+    "lint": "pnpm exec eslint .",
     "prebuild": "pnpm dlx rimraf dist && pnpm run check && pnpm run lint",
     "build": "pnpm exec rollup --config rollup.config.mjs",
     "pretest": "pnpm dlx rimraf coverage",

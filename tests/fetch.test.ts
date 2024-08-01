@@ -10,8 +10,8 @@ Deno.test('fetch', async (t) => {
     const mockNotFound = `${ mockServer }/not_found`;
 
     await t.step('Invalid url will throw', () => {
-        const url = null;
-        assertThrows(() => fetchT(url!), Error);
+        const url = {};
+        assertThrows(() => fetchT((url as string)), Error);
     });
 
     await t.step('Get Response by default', async () => {
