@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       happy-rusty:
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.3.0
+        version: 1.3.0
       tiny-invariant:
         specifier: ^1.3.3
         version: 1.3.3
@@ -629,8 +629,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  happy-rusty@1.2.0:
-    resolution: {integrity: sha512-rWR3EOvbnlYiufhiZEwUUnDIfX6MXDJh1CtISJYX4hGpEUdK2O8z9/qjbfdRvS9pbMklvWScN0Iu2e3pIY91bg==}
+  happy-rusty@1.3.0:
+    resolution: {integrity: sha512-eIdLbzj90fuIFZc8ICyeIYYTQBEWkNiM+J6d94OCdDND5jFRHFfkJN+5mzj4XgXLNf2q563mxY6NZVDBzAHJiA==}
 
   has-flag@3.0.0:
     resolution: {integrity: sha512-sKJf1+ceQBr4SMkvQnBDNDtf4TXpVhVGateu0t918bl30FnbE2m4vNLX+VWe/dpjlb+HugGYzW7uQXH98HPEYw==}
@@ -1485,7 +1485,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  happy-rusty@1.2.0: {}
+  happy-rusty@1.3.0: {}
 
   has-flag@3.0.0:
     optional: true

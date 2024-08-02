@@ -7,7 +7,7 @@
       "npm:@eslint/js@^9.8.0": "npm:@eslint/js@9.8.0",
       "npm:@types/eslint__js@^8.42.3": "npm:@types/eslint__js@8.42.3",
       "npm:eslint@^9.8.0": "npm:eslint@9.8.0",
-      "npm:happy-rusty@^1.2.0": "npm:happy-rusty@1.2.0",
+      "npm:happy-rusty@^1.3.0": "npm:happy-rusty@1.3.0",
       "npm:rollup-plugin-dts@^6.1.1": "npm:rollup-plugin-dts@6.1.1_rollup@4.19.2_typescript@5.5.4",
       "npm:rollup-plugin-esbuild@^6.1.1": "npm:rollup-plugin-esbuild@6.1.1_esbuild@0.23.0_rollup@4.19.2",
       "npm:rollup@^4.19.2": "npm:rollup@4.19.2",
@@ -766,8 +766,8 @@
         "integrity": "sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==",
         "dependencies": {}
       },
-      "happy-rusty@1.2.0": {
-        "integrity": "sha512-rWR3EOvbnlYiufhiZEwUUnDIfX6MXDJh1CtISJYX4hGpEUdK2O8z9/qjbfdRvS9pbMklvWScN0Iu2e3pIY91bg==",
+      "happy-rusty@1.3.0": {
+        "integrity": "sha512-eIdLbzj90fuIFZc8ICyeIYYTQBEWkNiM+J6d94OCdDND5jFRHFfkJN+5mzj4XgXLNf2q563mxY6NZVDBzAHJiA==",
         "dependencies": {}
       },
       "has-flag@3.0.0": {
@@ -1190,7 +1190,7 @@
         "npm:@eslint/js@^9.8.0",
         "npm:@types/eslint__js@^8.42.3",
         "npm:eslint@^9.8.0",
-        "npm:happy-rusty@^1.2.0",
+        "npm:happy-rusty@^1.3.0",
         "npm:rollup-plugin-dts@^6.1.1",
         "npm:rollup-plugin-esbuild@^6.1.1",
         "npm:rollup@^4.19.2",
