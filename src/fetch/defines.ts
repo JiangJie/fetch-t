@@ -33,6 +33,11 @@ export interface FetchTask<T> {
 }
 
 /**
+ * Specifies the expected response type of the fetch request.
+ */
+export type FetchResponseType = 'text' | 'arraybuffer' | 'blob' | 'json';
+
+/**
  * Extends the standard `RequestInit` interface from the Fetch API to include additional custom options.
  */
 export interface FetchInit extends RequestInit {
@@ -44,20 +49,10 @@ export interface FetchInit extends RequestInit {
     /**
      * Specifies the expected response type of the fetch request.
      */
-    responseType?: 'text' | 'arraybuffer' | 'blob' | 'json';
+    responseType?: FetchResponseType;
 
     /**
      * Specifies the maximum time in milliseconds to wait for the fetch request to complete.
      */
     timeout?: number;
 }
-
-/**
- * Name of abort error;
- */
-export const ABORT_ERROR = 'AbortError' as const;
-
-/**
- * Name of timeout error;
- */
-export const TIMEOUT_ERROR = 'TimeoutError' as const;

@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Err, Ok } from 'happy-rusty';
 import invariant from 'tiny-invariant';
-import { TIMEOUT_ERROR, type FetchInit, type FetchResponse, type FetchTask } from './defines.ts';
+import { TIMEOUT_ERROR } from './constants.ts';
+import type { FetchInit, FetchResponse, FetchTask } from './defines.ts';
 
 /**
  * Fetches a resource from the network as a text string and returns a `FetchTask` representing the operation.
@@ -211,13 +211,16 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
 
     if (abortable) {
         return {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             abort(reason?: any): void {
                 cancelTimer?.();
                 controller.abort(reason);
             },
+
             get aborted(): boolean {
                 return controller.signal.aborted;
             },
+
             get response(): FetchResponse<T> {
                 return response;
             },

@@ -1,6 +1,5 @@
 import { assert, assertThrows } from '@std/assert';
-import { ABORT_ERROR, TIMEOUT_ERROR } from "../src/fetch/defines.ts";
-import { fetchT } from '../src/mod.ts';
+import { ABORT_ERROR, fetchT, TIMEOUT_ERROR } from '../src/mod.ts';
 
 Deno.test('fetch', async (t) => {
     const mockServer = 'https://fakestoreapi.com';
