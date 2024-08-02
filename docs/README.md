@@ -16,6 +16,7 @@
 | Type alias | Description |
 | ------ | ------ |
 | [FetchResponse](type-aliases/FetchResponse.md) | Represents the response of a fetch operation, encapsulating the result data or any error that occurred. |
+| [FetchResponseType](type-aliases/FetchResponseType.md) | Specifies the expected response type of the fetch request. |
 
 ## Variables
 

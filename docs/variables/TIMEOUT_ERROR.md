@@ -14,4 +14,4 @@ Name of timeout error;
 
 ## Defined in
 
-[defines.ts:63](https://github.com/JiangJie/fetch-t/blob/d90c4d8dc6d5e11996ad3e2f1da5b1c12e4b5058/src/fetch/defines.ts#L63)
+[constants.ts:9](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/constants.ts#L9)
