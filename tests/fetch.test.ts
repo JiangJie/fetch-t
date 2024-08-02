@@ -132,6 +132,16 @@ Deno.test('fetch', async (t) => {
         assert((res.unwrapErr() as Error).message.includes(`Response is invalid json`));
     });
 
+    await t.step('Ignore timeout when success', async () => {
+        const res = await fetchT(mockSingle, {
+            timeout: 10000,
+        });
+
+        assert(res.isOk());
+        // Leak risk
+        res.unwrap().body?.cancel();
+    });
+
     await t.step('Abort fetch by default', async () => {
         const fetchTask = fetchT(mockSingle, {
             abortable: true,
@@ -140,7 +150,7 @@ Deno.test('fetch', async (t) => {
 
         setTimeout(() => {
             fetchTask.abort();
-        }, 0);
+        }, 100);
 
         const res = await fetchTask.response;
         assert((res.unwrapErr() as Error).name === ABORT_ERROR);
