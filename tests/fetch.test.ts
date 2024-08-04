@@ -1,5 +1,5 @@
 import { assert, assertThrows } from '@std/assert';
-import { ABORT_ERROR, fetchT, TIMEOUT_ERROR } from '../src/mod.ts';
+import { ABORT_ERROR, FetchError, fetchT, TIMEOUT_ERROR } from '../src/mod.ts';
 
 Deno.test('fetch', async (t) => {
     const mockServer = 'https://fakestoreapi.com';
@@ -195,8 +195,10 @@ Deno.test('fetch', async (t) => {
         }
     });
 
-    await t.step('Fetch fail', async () => {
+    await t.step('Fetch not found', async () => {
         const err: Error = (await fetchT(mockNotFound)).unwrapErr();
-        assert(err.message.includes('404'));
+        assert(err.name === 'FetchError');
+        assert(err.message === 'Not Found');
+        assert((err as FetchError).status === 404);
     });
 });

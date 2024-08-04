@@ -56,3 +56,22 @@ export interface FetchInit extends RequestInit {
      */
     timeout?: number;
 }
+
+/**
+ * Represents an error that occurred during a fetch operation when the response is not ok.
+ */
+export class FetchError extends Error {
+    /**
+     * The name of the error.
+     */
+    name = 'FetchError';
+    /**
+     * The status code of the response.
+     */
+    status = 0;
+
+    constructor(message: string, status: number) {
+        super(message);
+        this.status = status;
+    }
+}

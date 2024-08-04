@@ -1,7 +1,7 @@
 import { Err, Ok } from 'happy-rusty';
 import invariant from 'tiny-invariant';
 import { TIMEOUT_ERROR } from './constants.ts';
-import type { FetchInit, FetchResponse, FetchTask } from './defines.ts';
+import { FetchError, type FetchInit, type FetchResponse, type FetchTask } from './defines.ts';
 
 /**
  * Fetches a resource from the network as a text string and returns a `FetchTask` representing the operation.
@@ -160,7 +160,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
 
         if (!res.ok) {
             await res.body?.cancel();
-            return Err(new Error(`fetch status: ${ res.status }`));
+            return Err(new FetchError(res.statusText, res.status));
         }
 
         switch (responseType) {
