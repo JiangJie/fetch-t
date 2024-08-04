@@ -57,7 +57,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L14)
+[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L14)
 
 ## fetchT(url, init)
 
@@ -96,7 +96,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L26)
+[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L26)
 
 ## fetchT(url, init)
 
@@ -135,7 +135,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L38)
+[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L38)
 
 ## fetchT(url, init)
 
@@ -180,7 +180,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L51)
+[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L51)
 
 ## fetchT(url, init)
 
@@ -219,7 +219,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L63)
+[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L63)
 
 ## fetchT(url, init)
 
@@ -258,7 +258,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L74)
+[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L74)
 
 ## fetchT(url, init)
 
@@ -297,7 +297,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L85)
+[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L85)
 
 ## fetchT(url, init)
 
@@ -342,7 +342,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L97)
+[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L97)
 
 ## fetchT(url, init)
 
@@ -381,7 +381,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L108)
+[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L108)
 
 ## fetchT(url, init)
 
@@ -420,4 +420,4 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:120](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/fetch.ts#L120)
+[fetch.ts:120](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/fetch.ts#L120)

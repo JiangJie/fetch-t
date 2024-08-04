@@ -14,4 +14,4 @@ Name of abort error;
 
 ## Defined in
 
-[constants.ts:4](https://github.com/JiangJie/fetch-t/blob/6db6e6bc264d2c2e0afd8a65220e2640b742b88b/src/fetch/constants.ts#L4)
+[constants.ts:4](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/constants.ts#L4)

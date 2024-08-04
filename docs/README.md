@@ -4,6 +4,12 @@
 
 # @happy-ts/fetch-t
 
+## Classes
+
+| Class | Description |
+| ------ | ------ |
+| [FetchError](classes/FetchError.md) | Represents an error that occurred during a fetch operation when the response is not ok. |
+
 ## Interfaces
 
 | Interface | Description |
