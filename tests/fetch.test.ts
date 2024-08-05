@@ -168,13 +168,13 @@ Deno.test('fetch', async (t) => {
         }, 500);
 
         const res = await fetchTask.response;
-        if (res.isErr()) {
-            assert((res.unwrapErr() as string) === 'cancel');
-        } else {
+
+        res.inspect((x) => {
             clearTimeout(timer);
-            assert(res.isOk());
-            await res.unwrap().body?.cancel();
-        }
+            x.body?.cancel();
+        }).inspectErr(err => {
+            assert((err as string) === 'cancel');
+        });
     });
 
     await t.step('Invalid timeout', () => {
@@ -188,11 +188,8 @@ Deno.test('fetch', async (t) => {
             timeout: 1,
         });
 
-        if (res.isErr()) {
-            assert((res.unwrapErr() as Error).name === TIMEOUT_ERROR);
-        } else {
-            assert(res.isOk());
-        }
+        assert(res.isErr());
+        assert((res.unwrapErr() as Error).name === TIMEOUT_ERROR);
     });
 
     await t.step('Fetch not found', async () => {
