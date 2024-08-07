@@ -18,33 +18,18 @@ fetchT 的返回数据是一个明确的类型，可以是 `string` `ArrayBuffer
 
 ## 安装
 
-pnpm
-```
+```sh
+# via pnpm
 pnpm add @happy-ts/fetch-t
-```
-
-yarn
-```
+# or via yarn
 yarn add @happy-ts/fetch-t
-```
-
-npm
-```
+# or just from npm
 npm install --save @happy-ts/fetch-t
-```
-
-通过 JSR
-```
+# via JSR
 jsr add @happy-ts/fetch-t
-```
-
-通过 deno
-```
+# for deno
 deno add @happy-ts/fetch-t
-```
-
-通过 bun
-```
+# for bun
 bunx jsr add @happy-ts/fetch-t
 ```
 

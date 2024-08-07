@@ -23,39 +23,18 @@ Support `timeout`.
 
 ## Installation
 
-via pnpm
-
-```
+```sh
+# via pnpm
 pnpm add @happy-ts/fetch-t
-```
-
-or via yarn
-
-```
+# or via yarn
 yarn add @happy-ts/fetch-t
-```
-
-or just from npm
-
-```
+# or just from npm
 npm install --save @happy-ts/fetch-t
-```
-
-via JSR
-
-```
+# via JSR
 jsr add @happy-ts/fetch-t
-```
-
-for deno
-
-```
+# for deno
 deno add @happy-ts/fetch-t
-```
-
-for bun
-
-```
+# for bun
 bunx jsr add @happy-ts/fetch-t
 ```
 
