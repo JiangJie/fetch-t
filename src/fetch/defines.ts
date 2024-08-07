@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { AsyncResult } from 'happy-rusty';
+import type { AsyncResult, IOResult } from 'happy-rusty';
 
 /**
  * Represents the response of a fetch operation, encapsulating the result data or any error that occurred.
@@ -38,6 +38,21 @@ export interface FetchTask<T> {
 export type FetchResponseType = 'text' | 'arraybuffer' | 'blob' | 'json';
 
 /**
+ * Represents the progress of a fetch operation.
+ */
+export interface FetchProgress {
+    /**
+     * The total number of bytes to be received.
+     */
+    totalByteLength: number;
+
+    /**
+     * The number of bytes received so far.
+     */
+    completedByteLength: number;
+}
+
+/**
  * Extends the standard `RequestInit` interface from the Fetch API to include additional custom options.
  */
 export interface FetchInit extends RequestInit {
@@ -55,6 +70,18 @@ export interface FetchInit extends RequestInit {
      * Specifies the maximum time in milliseconds to wait for the fetch request to complete.
      */
     timeout?: number;
+
+    /**
+     * Specifies a function to be called when the fetch request makes progress.
+     * @param progressResult - The progress of the fetch request.
+     */
+    onProgress?: (progressResult: IOResult<FetchProgress>) => void;
+
+    /**
+     * Specifies a function to be called when the fetch request receives a chunk of data.
+     * @param chunk - The chunk of data received.
+     */
+    onChunk?: (chunk: Uint8Array) => void;
 }
 
 /**

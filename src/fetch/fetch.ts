@@ -138,6 +138,8 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         abortable = false,
         responseType,
         timeout,
+        onProgress,
+        onChunk,
         ...rest
     } = init ?? {};
 
@@ -161,6 +163,65 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         if (!res.ok) {
             await res.body?.cancel();
             return Err(new FetchError(res.statusText, res.status));
+        }
+
+        if (res.body) {
+            // should notify progress or data chunk?
+            const shouldNotifyProgress = typeof onProgress === 'function';
+            const shouldNotifyChunk = typeof onChunk === 'function';
+
+            if ((shouldNotifyProgress || shouldNotifyChunk)) {
+                // tee the original stream to two streams, one for notify progress, another for response
+                const [stream1, stream2] = res.body.tee();
+
+                const reader = stream1.getReader();
+                // may has no  content-length
+                let totalByteLength: number | null = null;
+                let completedByteLength = 0;
+
+                if (shouldNotifyProgress) {
+                    // try to get content-length
+                    // compatible with http/2
+                    const contentLength = res.headers.get('content-length') ?? res.headers.get('Content-Length');
+                    if (contentLength == null) {
+                        // response headers has no content-length
+                        onProgress(Err(new Error('No content-length in response headers.')));
+                    } else {
+                        totalByteLength = parseInt(contentLength, 10);
+                    }
+                }
+
+                reader.read().then(function notify({ done, value }) {
+                    if (done) {
+                        return;
+                    }
+
+                    // notify chunk
+                    if (shouldNotifyChunk) {
+                        onChunk(value);
+                    }
+
+                    // notify progress
+                    if (shouldNotifyProgress && totalByteLength != null) {
+                        completedByteLength += value.byteLength;
+                        onProgress(Ok({
+                            totalByteLength,
+                            completedByteLength,
+                        }));
+                    }
+
+
+                    // continue to read
+                    reader.read().then(notify);
+                });
+
+                // replace the original response with the new one
+                res = new Response(stream2, {
+                    headers: res.headers,
+                    status: res.status,
+                    statusText: res.statusText,
+                });
+            }
         }
 
         switch (responseType) {
