@@ -57,6 +57,14 @@ Deno.test('fetch', async (t) => {
         const data = (await fetchT<{ id: number }>(mockSingle, {
             responseType: 'json',
             method: 'GET',
+            onChunk(chunk): void {
+                assert(chunk instanceof Uint8Array);
+            },
+            onProgress(progressResult): void {
+                assert(progressResult.isErr());
+                assert(progressResult.unwrapErr() instanceof Error);
+                assert(progressResult.unwrapErr().message === 'No content-length in response headers.');
+            },
         })).unwrap();
 
         assert('id' in data);
@@ -73,6 +81,15 @@ Deno.test('fetch', async (t) => {
             }),
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
+            },
+            onChunk(chunk): void {
+                assert(chunk instanceof Uint8Array);
+            },
+            onProgress(progressResult): void {
+                assert(progressResult.isOk());
+                progressResult.inspect(x => {
+                    assert(x.completedByteLength <= x.totalByteLength);
+                })
             },
         })).unwrap();
 
