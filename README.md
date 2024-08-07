@@ -21,6 +21,8 @@ The return data of fetchT is of a specific type, which can be either `string`, `
 
 Support `timeout`.
 
+Support `progress`.
+
 ## Installation
 
 ```sh
@@ -56,6 +58,16 @@ const fetchTask = fetchT('https://example.com', {
     abortable: true,
     responseType: 'json',
     timeout: 3000,
+    onChunk(chunk): void {
+        console.assert(chunk instanceof Uint8Array);
+    },
+    onProgress(progressResult): void {
+        progressResult.inspect(progress => {
+            console.log(`${ progress.completedByteLength }/${ progress.totalByteLength }`);
+        }).inspectErr(err => {
+            console.error(err);
+        });
+    },
 });
 
 somethingHappenAsync(() => {
@@ -63,11 +75,11 @@ somethingHappenAsync(() => {
 });
 
 const res = await fetchTask.response;
-if (res.isErr()) {
-    console.assert(res.unwrapErr() === 'cancel');
-} else {
-    console.log(res.unwrap());
-}
+res.inspect(data => {
+    console.log(data);
+}).inspectErr(err => {
+    console.assert(err === 'cancel');
+});
 ```
 
 For more examples, please refer to test case <a href="tests/fetch.test.ts">fetch.test.ts</a>.

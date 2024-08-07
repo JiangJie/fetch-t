@@ -15,6 +15,7 @@
 | Interface | Description |
 | ------ | ------ |
 | [FetchInit](interfaces/FetchInit.md) | Extends the standard `RequestInit` interface from the Fetch API to include additional custom options. |
+| [FetchProgress](interfaces/FetchProgress.md) | Represents the progress of a fetch operation. |
 | [FetchTask](interfaces/FetchTask.md) | Defines the structure and behavior of a fetch task, including the ability to abort the task and check its status. |
 
 ## Type Aliases

@@ -37,11 +37,11 @@ new FetchError(message, status): FetchError
 
 #### Defined in
 
-[defines.ts:73](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/defines.ts#L73)
+[defines.ts:100](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/defines.ts#L100)
 
 ## Properties
 
 | Property | Type | Default value | Description | Overrides | Defined in |
 | ------ | ------ | ------ | ------ | ------ | ------ |
-| `name` | `string` | `'FetchError'` | The name of the error. | `Error.name` | [defines.ts:67](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/defines.ts#L67) |
-| `status` | `number` | `0` | The status code of the response. | - | [defines.ts:71](https://github.com/JiangJie/fetch-t/blob/8806bee244ff033abe18991d72f4e6f862cf2c99/src/fetch/defines.ts#L71) |
+| `name` | `string` | `'FetchError'` | The name of the error. | `Error.name` | [defines.ts:94](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/defines.ts#L94) |
+| `status` | `number` | `0` | The status code of the response. | - | [defines.ts:98](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/defines.ts#L98) |

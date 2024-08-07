@@ -16,6 +16,8 @@ fetchT 的返回数据是一个明确的类型，可以是 `string` `ArrayBuffer
 
 支持超时自动取消请求。
 
+支持进度回调。
+
 ## 安装
 
 ```sh
@@ -51,6 +53,16 @@ const fetchTask = fetchT('https://example.com', {
     abortable: true,
     responseType: 'json',
     timeout: 3000,
+    onChunk(chunk): void {
+        console.assert(chunk instanceof Uint8Array);
+    },
+    onProgress(progressResult): void {
+        progressResult.inspect(progress => {
+            console.log(`${ progress.completedByteLength }/${ progress.totalByteLength }`);
+        }).inspectErr(err => {
+            console.error(err);
+        });
+    },
 });
 
 somethingHappenAsync(() => {
@@ -58,11 +70,11 @@ somethingHappenAsync(() => {
 });
 
 const res = await fetchTask.response;
-if (res.isErr()) {
-    console.assert(res.unwrapErr() === 'cancel');
-} else {
-    console.log(res.unwrap());
-}
+res.inspect(data => {
+    console.log(data);
+}).inspectErr(err => {
+    console.assert(err === 'cancel');
+});
 ```
 
 更多示例可参见测试用例 <a href="tests/fetch.test.ts">fetch.test.ts</a>。
