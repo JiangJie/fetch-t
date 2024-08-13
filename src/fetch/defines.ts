@@ -6,7 +6,7 @@ import type { AsyncResult, IOResult } from 'happy-rusty';
  *
  * @typeParam T - The type of the data expected in the response.
  */
-export type FetchResponse<T> = AsyncResult<T, any>;
+export type FetchResponse<T, E = any> = AsyncResult<T, E>;
 
 /**
  * Defines the structure and behavior of a fetch task, including the ability to abort the task and check its status.

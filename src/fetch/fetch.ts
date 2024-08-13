@@ -62,7 +62,7 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'text';
-}): FetchResponse<string>;
+}): FetchResponse<string, Error>;
 
 /**
  * Fetches a resource from the network as an ArrayBuffer and returns a `FetchResponse` representing the operation.
@@ -73,7 +73,7 @@ export function fetchT(url: string | URL, init: FetchInit & {
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'arraybuffer';
-}): FetchResponse<ArrayBuffer>;
+}): FetchResponse<ArrayBuffer, Error>;
 
 /**
  * Fetches a resource from the network as a Blob and returns a `FetchResponse` representing the operation.
@@ -84,7 +84,7 @@ export function fetchT(url: string | URL, init: FetchInit & {
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'blob';
-}): FetchResponse<Blob>;
+}): FetchResponse<Blob, Error>;
 
 /**
  * Fetches a resource from the network and parses it as JSON, returning a `FetchResponse` representing the operation.
@@ -96,7 +96,7 @@ export function fetchT(url: string | URL, init: FetchInit & {
  */
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     responseType: 'json';
-}): FetchResponse<T>;
+}): FetchResponse<T, Error>;
 
 /**
  * Fetches a resource from the network and returns a `FetchTask` representing the operation with a generic `Response`.
