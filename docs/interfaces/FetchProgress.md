@@ -12,5 +12,5 @@ Represents the progress of a fetch operation.
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| `completedByteLength` | `number` | The number of bytes received so far. | [defines.ts:52](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/defines.ts#L52) |
-| `totalByteLength` | `number` | The total number of bytes to be received. | [defines.ts:47](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/defines.ts#L47) |
+| `completedByteLength` | `number` | The number of bytes received so far. | [defines.ts:52](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/defines.ts#L52) |
+| `totalByteLength` | `number` | The total number of bytes to be received. | [defines.ts:47](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/defines.ts#L47) |

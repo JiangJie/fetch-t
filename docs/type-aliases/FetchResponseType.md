@@ -14,4 +14,4 @@ Specifies the expected response type of the fetch request.
 
 ## Defined in
 
-[defines.ts:38](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/defines.ts#L38)
+[defines.ts:38](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/defines.ts#L38)

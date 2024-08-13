@@ -57,7 +57,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L14)
+[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L14)
 
 ## fetchT(url, init)
 
@@ -96,7 +96,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L26)
+[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L26)
 
 ## fetchT(url, init)
 
@@ -135,7 +135,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L38)
+[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L38)
 
 ## fetchT(url, init)
 
@@ -180,12 +180,12 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L51)
+[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L51)
 
 ## fetchT(url, init)
 
 ```ts
-function fetchT(url, init): FetchResponse<string>
+function fetchT(url, init): FetchResponse<string, Error>
 ```
 
 Fetches a resource from the network as a text string and returns a `FetchResponse` representing the operation.
@@ -199,7 +199,7 @@ Fetches a resource from the network as a text string and returns a `FetchRespons
 
 ### Returns
 
-[`FetchResponse`](../type-aliases/FetchResponse.md)\<`string`\>
+[`FetchResponse`](../type-aliases/FetchResponse.md)\<`string`, `Error`\>
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
@@ -219,12 +219,12 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L63)
+[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L63)
 
 ## fetchT(url, init)
 
 ```ts
-function fetchT(url, init): FetchResponse<ArrayBuffer>
+function fetchT(url, init): FetchResponse<ArrayBuffer, Error>
 ```
 
 Fetches a resource from the network as an ArrayBuffer and returns a `FetchResponse` representing the operation.
@@ -238,7 +238,7 @@ Fetches a resource from the network as an ArrayBuffer and returns a `FetchRespon
 
 ### Returns
 
-[`FetchResponse`](../type-aliases/FetchResponse.md)\<`ArrayBuffer`\>
+[`FetchResponse`](../type-aliases/FetchResponse.md)\<`ArrayBuffer`, `Error`\>
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
@@ -258,12 +258,12 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L74)
+[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L74)
 
 ## fetchT(url, init)
 
 ```ts
-function fetchT(url, init): FetchResponse<Blob>
+function fetchT(url, init): FetchResponse<Blob, Error>
 ```
 
 Fetches a resource from the network as a Blob and returns a `FetchResponse` representing the operation.
@@ -277,7 +277,7 @@ Fetches a resource from the network as a Blob and returns a `FetchResponse` repr
 
 ### Returns
 
-[`FetchResponse`](../type-aliases/FetchResponse.md)\<`Blob`\>
+[`FetchResponse`](../type-aliases/FetchResponse.md)\<`Blob`, `Error`\>
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
@@ -297,12 +297,12 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L85)
+[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L85)
 
 ## fetchT(url, init)
 
 ```ts
-function fetchT<T>(url, init): FetchResponse<T>
+function fetchT<T>(url, init): FetchResponse<T, Error>
 ```
 
 Fetches a resource from the network and parses it as JSON, returning a `FetchResponse` representing the operation.
@@ -322,7 +322,7 @@ Fetches a resource from the network and parses it as JSON, returning a `FetchRes
 
 ### Returns
 
-[`FetchResponse`](../type-aliases/FetchResponse.md)\<`T`\>
+[`FetchResponse`](../type-aliases/FetchResponse.md)\<`T`, `Error`\>
 
 A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
 
@@ -342,7 +342,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L97)
+[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L97)
 
 ## fetchT(url, init)
 
@@ -381,7 +381,7 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L108)
+[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L108)
 
 ## fetchT(url, init)
 
@@ -420,4 +420,4 @@ Additional options for the fetch operation, including custom `FetchInit` propert
 
 ### Defined in
 
-[fetch.ts:120](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/fetch.ts#L120)
+[fetch.ts:120](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L120)

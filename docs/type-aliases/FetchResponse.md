@@ -4,20 +4,21 @@
 
 [@happy-ts/fetch-t](../README.md) / FetchResponse
 
-# Type Alias: FetchResponse\<T\>
+# Type Alias: FetchResponse\<T, E\>
 
 ```ts
-type FetchResponse<T>: AsyncResult<T, any>;
+type FetchResponse<T, E>: AsyncResult<T, E>;
 ```
 
 Represents the response of a fetch operation, encapsulating the result data or any error that occurred.
 
 ## Type Parameters
 
-| Type Parameter | Description |
-| ------ | ------ |
-| `T` | The type of the data expected in the response. |
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| `T` | - | The type of the data expected in the response. |
+| `E` | `any` | - |
 
 ## Defined in
 
-[defines.ts:9](https://github.com/JiangJie/fetch-t/blob/2e206031a806329279bb68d7ae74aa44f812eb58/src/fetch/defines.ts#L9)
+[defines.ts:9](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/defines.ts#L9)
