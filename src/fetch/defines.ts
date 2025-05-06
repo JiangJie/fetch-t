@@ -91,7 +91,7 @@ export class FetchError extends Error {
     /**
      * The name of the error.
      */
-    name = 'FetchError';
+    override name = 'FetchError';
     /**
      * The status code of the response.
      */
