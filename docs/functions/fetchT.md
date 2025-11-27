@@ -1,4 +1,4 @@
-[**@happy-ts/fetch-t**](../README.md) • **Docs**
+[**@happy-ts/fetch-t**](../README.md)
 
 ***
 
@@ -20,11 +20,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init): FetchTask<string>
 ```
+
+Defined in: [fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L14)
 
 Fetches a resource from the network as a text string and returns a `FetchTask` representing the operation.
 
@@ -55,15 +57,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:14](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L14)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init): FetchTask<ArrayBuffer>
 ```
+
+Defined in: [fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L26)
 
 Fetches a resource from the network as an ArrayBuffer and returns a `FetchTask` representing the operation.
 
@@ -94,15 +94,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:26](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L26)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init): FetchTask<Blob>
 ```
+
+Defined in: [fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L38)
 
 Fetches a resource from the network as a Blob and returns a `FetchTask` representing the operation.
 
@@ -133,15 +131,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:38](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L38)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT<T>(url, init): FetchTask<T>
 ```
+
+Defined in: [fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L51)
 
 Fetches a resource from the network and parses it as JSON, returning a `FetchTask` representing the operation.
 
@@ -178,15 +174,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:51](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L51)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init): FetchResponse<string, Error>
 ```
+
+Defined in: [fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L63)
 
 Fetches a resource from the network as a text string and returns a `FetchResponse` representing the operation.
 
@@ -217,15 +211,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:63](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L63)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init): FetchResponse<ArrayBuffer, Error>
 ```
+
+Defined in: [fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L74)
 
 Fetches a resource from the network as an ArrayBuffer and returns a `FetchResponse` representing the operation.
 
@@ -256,15 +248,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:74](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L74)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init): FetchResponse<Blob, Error>
 ```
+
+Defined in: [fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L85)
 
 Fetches a resource from the network as a Blob and returns a `FetchResponse` representing the operation.
 
@@ -295,15 +285,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:85](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L85)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT<T>(url, init): FetchResponse<T, Error>
 ```
+
+Defined in: [fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L97)
 
 Fetches a resource from the network and parses it as JSON, returning a `FetchResponse` representing the operation.
 
@@ -340,15 +328,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:97](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L97)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init): FetchTask<Response>
 ```
+
+Defined in: [fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L108)
 
 Fetches a resource from the network and returns a `FetchTask` representing the operation with a generic `Response`.
 
@@ -379,15 +365,13 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
 
-### Defined in
-
-[fetch.ts:108](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L108)
-
-## fetchT(url, init)
+## Call Signature
 
 ```ts
 function fetchT(url, init?): FetchResponse<Response>
 ```
+
+Defined in: [fetch.ts:120](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/fetch.ts#L120)
 
 Fetches a resource from the network and returns a `FetchResponse` or `FetchTask` based on the provided options.
 
@@ -417,7 +401,3 @@ The resource to fetch. Can be a URL object or a string representing a URL.
 ### Param
 
 Additional options for the fetch operation, including custom `FetchInit` properties.
-
-### Defined in
-
-[fetch.ts:120](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/fetch.ts#L120)

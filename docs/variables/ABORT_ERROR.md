@@ -1,4 +1,4 @@
-[**@happy-ts/fetch-t**](../README.md) • **Docs**
+[**@happy-ts/fetch-t**](../README.md)
 
 ***
 
@@ -10,8 +10,6 @@
 const ABORT_ERROR: "AbortError";
 ```
 
+Defined in: [constants.ts:4](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/constants.ts#L4)
+
 Name of abort error;
-
-## Defined in
-
-[constants.ts:4](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/constants.ts#L4)

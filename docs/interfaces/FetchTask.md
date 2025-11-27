@@ -1,10 +1,12 @@
-[**@happy-ts/fetch-t**](../README.md) • **Docs**
+[**@happy-ts/fetch-t**](../README.md)
 
 ***
 
 [@happy-ts/fetch-t](../README.md) / FetchTask
 
 # Interface: FetchTask\<T\>
+
+Defined in: [defines.ts:16](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/defines.ts#L16)
 
 Defines the structure and behavior of a fetch task, including the ability to abort the task and check its status.
 
@@ -18,8 +20,8 @@ Defines the structure and behavior of a fetch task, including the ability to abo
 
 | Property | Modifier | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| `aborted` | `readonly` | `boolean` | Indicates whether the fetch task has been aborted. | [defines.ts:27](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/defines.ts#L27) |
-| `response` | `readonly` | [`FetchResponse`](../type-aliases/FetchResponse.md)\<`T`, `any`\> | The response of the fetch task, represented as an `AsyncResult`. | [defines.ts:32](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/defines.ts#L32) |
+| <a id="aborted"></a> `aborted` | `readonly` | `boolean` | Indicates whether the fetch task has been aborted. | [defines.ts:27](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/defines.ts#L27) |
+| <a id="response"></a> `response` | `readonly` | [`FetchResponse`](../type-aliases/FetchResponse.md)\<`T`\> | The response of the fetch task, represented as an `AsyncResult`. | [defines.ts:32](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/defines.ts#L32) |
 
 ## Methods
 
@@ -28,6 +30,8 @@ Defines the structure and behavior of a fetch task, including the ability to abo
 ```ts
 abort(reason?): void
 ```
+
+Defined in: [defines.ts:22](https://github.com/JiangJie/fetch-t/blob/bef789cb418392a07597af77b2942bea27482d3e/src/fetch/defines.ts#L22)
 
 Aborts the fetch task, optionally with a reason for the abortion.
 
@@ -40,7 +44,3 @@ Aborts the fetch task, optionally with a reason for the abortion.
 #### Returns
 
 `void`
-
-#### Defined in
-
-[defines.ts:22](https://github.com/JiangJie/fetch-t/blob/61346c95bab5342bcbd9e97bca747ef24af2eac6/src/fetch/defines.ts#L22)

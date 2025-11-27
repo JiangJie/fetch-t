@@ -1,4 +1,4 @@
-**@happy-ts/fetch-t** • **Docs**
+**@happy-ts/fetch-t**
 
 ***
 
@@ -36,4 +36,4 @@
 
 | Function | Description |
 | ------ | ------ |
-| [fetchT](functions/fetchT.md) | Fetches a resource from the network as a text string and returns a `FetchTask` representing the operation. |
+| [fetchT](functions/fetchT.md) | Fetches a resource from the network and returns either a `FetchTask` or `FetchResponse` based on the provided options. |
