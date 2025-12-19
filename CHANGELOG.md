@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-12-19
+
+### Changed
+
+- **BREAKING**: Migrate from Deno test runner to Vitest with MSW mocking
+- **BREAKING**: Migrate from Rollup to Vite for building
+- **BREAKING**: Change license from GPL-3.0 to MIT
+- Upgrade `happy-rusty` dependency to ^1.6.1
+- Upgrade all dev dependencies to latest versions
+- Rewrite README with improved structure, examples, and API documentation
+- Update GitHub Actions workflows for Vitest
+
+### Added
+
+- Add `examples/` directory with runnable usage examples
+- Add ESLint stylistic rules for code formatting
+- Add TypeDoc HTML documentation hosted on GitHub Pages
+
+### Removed
+
+- Remove Deno configuration (`deno.json`)
+- Remove Rollup configuration (`rollup.config.mjs`)
+
 ## [1.3.3] - 2025-11-27
 
 ### Fixed
@@ -84,7 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Timeout support
 - Rust-like Result type error handling via `happy-rusty` library
 
-[Unreleased]: https://github.com/JiangJie/fetch-t/compare/v1.3.3...HEAD
+[Unreleased]: https://github.com/JiangJie/fetch-t/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/JiangJie/fetch-t/compare/v1.3.3...v1.4.0
 [1.3.3]: https://github.com/JiangJie/fetch-t/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/JiangJie/fetch-t/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/JiangJie/fetch-t/compare/v1.3.0...v1.3.1
