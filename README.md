@@ -4,84 +4,171 @@
 [![NPM downloads](https://badgen.net/npm/dm/@happy-ts/fetch-t)](https://npmjs.org/package/@happy-ts/fetch-t)
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
-[![Build Status](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml/badge.svg)](https://github.com/jiangjie/fetch-t/actions/workflows/test.yml)
+[![Build Status](https://github.com/JiangJie/fetch-t/actions/workflows/test.yml/badge.svg)](https://github.com/JiangJie/fetch-t/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/JiangJie/fetch-t/graph/badge.svg)](https://codecov.io/gh/JiangJie/fetch-t)
+[![License](https://img.shields.io/npm/l/@happy-ts/fetch-t.svg)](https://github.com/JiangJie/fetch-t/blob/main/LICENSE)
 
----
+[中文文档](README.cn.md)
 
-## [中文](README.cn.md)
+Type-safe Fetch API wrapper with abortable requests, timeout support, progress tracking, and Rust-like Result error handling.
 
----
+## Features
 
-## Abortable && Predictable
-
-The return value of fetchT includes an `abort` method.
-
-The return data of fetchT is of a specific type, which can be either `string`, `ArrayBuffer`, `Blob`, or `<T>(generic)`.
-
-Support `timeout`.
-
-Support `progress`.
+- **Abortable Requests** - Cancel requests anytime via `FetchTask.abort()`
+- **Type-safe Responses** - Specify return type with `responseType` parameter
+- **Timeout Support** - Auto-abort requests after specified milliseconds
+- **Progress Tracking** - Monitor download progress with `onProgress` callback
+- **Chunk Streaming** - Access raw data chunks via `onChunk` callback
+- **Result Error Handling** - Rust-like `Result` type for explicit error handling
+- **Cross-platform** - Works with Deno, Node.js, Bun, and browsers
 
 ## Installation
 
 ```sh
-# via pnpm
-pnpm add @happy-ts/fetch-t
-# or via yarn
+# npm
+npm install @happy-ts/fetch-t
+
+# yarn
 yarn add @happy-ts/fetch-t
-# or just from npm
-npm install --save @happy-ts/fetch-t
-# via JSR
-jsr add @happy-ts/fetch-t
-# for deno
+
+# pnpm
+pnpm add @happy-ts/fetch-t
+
+# JSR (Deno)
 deno add @happy-ts/fetch-t
-# for bun
+
+# JSR (Bun)
 bunx jsr add @happy-ts/fetch-t
 ```
 
-## Why fetchT
+## Quick Start
 
-fetchT is a simple encapsulation of the [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API, with two main modifications:
-
--   It adds the `abortable` parameter. If `abortable: true` is passed, fetchT will return a `FetchTask` object that allows you to abort the request by calling `FetchTask.abort()`.
--   It supports generic return values by adding the responseType parameter. The optional values for `responseType` include `'text' | 'arraybuffer' | 'blob' | 'json'`. The return value corresponds to the parameter and can be either `string | ArrayBuffer | Blob | T`, where T is the generic type. All return values are of the [Result](https://github.com/JiangJie/happy-rusty) type, which facilitates error handling.
-
-If you don't have these requirements, it is recommended to use the vanilla [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
-
-## Examples
+### Basic Usage
 
 ```ts
 import { fetchT } from '@happy-ts/fetch-t';
 
-const fetchTask = fetchT('https://example.com', {
-    abortable: true,
+// GET JSON data
+const result = await fetchT<{ id: number; title: string }>('https://api.example.com/data', {
     responseType: 'json',
-    timeout: 3000,
-    onChunk(chunk): void {
-        console.assert(chunk instanceof Uint8Array);
-    },
-    onProgress(progressResult): void {
-        progressResult.inspect(progress => {
-            console.log(`${ progress.completedByteLength }/${ progress.totalByteLength }`);
-        }).inspectErr(err => {
-            console.error(err);
-        });
-    },
 });
 
-somethingHappenAsync(() => {
-    fetchTask.abort('cancel');
-});
-
-const res = await fetchTask.response;
-res.inspect(data => {
-    console.log(data);
+result.inspect(data => {
+    console.log(data.title);
 }).inspectErr(err => {
-    console.assert(err === 'cancel');
+    console.error('Request failed:', err.message);
 });
 ```
 
-For more examples, please refer to test case <a href="tests/fetch.test.ts">fetch.test.ts</a>.
+### Abortable Request
 
-## [Docs](docs/README.md)
+```ts
+const task = fetchT('https://api.example.com/large-file', {
+    abortable: true,
+    responseType: 'arraybuffer',
+});
+
+// Abort after 5 seconds
+setTimeout(() => {
+    task.abort('User cancelled');
+}, 5000);
+
+const result = await task.response;
+```
+
+### With Timeout
+
+```ts
+const result = await fetchT('https://api.example.com/data', {
+    responseType: 'json',
+    timeout: 3000, // Auto-abort after 3 seconds
+});
+```
+
+### Progress Tracking
+
+```ts
+const result = await fetchT('https://api.example.com/large-file', {
+    responseType: 'blob',
+    onProgress(progressResult) {
+        progressResult.inspect(progress => {
+            const percent = (progress.completedByteLength / progress.totalByteLength * 100).toFixed(1);
+            console.log(`Download: ${percent}%`);
+        });
+    },
+});
+```
+
+### Error Handling
+
+```ts
+import { fetchT, ABORT_ERROR, TIMEOUT_ERROR } from '@happy-ts/fetch-t';
+
+const result = await fetchT('https://api.example.com/data', {
+    responseType: 'json',
+    timeout: 3000,
+});
+
+if (result.isErr()) {
+    const err = result.unwrapErr();
+    if (err.name === TIMEOUT_ERROR) {
+        console.log('Request timed out');
+    } else if (err.name === ABORT_ERROR) {
+        console.log('Request was aborted');
+    } else {
+        console.log('Request failed:', err.message);
+    }
+} else {
+    console.log('Data:', result.unwrap());
+}
+```
+
+## API
+
+### `fetchT(url, options?)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `url` | `string \| URL` | Request URL |
+| `options` | `FetchInit` | Extended fetch options |
+
+### `FetchInit` Options
+
+Extends standard `RequestInit` with:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `abortable` | `boolean` | If `true`, returns `FetchTask` instead of `FetchResponse` |
+| `responseType` | `'text' \| 'arraybuffer' \| 'blob' \| 'json'` | Specifies return data type |
+| `timeout` | `number` | Auto-abort after milliseconds |
+| `onProgress` | `(result: IOResult<FetchProgress>) => void` | Download progress callback |
+| `onChunk` | `(chunk: Uint8Array) => void` | Raw data chunk callback |
+
+### `FetchTask<T>`
+
+Returned when `abortable: true`:
+
+| Property/Method | Type | Description |
+|-----------------|------|-------------|
+| `response` | `FetchResponse<T>` | The response promise |
+| `abort(reason?)` | `void` | Abort the request |
+| `aborted` | `boolean` | Whether request was aborted |
+
+### Constants
+
+| Constant | Description |
+|----------|-------------|
+| `ABORT_ERROR` | Error name for aborted requests |
+| `TIMEOUT_ERROR` | Error name for timed out requests |
+
+## Examples
+
+For more examples, see the [examples](examples/) directory.
+
+## Documentation
+
+Full API documentation is available at [https://jiangjie.github.io/fetch-t/](https://jiangjie.github.io/fetch-t/)
+
+## License
+
+[MIT](LICENSE)
