@@ -30,7 +30,7 @@ pnpm run lint
 pnpm run build
 
 # Manual prebuild steps (runs automatically before build)
-pnpm run prebuild  # Cleans dist/, runs check and lint
+pnpm run prebuild  # Runs check and lint
 ```
 
 **Build outputs:**
@@ -40,17 +40,26 @@ pnpm run prebuild  # Cleans dist/, runs check and lint
 
 ### Testing
 ```bash
-# Run tests with coverage (using Deno)
+# Run tests with coverage
 pnpm run test
 
-# Generate HTML coverage report
-pnpm run test:html
+# Run tests in watch mode
+pnpm run test:watch
+
+# Run tests with UI
+pnpm run test:ui
 
 # Run a specific test by name pattern
-deno test -A --filter "test name pattern"
+pnpm exec vitest run --filter "test name pattern"
 ```
 
-**Note:** Tests use Deno's native test runner. The test file is located at `tests/fetch.test.ts`.
+**Note:** Tests use Vitest with MSW (Mock Service Worker) for API mocking. The test file is located at `tests/fetch.test.ts`.
+
+### Examples
+```bash
+# Run example files
+pnpm run eg
+```
 
 ### Documentation
 ```bash
@@ -58,24 +67,26 @@ deno test -A --filter "test name pattern"
 pnpm run docs
 ```
 
+Documentation is hosted on GitHub Pages at https://jiangjie.github.io/fetch-t/
+
 ## Repository Structure
 
 ```
 /data/workspace/fetch-t/
 ├── .github/workflows/         # CI/CD pipelines
-│   ├── test.yml              # Run tests with Deno + Codecov
+│   ├── test.yml              # Run tests with Vitest + Codecov
 │   ├── npm-publish.yml       # NPM registry publication
 │   ├── npm-publish-github-packages.yml
 │   └── jsr-publish.yml       # JSR registry publication
 ├── .vscode/
-│   └── settings.json         # VSCode: format on save, Deno disabled for src/
-├── docs/                     # Generated TypeDoc documentation
-│   ├── classes/
-│   ├── functions/
-│   ├── interfaces/
-│   ├── type-aliases/
-│   ├── variables/
-│   └── README.md
+│   └── settings.json         # VSCode settings
+├── docs/                     # Generated TypeDoc documentation (GitHub Pages)
+├── examples/                 # Runnable usage examples
+│   ├── main.ts              # Entry point (runs all examples)
+│   ├── basic.ts             # Basic fetch requests
+│   ├── with-progress.ts     # Progress tracking examples
+│   ├── abortable.ts         # Abortable request examples
+│   └── error-handling.ts    # Error handling patterns
 ├── src/                      # Source code
 │   ├── fetch/
 │   │   ├── constants.ts      # Error constants (ABORT_ERROR, TIMEOUT_ERROR)
@@ -83,20 +94,19 @@ pnpm run docs
 │   │   └── fetch.ts          # Core implementation with 10 function overloads
 │   └── mod.ts                # Public API entry point (re-exports)
 ├── tests/
-│   └── fetch.test.ts         # Deno test suite
+│   └── fetch.test.ts         # Vitest test suite with MSW mocking
 ├── .gitignore                # Excludes: node_modules, dist, coverage
 ├── CODEBUDDY.md              # This file
-├── deno.json                 # Deno configuration and imports
 ├── eslint.config.mjs         # ESLint configuration (strict + stylistic)
 ├── jsr.json                  # JSR registry metadata
-├── LICENSE                   # GPL-3.0
+├── LICENSE                   # MIT
 ├── package.json              # NPM metadata and scripts
 ├── pnpm-lock.yaml            # Dependency lockfile
 ├── README.md                 # English documentation
 ├── README.cn.md              # Chinese documentation
-├── rollup.config.mjs         # Build configuration
 ├── tsconfig.json             # TypeScript compiler options
-└── typedoc.json              # TypeDoc documentation config
+├── typedoc.json              # TypeDoc documentation config
+└── vite.config.ts            # Vite build + Vitest test configuration
 ```
 
 ## Code Architecture
@@ -124,16 +134,17 @@ src/
    - Uses `happy-rusty` library's `Result` type for explicit error handling
    - All responses are wrapped in `AsyncResult<T, E>` (no throwing exceptions)
    - Call `.inspect()` for success cases, `.inspectErr()` for errors
+   - Use `.isOk()`, `.isErr()`, `.unwrap()`, `.unwrapErr()` for conditional handling
    - Example: `result.inspect(data => console.log(data)).inspectErr(err => console.error(err))`
 
 3. **Stream Multiplexing**
-   - Uses `ReadableStream.tee()` to split response streams (line 175 in fetch.ts)
+   - Uses `ReadableStream.tee()` to split response streams
    - One stream for progress/chunk tracking, another for response body parsing
    - Enables progress callbacks without consuming the response
    - Creates a new Response object with the teed stream to maintain compatibility
 
 4. **Timeout Mechanism**
-   - Uses `AbortController` + `setTimeout` for timeout implementation (lines 255-271)
+   - Uses `AbortController` + `setTimeout` for timeout implementation
    - Timer is automatically cancelled when response completes or fails
    - Timeout errors are named `TIMEOUT_ERROR` for easy identification
    - `cancelTimer` function ensures cleanup to prevent memory leaks
@@ -142,7 +153,7 @@ src/
    - `FetchError` class extends Error with HTTP status codes
    - Constants for common error types: `ABORT_ERROR`, `TIMEOUT_ERROR`
    - Non-ok responses (e.g., 404, 500) return `Err(FetchError)` instead of throwing
-   - Response body is cancelled on error to prevent resource leaks (line 164)
+   - Response body is cancelled on error to prevent resource leaks
 
 ### Core Types & Interfaces
 
@@ -165,29 +176,40 @@ src/
 ### Dependencies
 
 **Runtime:**
-- `happy-rusty` (^1.5.0) - Provides Result/AsyncResult types for functional error handling
+- `happy-rusty` (^1.6.1) - Provides Result/AsyncResult types for functional error handling
 - `tiny-invariant` (^1.3.3) - Runtime assertions and validation
 
 **Dev:**
 - TypeScript (^5.9.3) - Type checking and compilation
-- Rollup (^4.53.3) - Module bundler with plugins:
-  - `rollup-plugin-esbuild` (^6.2.1) - Transpiles to ESNext
-  - `rollup-plugin-dts` (^6.2.3) - Bundles TypeScript definitions
-- ESLint (^9.39.1) + typescript-eslint (^8.48.0) - Linting
-- TypeDoc (^0.27.9) + typedoc-plugin-markdown (^4.4.2) - Documentation generation
+- Vite (^7.3.0) - Build tool and dev server
+  - `vite-plugin-dts` (^4.5.4) - Bundles TypeScript definitions
+- Vitest (^4.0.16) - Test framework
+  - `@vitest/coverage-v8` (^4.0.16) - Coverage provider
+- MSW (^2.12.4) - Mock Service Worker for API mocking in tests
+- ESLint (^9.39.2) + typescript-eslint (^8.50.0) - Linting
+- TypeDoc (^0.28.15) - Documentation generation
 
-**External dependencies are marked as external in rollup.config.mjs** - they are not bundled.
+**External dependencies are marked as external in vite.config.ts** - they are not bundled.
 
 ## Build System
 
-### Rollup Configuration
+### Vite Configuration
 - **Entry point:** `src/mod.ts`
 - **Plugins:**
-  - `rollup-plugin-esbuild` - Transpiles to ESNext target
-  - `rollup-plugin-dts` - Bundles TypeScript definitions
+  - `vite-plugin-dts` - Bundles TypeScript definitions with `rollupTypes: true`
+- **Build options:**
+  - `target: 'esnext'` - Modern JavaScript output
+  - `minify: false` - No minification for library
+  - `sourcemap: true` - Source maps enabled
 - **External dependencies:** happy-rusty, tiny-invariant (not bundled)
 - **Tree shaking:** Set to 'smallest' for optimal bundle size
-- **Output formats:** Both CommonJS (.cjs) and ES Module (.mjs) with source maps
+- **Output formats:** Both CommonJS (.cjs) and ES Module (.mjs)
+
+### Vitest Configuration (in vite.config.ts)
+- **Test pattern:** `**/*.test.ts`
+- **Coverage provider:** v8
+- **Coverage reporters:** text, json, html, lcov
+- **Coverage include:** `src/**/*.ts`
 
 ### TypeScript Configuration
 - **Target:** ESNext
@@ -196,7 +218,7 @@ src/
   - `noUnusedLocals: true`
   - `noUnusedParameters: true`
   - `noPropertyAccessFromIndexSignature: true`
-- **No emit mode** - Build is handled by Rollup
+- **No emit mode** - Build is handled by Vite
 - **Module detection:** Forced to treat all files as modules
 - **Bundler mode features:**
   - `allowImportingTsExtensions: true` - Allows `.ts` extensions in imports
@@ -208,25 +230,32 @@ src/
   - `@eslint/js` recommended rules
   - TypeScript ESLint strict rules
   - TypeScript ESLint stylistic rules
+  - `@stylistic/eslint-plugin` for code formatting
 - Ignores `dist/` directory
 
 ## Testing Guidelines
 
 ### Test Structure
 - Tests are in `tests/fetch.test.ts`
-- Uses Deno's native test runner (`Deno.test()`)
-- Uses public fake API (fakestoreapi.com) for integration testing
+- Uses Vitest as test framework
+- Uses MSW (Mock Service Worker) for HTTP mocking
+- 28 test cases with 100% coverage
 - Coverage includes:
   - All response types (text, arraybuffer, blob, JSON)
   - HTTP methods (GET, POST, PUT, PATCH, DELETE)
   - Progress and chunk callbacks
   - Abort and timeout functionality
-  - Error scenarios (invalid JSON, 404 errors, invalid URLs)
+  - Error scenarios (invalid JSON, 404 errors, network errors)
+
+### MSW Setup
+- Mock server configured with handlers for various endpoints
+- Supports streaming responses for progress testing
+- Handles error scenarios (404, network errors)
 
 ### Coverage
-- Uses Deno's built-in coverage tool
+- Uses Vitest's v8 coverage provider
 - CI uploads to Codecov with token authentication
-- HTML reports available via `pnpm run test:html`
+- HTML reports available via coverage output
 - Coverage files stored in `coverage/` directory (git-ignored)
 
 ## CI/CD
@@ -234,8 +263,7 @@ src/
 ### GitHub Actions Workflows
 
 **test.yml** - Runs on every push to main:
-- Sets up Node.js (latest) and installs pnpm globally
-- Sets up Deno for running tests
+- Sets up Node.js (latest) and pnpm
 - Runs `pnpm test` (includes coverage generation)
 - Uploads coverage to Codecov
 
@@ -258,24 +286,24 @@ src/
 ## Implementation Details
 
 ### fetchT Function Flow
-1. **URL validation** (lines 132-134): Uses `tiny-invariant` to ensure URL is string or URL object
-2. **Options destructuring** (lines 136-144): Extracts custom options from FetchInit
-3. **Abort controller setup** (lines 146-158): Creates controller if abortable or timeout specified
-4. **Fetch execution** (line 160): Calls native fetch with processed options
-5. **Response handling** (lines 160-248):
+1. **URL validation**: Uses `tiny-invariant` to ensure URL is string or URL object
+2. **Options destructuring**: Extracts custom options from FetchInit
+3. **Abort controller setup**: Creates controller if abortable or timeout specified
+4. **Fetch execution**: Calls native fetch with processed options
+5. **Response handling**:
    - Check `res.ok` - return FetchError if false
    - Stream multiplexing for progress/chunk callbacks
    - Parse response based on `responseType`
    - Default to returning Response object
-6. **Error handling** (lines 249-253): Catch and wrap in Err()
-7. **Timeout setup** (lines 255-271): Schedule abort if timeout specified
-8. **Return value** (lines 273-291): FetchTask if abortable, otherwise FetchResponse
+6. **Error handling**: Catch and wrap in Err()
+7. **Timeout setup**: Schedule abort if timeout specified
+8. **Return value**: FetchTask if abortable, otherwise FetchResponse
 
 ### Progress Tracking Details
-- Requires `Content-Length` header to calculate progress (lines 183-192)
+- Requires `Content-Length` header to calculate progress
 - If header missing, calls `onProgress(Err(new Error('No content-length...')))` once
 - Compatible with both HTTP/1.1 and HTTP/2 (checks both header formats)
-- Uses recursive promise chain for reading chunks (lines 194-216)
+- Uses recursive promise chain for reading chunks
 - Progress calculation: `completedByteLength += value.byteLength`
 
 ### AbortController Behavior
@@ -289,23 +317,21 @@ src/
 
 ### Pre-publish Checklist
 The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
-1. Clean dist/ directory (via `pnpm dlx rimraf dist`)
-2. Type checking (`pnpm run check`)
-3. Linting (`pnpm run lint`)
-4. Rollup build
+1. Type checking (`pnpm run check`)
+2. Linting (`pnpm run lint`)
+3. Vite build
 
 ### Distribution Targets
 - **NPM:** @happy-ts/fetch-t
 - **JSR:** @happy-ts/fetch-t
 - **GitHub Packages:** Via workflow
 
-### Distribution Package Includes
-- Source code (`src/`)
-- Built files (`dist/`)
-- Documentation (`docs/`)
-- README files (both English and Chinese)
-- LICENSE (GPL-3.0)
-- package.json, jsr.json
+### Distribution Package Includes (defined in package.json files array)
+- LICENSE
+- README.md
+- README.cn.md
+- CHANGELOG.md
+- dist/
 
 ## Known Issues & Gotchas
 
@@ -313,43 +339,42 @@ The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
 
 2. **Stream tee() limitation**: Progress/chunk callbacks add overhead due to stream splitting. Each chunk is read twice - once for tracking, once for parsing.
 
-3. **Import extensions**: Source code uses `.ts` extensions in imports which is non-standard but enabled by TypeScript bundler mode. This is required for Deno compatibility.
+3. **Import extensions**: Source code uses `.ts` extensions in imports which is non-standard but enabled by TypeScript bundler mode.
 
-4. **Deno vs Build environment**: The `.vscode/settings.json` disables Deno for `src/`, `eslint.config.mjs`, and `rollup.config.mjs` because these use Node.js-style module resolution during development/build, but tests use Deno.
+4. **Invalid JSON handling**: When `responseType: 'json'` is specified but the response is invalid JSON, the function returns `Err(new Error('Response is invalid json...'))` instead of letting the parse error propagate.
 
-5. **Invalid JSON handling**: When `responseType: 'json'` is specified but the response is invalid JSON, the function returns `Err(new Error('Response is invalid json...'))` instead of letting the parse error propagate.
+5. **happy-rusty Result API**: Use `isOk()`, `isErr()`, `unwrap()`, `unwrapErr()` methods. Note that `match()` method does NOT exist in happy-rusty.
 
 ## Key Files Reference
 
 ### Source Code
-- `src/mod.ts:1-3` - Main entry point (re-exports from fetch/)
-- `src/fetch/fetch.ts:130` - Core fetchT implementation function
-- `src/fetch/fetch.ts:14-120` - 10 function overload signatures
-- `src/fetch/fetch.ts:175` - Stream tee() for progress tracking
-- `src/fetch/fetch.ts:183-192` - Content-Length header handling
-- `src/fetch/fetch.ts:255-271` - Timeout implementation
-- `src/fetch/defines.ts:16-33` - FetchTask interface
-- `src/fetch/defines.ts:58-85` - FetchInit interface
-- `src/fetch/defines.ts:90-104` - FetchError class
-- `src/fetch/constants.ts:1-2` - Error constants
+- `src/mod.ts` - Main entry point (re-exports from fetch/)
+- `src/fetch/fetch.ts` - Core fetchT implementation function with 10 overloads
+- `src/fetch/defines.ts` - All type definitions (FetchTask, FetchInit, FetchError, etc.)
+- `src/fetch/constants.ts` - Error constants (ABORT_ERROR, TIMEOUT_ERROR)
 
 ### Configuration
-- `package.json:22-34` - Available npm scripts
-- `package.json:56-59` - Runtime dependencies
-- `rollup.config.mjs:17-52` - Build configuration (dual output)
-- `tsconfig.json:1-29` - TypeScript compiler options
-- `eslint.config.mjs:4-13` - ESLint flat config
-- `typedoc.json:1-17` - Documentation generation settings
-- `deno.json:1-7` - Deno imports and configuration
-- `jsr.json:1-17` - JSR registry metadata
+- `package.json` - NPM metadata, scripts, and dependencies
+- `vite.config.ts` - Vite build configuration + Vitest test configuration
+- `tsconfig.json` - TypeScript compiler options
+- `eslint.config.mjs` - ESLint flat config
+- `typedoc.json` - Documentation generation settings
+- `jsr.json` - JSR registry metadata
 
-### Tests & CI
-- `tests/fetch.test.ts:1` - Test suite
-- `.github/workflows/test.yml:1` - CI test workflow
+### Tests & Examples
+- `tests/fetch.test.ts` - Vitest test suite with MSW mocking
+- `examples/main.ts` - Example entry point
+- `examples/basic.ts` - Basic usage examples
+- `examples/with-progress.ts` - Progress tracking examples
+- `examples/abortable.ts` - Abortable request examples
+- `examples/error-handling.ts` - Error handling examples
+
+### CI/CD
+- `.github/workflows/test.yml` - CI test workflow
 - `.github/workflows/npm-publish.yml` - NPM publication
 - `.github/workflows/jsr-publish.yml` - JSR publication
 
 ### Documentation
 - `README.md` - English documentation
 - `README.cn.md` - Chinese documentation
-- `docs/README.md` - Generated API documentation index
+- `docs/` - Generated TypeDoc documentation (GitHub Pages)
