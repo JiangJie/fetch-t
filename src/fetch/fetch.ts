@@ -4,12 +4,11 @@ import { TIMEOUT_ERROR } from './constants.ts';
 import { FetchError, type FetchInit, type FetchResponse, type FetchTask } from './defines.ts';
 
 /**
- * Fetches a resource from the network as a text string and returns a `FetchTask` representing the operation.
+ * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
  *
- * @typeParam T - The expected type of the response data.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
- * @returns A `FetchTask` representing the operation with a `string` response.
+ * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'text'`.
+ * @returns A `FetchTask` representing the abortable operation with a `string` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
@@ -17,11 +16,11 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchTask<string>;
 
 /**
- * Fetches a resource from the network as an ArrayBuffer and returns a `FetchTask` representing the operation.
+ * Fetches a resource from the network as an ArrayBuffer and returns an abortable `FetchTask`.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
- * @returns A `FetchTask` representing the operation with an `ArrayBuffer` response.
+ * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'arraybuffer'`.
+ * @returns A `FetchTask` representing the abortable operation with an `ArrayBuffer` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
@@ -29,11 +28,11 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchTask<ArrayBuffer>;
 
 /**
- * Fetches a resource from the network as a Blob and returns a `FetchTask` representing the operation.
+ * Fetches a resource from the network as a Blob and returns an abortable `FetchTask`.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
- * @returns A `FetchTask` representing the operation with a `Blob` response.
+ * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'blob'`.
+ * @returns A `FetchTask` representing the abortable operation with a `Blob` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
@@ -41,12 +40,12 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchTask<Blob>;
 
 /**
- * Fetches a resource from the network and parses it as JSON, returning a `FetchTask` representing the operation.
+ * Fetches a resource from the network and parses it as JSON, returning an abortable `FetchTask`.
  *
  * @typeParam T - The expected type of the parsed JSON data.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
- * @returns A `FetchTask` representing the operation with a response parsed as JSON.
+ * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'json'`.
+ * @returns A `FetchTask` representing the abortable operation with a response parsed as type `T`.
  */
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     abortable: true;
@@ -54,10 +53,10 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
 }): FetchTask<T>;
 
 /**
- * Fetches a resource from the network as a text string and returns a `FetchResponse` representing the operation.
+ * Fetches a resource from the network as a text string.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, specifying the response type as 'text'.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'text'`.
  * @returns A `FetchResponse` representing the operation with a `string` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
@@ -65,10 +64,10 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchResponse<string, Error>;
 
 /**
- * Fetches a resource from the network as an ArrayBuffer and returns a `FetchResponse` representing the operation.
+ * Fetches a resource from the network as an ArrayBuffer.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, specifying the response type as 'arraybuffer'.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'arraybuffer'`.
  * @returns A `FetchResponse` representing the operation with an `ArrayBuffer` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
@@ -76,10 +75,10 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchResponse<ArrayBuffer, Error>;
 
 /**
- * Fetches a resource from the network as a Blob and returns a `FetchResponse` representing the operation.
+ * Fetches a resource from the network as a Blob.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, specifying the response type as 'blob'.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'blob'`.
  * @returns A `FetchResponse` representing the operation with a `Blob` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
@@ -87,54 +86,127 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchResponse<Blob, Error>;
 
 /**
- * Fetches a resource from the network and parses it as JSON, returning a `FetchResponse` representing the operation.
+ * Fetches a resource from the network and parses it as JSON.
  *
  * @typeParam T - The expected type of the parsed JSON data.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, specifying the response type as 'json'.
- * @returns A `FetchResponse` representing the operation with a response parsed as JSON.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'json'`.
+ * @returns A `FetchResponse` representing the operation with a response parsed as type `T`.
  */
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     responseType: 'json';
 }): FetchResponse<T, Error>;
 
 /**
- * Fetches a resource from the network and returns a `FetchTask` representing the operation with a generic `Response`.
+ * Fetches a resource from the network and returns an abortable `FetchTask` with a generic `Response`.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, indicating that the operation should be abortable.
- * @returns A `FetchTask` representing the operation with a generic `Response`.
+ * @param init - Additional options for the fetch operation, must include `abortable: true`.
+ * @returns A `FetchTask` representing the abortable operation with a `Response` object.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
 }): FetchTask<Response>;
 
 /**
- * Fetches a resource from the network and returns a `FetchResponse` or `FetchTask` based on the provided options.
+ * Fetches a resource from the network and returns a `FetchResponse` with a generic `Response` object.
  *
- * @typeParam T - The expected type of the response data when not using a specific `responseType`.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
+ * @param init - Optional additional options for the fetch operation.
  * @returns A `FetchResponse` representing the operation with a `Response` object.
  */
 export function fetchT(url: string | URL, init?: FetchInit): FetchResponse<Response>;
 
 /**
- * Fetches a resource from the network and returns either a `FetchTask` or `FetchResponse` based on the provided options.
+ * Enhanced fetch function that wraps the native Fetch API with additional capabilities.
  *
- * @typeParam T - The expected type of the response data when not using a specific `responseType`.
+ * Features:
+ * - **Abortable requests**: Set `abortable: true` to get a `FetchTask` with `abort()` method.
+ * - **Type-safe responses**: Use `responseType` to automatically parse responses as text, JSON, ArrayBuffer, or Blob.
+ * - **Timeout support**: Set `timeout` in milliseconds to auto-abort long-running requests.
+ * - **Progress tracking**: Use `onProgress` callback to track download progress (requires Content-Length header).
+ * - **Chunk streaming**: Use `onChunk` callback to receive raw data chunks as they arrive.
+ * - **Result type error handling**: Returns `Result<T, Error>` instead of throwing exceptions.
+ *
+ * @typeParam T - The expected type of the response data.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, including custom `FetchInit` properties.
- * @returns A `FetchTask` or `FetchResponse` depending on the provided options in `init`.
+ * @param init - Additional options for the fetch operation, extending standard `RequestInit` with custom properties.
+ * @returns A `FetchTask<T>` if `abortable: true`, otherwise a `FetchResponse<T>` (which is `AsyncResult<T, Error>`).
+ * @throws {Error} If `url` is not a string or URL object.
+ * @throws {Error} If `timeout` is specified but is not a positive number.
+ *
+ * @example
+ * // Basic GET request - returns Response object wrapped in Result
+ * const result = await fetchT('https://api.example.com/data');
+ * result
+ *     .inspect((res) => console.log('Status:', res.status))
+ *     .inspectErr((err) => console.error('Error:', err));
+ *
+ * @example
+ * // GET JSON with type safety
+ * interface User {
+ *     id: number;
+ *     name: string;
+ * }
+ * const result = await fetchT<User>('https://api.example.com/user/1', {
+ *     responseType: 'json',
+ * });
+ * result.inspect((user) => console.log(user.name));
+ *
+ * @example
+ * // POST request with JSON body
+ * const result = await fetchT<User>('https://api.example.com/users', {
+ *     method: 'POST',
+ *     headers: { 'Content-Type': 'application/json' },
+ *     body: JSON.stringify({ name: 'John' }),
+ *     responseType: 'json',
+ * });
+ *
+ * @example
+ * // Abortable request with timeout
+ * const task = fetchT('https://api.example.com/data', {
+ *     abortable: true,
+ *     timeout: 5000, // 5 seconds
+ * });
+ *
+ * // Cancel the request if needed
+ * task.abort('User cancelled');
+ *
+ * // Check if aborted
+ * console.log('Aborted:', task.aborted);
+ *
+ * // Wait for response
+ * const result = await task.response;
+ *
+ * @example
+ * // Track download progress
+ * const result = await fetchT('https://example.com/large-file.zip', {
+ *     responseType: 'blob',
+ *     onProgress: (progressResult) => {
+ *         progressResult
+ *             .inspect(({ completedByteLength, totalByteLength }) => {
+ *                 const percent = ((completedByteLength / totalByteLength) * 100).toFixed(1);
+ *                 console.log(`Progress: ${percent}%`);
+ *             })
+ *             .inspectErr((err) => console.warn('Progress unavailable:', err.message));
+ *     },
+ * });
+ *
+ * @example
+ * // Stream data chunks
+ * const chunks: Uint8Array[] = [];
+ * const result = await fetchT('https://example.com/stream', {
+ *     onChunk: (chunk) => chunks.push(chunk),
+ * });
  */
 export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | FetchResponse<T> {
-    // most cases
+    // Fast path: most URLs are passed as strings
     if (typeof url !== 'string') {
         invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }.`);
     }
 
     const {
-        // default not abort able
+        // default not abortable
         abortable = false,
         responseType,
         timeout,
@@ -175,14 +247,13 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                 const [stream1, stream2] = res.body.tee();
 
                 const reader = stream1.getReader();
-                // may has no  content-length
+                // Content-Length may not be present in response headers
                 let totalByteLength: number | null = null;
                 let completedByteLength = 0;
 
                 if (shouldNotifyProgress) {
-                    // try to get content-length
-                    // compatible with http/2
-                    const contentLength = res.headers.get('content-length') ?? res.headers.get('Content-Length');
+                    // Headers.get() is case-insensitive per spec
+                    const contentLength = res.headers.get('content-length');
                     if (contentLength == null) {
                         // response headers has no content-length
                         onProgress(Err(new Error('No content-length in response headers.')));
@@ -210,8 +281,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                         }));
                     }
 
-
-                    // continue to read
+                    // Continue reading the stream
                     reader.read().then(notify);
                 });
 
@@ -254,18 +324,13 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
 
     if (shouldWaitTimeout) {
         const timer = setTimeout(() => {
-            if (!controller.signal.aborted) {
-                const error = new Error();
-                error.name = TIMEOUT_ERROR;
-                controller.abort(error);
-            }
+            const error = new Error();
+            error.name = TIMEOUT_ERROR;
+            controller.abort(error);
         }, timeout);
 
         cancelTimer = (): void => {
-            if (timer) {
-                clearTimeout(timer);
-            }
-
+            clearTimeout(timer);
             cancelTimer = null;
         };
     }
@@ -286,7 +351,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                 return response;
             },
         };
-    } else {
-        return response;
     }
+
+    return response;
 }
