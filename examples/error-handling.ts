@@ -1,0 +1,258 @@
+/**
+ * Error handling examples demonstrating various error scenarios.
+ *
+ * Run with: npx tsx examples/error-handling.ts
+ * Or with Deno: deno run --allow-net examples/error-handling.ts
+ */
+
+import { fetchT, FetchError, ABORT_ERROR, TIMEOUT_ERROR } from '../src/mod.ts';
+
+const API_BASE = 'https://jsonplaceholder.typicode.com';
+
+/**
+ * Example 1: Handle HTTP errors (4xx, 5xx)
+ */
+async function handleHttpErrors() {
+    console.log('--- Example 1: HTTP Errors ---');
+
+    // Request a non-existent resource (404)
+    const result = await fetchT(`${API_BASE}/posts/99999`, {
+        responseType: 'json',
+    });
+
+    result
+        .inspect((data) => {
+            console.log('Got data:', data);
+        })
+        .inspectErr((err) => {
+            if (err instanceof FetchError) {
+                console.log(`HTTP Error: ${err.status} - ${err.message}`);
+            } else {
+                console.log('Other error:', err.message);
+            }
+        });
+}
+
+/**
+ * Example 2: Handle network errors
+ */
+async function handleNetworkErrors() {
+    console.log('\n--- Example 2: Network Errors ---');
+
+    // Request to invalid host
+    const result = await fetchT('https://this-domain-does-not-exist-12345.com/api', {
+        responseType: 'json',
+        timeout: 5000, // 5 second timeout to avoid hanging
+    });
+
+    result
+        .inspect(() => {
+            console.log('Request succeeded (unexpected)');
+        })
+        .inspectErr((err) => {
+            if (err.name === TIMEOUT_ERROR) {
+                console.log('Request timed out');
+            } else {
+                console.log('Network error:', err.message);
+            }
+        });
+}
+
+/**
+ * Example 3: Handle invalid JSON response
+ */
+async function handleInvalidJson() {
+    console.log('\n--- Example 3: Invalid JSON ---');
+
+    // Request HTML page but expect JSON
+    const result = await fetchT('https://example.com', {
+        responseType: 'json',
+    });
+
+    result
+        .inspect((data) => {
+            console.log('Got data:', data);
+        })
+        .inspectErr((err) => {
+            console.log('JSON parse error:', err.message);
+        });
+}
+
+/**
+ * Example 4: Comprehensive error handling with type guards
+ */
+async function comprehensiveErrorHandling() {
+    console.log('\n--- Example 4: Comprehensive Error Handling ---');
+
+    async function safeFetch(url: string) {
+        const result = await fetchT(url, {
+            responseType: 'json',
+            timeout: 10000,
+        });
+
+        if (result.isOk()) {
+            return { success: true as const, data: result.unwrap() };
+        }
+
+        const err = result.unwrapErr();
+        // Categorize the error
+        if (err.name === ABORT_ERROR) {
+            return { success: false as const, errorType: 'abort', message: 'Request was cancelled' };
+        }
+        if (err.name === TIMEOUT_ERROR) {
+            return { success: false as const, errorType: 'timeout', message: 'Request timed out' };
+        }
+        if (err instanceof FetchError) {
+            return { success: false as const, errorType: 'http', status: err.status, message: err.message };
+        }
+        return { success: false as const, errorType: 'unknown', message: err.message };
+    }
+
+    // Test with valid URL
+    const result1 = await safeFetch(`${API_BASE}/posts/1`);
+    if (result1.success) {
+        console.log('Valid URL - Got post:', (result1.data as { id: number; }).id);
+    } else {
+        console.log('Valid URL - Error:', result1.message);
+    }
+
+    // Test with invalid URL (404)
+    const result2 = await safeFetch(`${API_BASE}/posts/99999`);
+    if (result2.success) {
+        console.log('Invalid URL - Got data (unexpected)');
+    } else {
+        console.log(`Invalid URL - ${result2.errorType} error:`, result2.message);
+    }
+}
+
+/**
+ * Example 5: Retry on failure
+ */
+async function retryOnFailure() {
+    console.log('\n--- Example 5: Retry on Failure ---');
+
+    async function fetchWithRetry(
+        url: string,
+        maxRetries = 3,
+        delayMs = 1000,
+    ): Promise<unknown> {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            console.log(`Attempt ${attempt}/${maxRetries}...`);
+
+            const result = await fetchT(url, {
+                responseType: 'json',
+                timeout: 5000,
+            });
+
+            if (result.isOk()) {
+                return result.unwrap();
+            }
+
+            const err = result.unwrapErr();
+            // Check if error is retryable
+            const isRetryable =
+                err.name === TIMEOUT_ERROR ||
+                (err instanceof FetchError && err.status >= 500);
+
+            if (!isRetryable) {
+                throw err;
+            }
+
+            if (attempt < maxRetries) {
+                console.log(`Retrying in ${delayMs}ms...`);
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+        }
+
+        throw new Error(`Failed after ${maxRetries} attempts`);
+    }
+
+    try {
+        const data = await fetchWithRetry(`${API_BASE}/posts/1`);
+        console.log('Success! Got post:', (data as { id: number; }).id);
+    } catch (err) {
+        console.error('All retries failed:', (err as Error).message);
+    }
+}
+
+/**
+ * Example 6: Using Result methods for chaining
+ */
+async function resultChaining() {
+    console.log('\n--- Example 6: Result Chaining ---');
+
+    interface Post {
+        id: number;
+        title: string;
+        body: string;
+        userId: number;
+    }
+
+    const result = await fetchT<Post>(`${API_BASE}/posts/1`, {
+        responseType: 'json',
+    });
+
+    // Chain operations on the result
+    const processed = result
+        .map((post) => ({
+            id: post.id,
+            title: post.title.toUpperCase(),
+            preview: post.body.substring(0, 50) + '...',
+        }))
+        .mapErr((err) => new Error(`Failed to fetch post: ${err.message}`));
+
+    processed
+        .inspect((data) => {
+            console.log('Processed post:');
+            console.log('  ID:', data.id);
+            console.log('  Title:', data.title);
+            console.log('  Preview:', data.preview);
+        })
+        .inspectErr((err) => {
+            console.error(err.message);
+        });
+}
+
+/**
+ * Example 7: Unwrap with default value
+ */
+async function unwrapWithDefault() {
+    console.log('\n--- Example 7: Unwrap with Default ---');
+
+    interface Post {
+        id: number;
+        title: string;
+    }
+
+    const defaultPost: Post = {
+        id: 0,
+        title: 'Default Post',
+    };
+
+    // Try to fetch a non-existent post
+    const result = await fetchT<Post>(`${API_BASE}/posts/99999`, {
+        responseType: 'json',
+    });
+
+    // Use unwrapOr to get a default value on error
+    const post = result.unwrapOr(defaultPost);
+    console.log('Post title:', post.title);
+
+    // Or use unwrapOrElse for lazy evaluation
+    const post2 = result.unwrapOrElse((err) => {
+        console.log('Using default because:', err.message);
+        return defaultPost;
+    });
+    console.log('Post2 title:', post2.title);
+}
+
+// Run all examples
+console.log('=== Error Handling Examples ===\n');
+
+await handleHttpErrors();
+await handleNetworkErrors();
+await handleInvalidJson();
+await comprehensiveErrorHandling();
+await retryOnFailure();
+await resultChaining();
+await unwrapWithDefault();
