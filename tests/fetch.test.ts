@@ -81,6 +81,39 @@ const server = setupServer(
         await new Promise(resolve => setTimeout(resolve, 5000));
         return HttpResponse.json({ id: 1 });
     }),
+
+    // GET /api/stream-error - stream that errors mid-way
+    http.get('http://mock.test/api/stream-error', () => {
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+            async start(controller) {
+                controller.enqueue(encoder.encode('chunk-0'));
+                await new Promise(r => setTimeout(r, 10));
+                controller.error(new Error('Stream read error'));
+            },
+        });
+        return new HttpResponse(stream, {
+            headers: {
+                'Content-Type': 'text/plain',
+                'Content-Length': '50',
+            },
+        });
+    }),
+
+    // GET /api/stream-error-immediate - stream that errors immediately on first read
+    http.get('http://mock.test/api/stream-error-immediate', () => {
+        const stream = new ReadableStream({
+            start(controller) {
+                controller.error(new Error('Immediate stream error'));
+            },
+        });
+        return new HttpResponse(stream, {
+            headers: {
+                'Content-Type': 'text/plain',
+                'Content-Length': '50',
+            },
+        });
+    }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -388,6 +421,91 @@ describe('fetchT', () => {
             const res = await fetchTask.response;
             expect(res.isOk()).toBe(true);
             expect(res.unwrap().id).toBe(1);
+        });
+    });
+
+    // ============ Callback Error Handling Tests ============
+    describe('callback error handling', () => {
+        it('should silently ignore errors thrown by onChunk callback', async () => {
+            let callCount = 0;
+
+            const res = await fetchT(`${ baseUrl }/api/data`, {
+                responseType: 'json',
+                onChunk() {
+                    callCount++;
+                    throw new Error('onChunk callback error');
+                },
+            });
+
+            // Request should succeed despite callback errors
+            expect(res.isOk()).toBe(true);
+            expect(callCount).toBeGreaterThan(0);
+        });
+
+        it('should silently ignore errors thrown by onProgress callback', async () => {
+            let callCount = 0;
+
+            const res = await fetchT(`${ baseUrl }/api/with-content-length`, {
+                responseType: 'json',
+                onProgress() {
+                    callCount++;
+                    throw new Error('onProgress callback error');
+                },
+            });
+
+            // Request should succeed despite callback errors
+            expect(res.isOk()).toBe(true);
+            expect(callCount).toBeGreaterThan(0);
+        });
+
+        it('should silently ignore errors thrown by onProgress when no content-length', async () => {
+            let callCount = 0;
+
+            const res = await fetchT(`${ baseUrl }/api/no-content-length`, {
+                responseType: 'json',
+                onProgress() {
+                    callCount++;
+                    throw new Error('onProgress callback error');
+                },
+            });
+
+            // Request should succeed despite callback errors
+            expect(res.isOk()).toBe(true);
+            expect(callCount).toBeGreaterThan(0);
+        });
+
+        it('should handle stream read errors without unhandled rejection', async () => {
+            const chunks: string[] = [];
+
+            const res = await fetchT(`${ baseUrl }/api/stream-error`, {
+                responseType: 'text',
+                onChunk(chunk) {
+                    chunks.push(new TextDecoder().decode(chunk));
+                },
+            });
+
+            // Stream error should be caught and returned as Err
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).message).toBe('Stream read error');
+            // At least one chunk should have been received before error
+            expect(chunks.length).toBeGreaterThan(0);
+        });
+
+        it('should handle immediate stream read errors without unhandled rejection', async () => {
+            let chunkCalled = false;
+
+            const res = await fetchT(`${ baseUrl }/api/stream-error-immediate`, {
+                responseType: 'text',
+                onChunk() {
+                    chunkCalled = true;
+                },
+            });
+
+            // Stream error should be caught and returned as Err
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).message).toBe('Immediate stream error');
+            // No chunks should have been received
+            expect(chunkCalled).toBe(false);
         });
     });
 });

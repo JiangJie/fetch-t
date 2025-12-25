@@ -256,7 +256,11 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                     const contentLength = res.headers.get('content-length');
                     if (contentLength == null) {
                         // response headers has no content-length
-                        onProgress(Err(new Error('No content-length in response headers.')));
+                        try {
+                            onProgress(Err(new Error('No content-length in response headers.')));
+                        } catch {
+                            // Silently ignore user callback errors
+                        }
                     } else {
                         totalByteLength = parseInt(contentLength, 10);
                     }
@@ -269,20 +273,32 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
 
                     // notify chunk
                     if (shouldNotifyChunk) {
-                        onChunk(value);
+                        try {
+                            onChunk(value);
+                        } catch {
+                            // Silently ignore user callback errors
+                        }
                     }
 
                     // notify progress
                     if (shouldNotifyProgress && totalByteLength != null) {
                         completedByteLength += value.byteLength;
-                        onProgress(Ok({
-                            totalByteLength,
-                            completedByteLength,
-                        }));
+                        try {
+                            onProgress(Ok({
+                                totalByteLength,
+                                completedByteLength,
+                            }));
+                        } catch {
+                            // Silently ignore user callback errors
+                        }
                     }
 
                     // Continue reading the stream
-                    reader.read().then(notify);
+                    reader.read().then(notify).catch(() => {
+                        // Silently ignore stream read errors (will be handled by main response)
+                    });
+                }).catch(() => {
+                    // Silently ignore initial stream read errors (will be handled by main response)
                 });
 
                 // replace the original response with the new one
