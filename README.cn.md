@@ -8,7 +8,7 @@
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 
-[English](README.md)
+[English](README.md) | [API 文档](https://jiangjie.github.io/fetch-t/)
 
 类型安全的 Fetch API 封装，支持可中止请求、超时、进度追踪和 Rust 风格的 Result 错误处理。
 
@@ -164,10 +164,6 @@ if (result.isErr()) {
 ## 示例
 
 更多示例请参见 [examples](examples/) 目录。
-
-## 文档
-
-完整 API 文档请访问 [https://jiangjie.github.io/fetch-t/](https://jiangjie.github.io/fetch-t/)
 
 ## 许可证
 

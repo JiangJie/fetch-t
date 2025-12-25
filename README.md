@@ -8,7 +8,7 @@
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 
-[中文文档](README.cn.md)
+[中文](README.cn.md) | [API Documentation](https://jiangjie.github.io/fetch-t/)
 
 Type-safe Fetch API wrapper with abortable requests, timeout support, progress tracking, and Rust-like Result error handling.
 
@@ -164,10 +164,6 @@ Returned when `abortable: true`:
 ## Examples
 
 For more examples, see the [examples](examples/) directory.
-
-## Documentation
-
-Full API documentation is available at [https://jiangjie.github.io/fetch-t/](https://jiangjie.github.io/fetch-t/)
 
 ## License
 
