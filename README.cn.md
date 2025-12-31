@@ -8,9 +8,13 @@
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 
+类型安全的 Fetch API 封装，支持可中止请求、超时、进度追踪和 Rust 风格的 Result 错误处理。
+
+---
+
 [English](README.md) | [API 文档](https://jiangjie.github.io/fetch-t/)
 
-类型安全的 Fetch API 封装，支持可中止请求、超时、进度追踪和 Rust 风格的 Result 错误处理。
+---
 
 ## 特性
 
@@ -76,94 +80,12 @@ setTimeout(() => {
 const result = await task.response;
 ```
 
-### 超时控制
-
-```ts
-const result = await fetchT('https://api.example.com/data', {
-    responseType: 'json',
-    timeout: 3000, // 3 秒后自动中止
-});
-```
-
-### 进度追踪
-
-```ts
-const result = await fetchT('https://api.example.com/large-file', {
-    responseType: 'blob',
-    onProgress(progressResult) {
-        progressResult.inspect(progress => {
-            const percent = (progress.completedByteLength / progress.totalByteLength * 100).toFixed(1);
-            console.log(`下载进度: ${percent}%`);
-        });
-    },
-});
-```
-
-### 错误处理
-
-```ts
-import { fetchT, ABORT_ERROR, TIMEOUT_ERROR } from '@happy-ts/fetch-t';
-
-const result = await fetchT('https://api.example.com/data', {
-    responseType: 'json',
-    timeout: 3000,
-});
-
-if (result.isErr()) {
-    const err = result.unwrapErr();
-    if (err.name === TIMEOUT_ERROR) {
-        console.log('请求超时');
-    } else if (err.name === ABORT_ERROR) {
-        console.log('请求已中止');
-    } else {
-        console.log('请求失败:', err.message);
-    }
-} else {
-    console.log('数据:', result.unwrap());
-}
-```
-
-## API
-
-### `fetchT(url, options?)`
-
-| 参数 | 类型 | 描述 |
-|------|------|------|
-| `url` | `string \| URL` | 请求 URL |
-| `options` | `FetchInit` | 扩展的 fetch 选项 |
-
-### `FetchInit` 选项
-
-继承标准 `RequestInit`，额外支持：
-
-| 选项 | 类型 | 描述 |
-|------|------|------|
-| `abortable` | `boolean` | 如为 `true`，返回 `FetchTask` 而非 `FetchResponse` |
-| `responseType` | `'text' \| 'arraybuffer' \| 'blob' \| 'json'` | 指定返回数据类型 |
-| `timeout` | `number` | 指定毫秒数后自动中止 |
-| `onProgress` | `(result: IOResult<FetchProgress>) => void` | 下载进度回调 |
-| `onChunk` | `(chunk: Uint8Array) => void` | 原始数据块回调 |
-
-### `FetchTask<T>`
-
-当 `abortable: true` 时返回：
-
-| 属性/方法 | 类型 | 描述 |
-|-----------|------|------|
-| `response` | `FetchResponse<T>` | 响应 Promise |
-| `abort(reason?)` | `void` | 中止请求 |
-| `aborted` | `boolean` | 请求是否已中止 |
-
-### 常量
-
-| 常量 | 描述 |
-|------|------|
-| `ABORT_ERROR` | 中止请求的错误名称 |
-| `TIMEOUT_ERROR` | 超时请求的错误名称 |
-
 ## 示例
 
-更多示例请参见 [examples](examples/) 目录。
+- [基础用法](examples/basic.ts) - 基本请求示例
+- [进度追踪](examples/with-progress.ts) - 下载进度和数据流处理
+- [可中止请求](examples/abortable.ts) - 取消和超时请求
+- [错误处理](examples/error-handling.ts) - 错误处理模式
 
 ## 许可证
 

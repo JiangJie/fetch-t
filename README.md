@@ -8,9 +8,13 @@
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 
+Type-safe Fetch API wrapper with abortable requests, timeout support, progress tracking, and Rust-like Result error handling.
+
+---
+
 [中文](README.cn.md) | [API Documentation](https://jiangjie.github.io/fetch-t/)
 
-Type-safe Fetch API wrapper with abortable requests, timeout support, progress tracking, and Rust-like Result error handling.
+---
 
 ## Features
 
@@ -76,94 +80,12 @@ setTimeout(() => {
 const result = await task.response;
 ```
 
-### With Timeout
-
-```ts
-const result = await fetchT('https://api.example.com/data', {
-    responseType: 'json',
-    timeout: 3000, // Auto-abort after 3 seconds
-});
-```
-
-### Progress Tracking
-
-```ts
-const result = await fetchT('https://api.example.com/large-file', {
-    responseType: 'blob',
-    onProgress(progressResult) {
-        progressResult.inspect(progress => {
-            const percent = (progress.completedByteLength / progress.totalByteLength * 100).toFixed(1);
-            console.log(`Download: ${percent}%`);
-        });
-    },
-});
-```
-
-### Error Handling
-
-```ts
-import { fetchT, ABORT_ERROR, TIMEOUT_ERROR } from '@happy-ts/fetch-t';
-
-const result = await fetchT('https://api.example.com/data', {
-    responseType: 'json',
-    timeout: 3000,
-});
-
-if (result.isErr()) {
-    const err = result.unwrapErr();
-    if (err.name === TIMEOUT_ERROR) {
-        console.log('Request timed out');
-    } else if (err.name === ABORT_ERROR) {
-        console.log('Request was aborted');
-    } else {
-        console.log('Request failed:', err.message);
-    }
-} else {
-    console.log('Data:', result.unwrap());
-}
-```
-
-## API
-
-### `fetchT(url, options?)`
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `url` | `string \| URL` | Request URL |
-| `options` | `FetchInit` | Extended fetch options |
-
-### `FetchInit` Options
-
-Extends standard `RequestInit` with:
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `abortable` | `boolean` | If `true`, returns `FetchTask` instead of `FetchResponse` |
-| `responseType` | `'text' \| 'arraybuffer' \| 'blob' \| 'json'` | Specifies return data type |
-| `timeout` | `number` | Auto-abort after milliseconds |
-| `onProgress` | `(result: IOResult<FetchProgress>) => void` | Download progress callback |
-| `onChunk` | `(chunk: Uint8Array) => void` | Raw data chunk callback |
-
-### `FetchTask<T>`
-
-Returned when `abortable: true`:
-
-| Property/Method | Type | Description |
-|-----------------|------|-------------|
-| `response` | `FetchResponse<T>` | The response promise |
-| `abort(reason?)` | `void` | Abort the request |
-| `aborted` | `boolean` | Whether request was aborted |
-
-### Constants
-
-| Constant | Description |
-|----------|-------------|
-| `ABORT_ERROR` | Error name for aborted requests |
-| `TIMEOUT_ERROR` | Error name for timed out requests |
-
 ## Examples
 
-For more examples, see the [examples](examples/) directory.
+- [Basic](examples/basic.ts) - Basic fetch requests
+- [Progress Tracking](examples/with-progress.ts) - Download progress and chunk streaming
+- [Abortable](examples/abortable.ts) - Cancel and timeout requests
+- [Error Handling](examples/error-handling.ts) - Error handling patterns
 
 ## License
 
