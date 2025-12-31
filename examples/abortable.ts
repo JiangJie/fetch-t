@@ -204,6 +204,55 @@ async function abortableWithProgress() {
         });
 }
 
+/**
+ * Example 7: Abortable stream request
+ */
+async function abortableStream() {
+    console.log('\n--- Example 7: Abortable Stream ---');
+
+    const task = fetchT(`${API_BASE}/posts`, {
+        abortable: true,
+        responseType: 'stream',
+    });
+
+    // Abort after 50ms
+    setTimeout(() => {
+        if (!task.aborted) {
+            console.log('Aborting stream...');
+            task.abort();
+        }
+    }, 50);
+
+    const result = await task.response;
+
+    if (result.isOk()) {
+        const stream = result.unwrap();
+        const reader = stream.getReader();
+        let totalBytes = 0;
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                totalBytes += value.byteLength;
+                console.log(`Received chunk: ${value.byteLength} bytes`);
+            }
+            console.log('Stream completed, total:', totalBytes, 'bytes');
+        } catch {
+            console.log('Stream reading interrupted');
+        } finally {
+            reader.releaseLock();
+        }
+    } else {
+        const err = result.unwrapErr();
+        if (err.name === ABORT_ERROR) {
+            console.log('Stream request was aborted');
+        } else {
+            console.error('Error:', err.message);
+        }
+    }
+}
+
 // Run all examples
 console.log('=== Abortable Request Examples ===\n');
 
@@ -213,3 +262,4 @@ await timeoutAbort();
 await conditionalAbort();
 await raceRequests();
 await abortableWithProgress();
+await abortableStream();

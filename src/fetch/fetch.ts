@@ -53,6 +53,18 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
 }): FetchTask<T>;
 
 /**
+ * Fetches a resource from the network as a ReadableStream and returns an abortable `FetchTask`.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'stream'`.
+ * @returns A `FetchTask` representing the abortable operation with a `ReadableStream<Uint8Array>` response.
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    abortable: true;
+    responseType: 'stream';
+}): FetchTask<ReadableStream<Uint8Array>>;
+
+/**
  * Fetches a resource from the network as a text string.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
@@ -96,6 +108,17 @@ export function fetchT(url: string | URL, init: FetchInit & {
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     responseType: 'json';
 }): FetchResponse<T, Error>;
+
+/**
+ * Fetches a resource from the network as a ReadableStream.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'stream'`.
+ * @returns A `FetchResponse` representing the operation with a `ReadableStream<Uint8Array>` response.
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    responseType: 'stream';
+}): FetchResponse<ReadableStream<Uint8Array>, Error>;
 
 /**
  * Fetches a resource from the network and returns an abortable `FetchTask` with a generic `Response`.
@@ -323,6 +346,9 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                 } catch {
                     return Err(new Error('Response is invalid json while responseType is json'));
                 }
+            }
+            case 'stream': {
+                return Ok(res.body as T);
             }
             case 'text': {
                 return Ok(await res.text() as T);

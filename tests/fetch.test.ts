@@ -114,6 +114,24 @@ const server = setupServer(
             },
         });
     }),
+
+    // GET /api/stream - returns a proper streaming response
+    http.get('http://mock.test/api/stream', () => {
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+            start(controller) {
+                controller.enqueue(encoder.encode('Hello'));
+                controller.enqueue(encoder.encode(' '));
+                controller.enqueue(encoder.encode('Stream'));
+                controller.close();
+            },
+        });
+        return new HttpResponse(stream, {
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+        });
+    }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -189,6 +207,27 @@ describe('fetchT', () => {
             });
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).message).toContain('Response is invalid json');
+        });
+
+        it('should get stream by responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/stream`, {
+                responseType: 'stream',
+            });
+            expect(result.isOk()).toBe(true);
+            const stream = result.unwrap();
+            expect(stream).toBeInstanceOf(ReadableStream);
+            
+            const reader = stream.getReader();
+            let text = '';
+            const decoder = new TextDecoder();
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                text += decoder.decode(value, { stream: true });
+            }
+            
+            expect(text).toBe('Hello Stream');
         });
     });
 
@@ -300,6 +339,16 @@ describe('fetchT', () => {
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(TIMEOUT_ERROR);
         });
+
+        it('should abort stream fetch by timeout', async () => {
+            const res = await fetchT(`${ baseUrl }/api/slow`, {
+                timeout: 50,
+                responseType: 'stream',
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(TIMEOUT_ERROR);
+        });
     });
 
     // ============ Abort Tests ============
@@ -325,6 +374,33 @@ describe('fetchT', () => {
 
             const res = await fetchTask.response;
             expect(res.unwrapErr()).toBe('custom-cancel');
+        });
+
+        it('should abort stream fetch with default reason', async () => {
+            const fetchTask = fetchT(`${ baseUrl }/api/slow`, {
+                abortable: true,
+                responseType: 'stream',
+            });
+
+            setTimeout(() => fetchTask.abort(), 50);
+
+            const res = await fetchTask.response;
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            expect(fetchTask.aborted).toBe(true);
+        });
+
+        it('should abort stream fetch with custom reason', async () => {
+            const fetchTask = fetchT(`${ baseUrl }/api/slow`, {
+                abortable: true,
+                responseType: 'stream',
+            });
+
+            setTimeout(() => fetchTask.abort('stream-cancelled'), 50);
+
+            const res = await fetchTask.response;
+            expect(res.isErr()).toBe(true);
+            expect(res.unwrapErr()).toBe('stream-cancelled');
         });
 
         it('should return FetchTask when abortable is true', () => {
@@ -421,6 +497,21 @@ describe('fetchT', () => {
             const res = await fetchTask.response;
             expect(res.isOk()).toBe(true);
             expect(res.unwrap().id).toBe(1);
+        });
+
+        it('should return FetchTask<ReadableStream> for stream responseType', async () => {
+            const fetchTask = fetchT(`${ baseUrl }/api/data`, {
+                abortable: true,
+                responseType: 'stream',
+            });
+
+            const res = await fetchTask.response;
+            expect(res.isOk()).toBe(true);
+            const stream = res.unwrap();
+            expect(stream).toBeInstanceOf(ReadableStream);
+
+            // Clean up stream
+            stream?.cancel().catch(() => {});
         });
     });
 

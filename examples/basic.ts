@@ -112,6 +112,33 @@ async function fetchArrayBuffer() {
         });
 }
 
+/**
+ * Example 6: GET request with Stream response
+ */
+async function fetchStream() {
+    console.log('\n--- Example 6: Stream Response ---');
+
+    const result = await fetchT(`${API_BASE}/posts/1`, {
+        responseType: 'stream',
+    });
+
+    if (result.isOk()) {
+        const stream = result.unwrap();
+        const reader = stream.getReader();
+        let totalBytes = 0;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            totalBytes += value.byteLength;
+        }
+
+        console.log('Stream completed, total bytes:', totalBytes);
+    } else {
+        console.error('Failed:', result.unwrapErr().message);
+    }
+}
+
 // Run all examples
 console.log('=== Basic Fetch Examples ===\n');
 
@@ -120,3 +147,4 @@ await fetchText();
 await postJson();
 await fetchRawResponse();
 await fetchArrayBuffer();
+await fetchStream();
