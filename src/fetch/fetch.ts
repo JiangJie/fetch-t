@@ -500,7 +500,16 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         } catch (err) {
             cancelTimer?.();
             removeAbortListener?.();
-            return Err(err as Error);
+
+            if (err instanceof Error) {
+                return Err(err);
+            }
+
+            // Non-Error type, most likely an abort reason
+            const error = new Error(typeof err === 'string' ? err : String(err));
+            error.name = ABORT_ERROR;
+            error.cause = err;
+            return Err(error);
         }
     };
 
@@ -563,7 +572,16 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         return {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             abort(reason?: any): void {
-                masterController.abort(reason);
+                if (reason instanceof Error) {
+                    masterController.abort(reason);
+                } else if (reason != null) {
+                    const error = new Error(typeof reason === 'string' ? reason : String(reason));
+                    error.name = ABORT_ERROR;
+                    error.cause = reason;
+                    masterController.abort(error);
+                } else {
+                    masterController.abort();
+                }
             },
 
             get aborted(): boolean {

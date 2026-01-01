@@ -422,7 +422,10 @@ describe('fetchT', () => {
             setTimeout(() => fetchTask.abort('custom-cancel'), 50);
 
             const res = await fetchTask.response;
-            expect(res.unwrapErr()).toBe('custom-cancel');
+            const err = res.unwrapErr() as Error;
+            expect(err.name).toBe(ABORT_ERROR);
+            expect(err.message).toBe('custom-cancel');
+            expect(err.cause).toBe('custom-cancel');
         });
 
         it('should abort stream fetch with default reason', async () => {
@@ -449,7 +452,10 @@ describe('fetchT', () => {
 
             const res = await fetchTask.response;
             expect(res.isErr()).toBe(true);
-            expect(res.unwrapErr()).toBe('stream-cancelled');
+            const err = res.unwrapErr() as Error;
+            expect(err.name).toBe(ABORT_ERROR);
+            expect(err.message).toBe('stream-cancelled');
+            expect(err.cause).toBe('stream-cancelled');
         });
 
         it('should return FetchTask when abortable is true', () => {
@@ -466,6 +472,76 @@ describe('fetchT', () => {
 
             fetchTask.abort();
             expect(fetchTask.aborted).toBe(true);
+        });
+
+        it('should abort fetch with Error reason', async () => {
+            const fetchTask = fetchT(`${ baseUrl }/api/slow`, {
+                abortable: true,
+            });
+
+            const customError = new Error('custom-error');
+            customError.name = 'CustomError';
+            setTimeout(() => fetchTask.abort(customError), 50);
+
+            const res = await fetchTask.response;
+            const err = res.unwrapErr() as Error;
+            expect(err).toBe(customError);
+            expect(err.name).toBe('CustomError');
+            expect(err.message).toBe('custom-error');
+        });
+
+        it('should handle external signal abort with string reason', async () => {
+            const externalController = new AbortController();
+
+            const response = fetchT(`${ baseUrl }/api/slow`, {
+                signal: externalController.signal,
+                responseType: 'text',
+            });
+
+            // Abort with a string reason via external controller
+            setTimeout(() => externalController.abort('external-abort-reason'), 50);
+
+            const res = await response;
+            expect(res.isErr()).toBe(true);
+            const err = res.unwrapErr() as Error;
+            expect(err.name).toBe(ABORT_ERROR);
+            expect(err.message).toBe('external-abort-reason');
+            expect(err.cause).toBe('external-abort-reason');
+        });
+
+        it('should handle external signal abort with non-string reason', async () => {
+            const externalController = new AbortController();
+
+            const response = fetchT(`${ baseUrl }/api/slow`, {
+                signal: externalController.signal,
+                responseType: 'text',
+            });
+
+            // Abort with a non-string reason (number) via external controller
+            setTimeout(() => externalController.abort(42), 50);
+
+            const res = await response;
+            expect(res.isErr()).toBe(true);
+            const err = res.unwrapErr() as Error;
+            expect(err.name).toBe(ABORT_ERROR);
+            expect(err.message).toBe('42');
+            expect(err.cause).toBe(42);
+        });
+
+        it('should abort fetch with non-string reason', async () => {
+            const fetchTask = fetchT(`${ baseUrl }/api/slow`, {
+                abortable: true,
+            });
+
+            // Abort with a non-string reason (object)
+            const reason = { code: 'CANCELLED', id: 123 };
+            setTimeout(() => fetchTask.abort(reason), 50);
+
+            const res = await fetchTask.response;
+            const err = res.unwrapErr() as Error;
+            expect(err.name).toBe(ABORT_ERROR);
+            expect(err.message).toBe('[object Object]');
+            expect(err.cause).toBe(reason);
         });
     });
 
