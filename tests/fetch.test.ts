@@ -345,6 +345,37 @@ describe('fetchT', () => {
             expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: -1 } })).toThrow(/Retry count must be a non-negative integer/);
         });
 
+        it('should throw error for invalid responseType', () => {
+            // @ts-expect-error Testing invalid responseType
+            expect(() => fetchT(`${ baseUrl }/api/data`, { responseType: 'invalid' })).toThrow(/responseType must be one of/);
+        });
+
+        it('should throw error for invalid onProgress', () => {
+            // @ts-expect-error Testing invalid onProgress
+            expect(() => fetchT(`${ baseUrl }/api/data`, { onProgress: 'not a function' })).toThrow(/onProgress callback must be a function/);
+        });
+
+        it('should throw error for invalid onChunk', () => {
+            // @ts-expect-error Testing invalid onChunk
+            expect(() => fetchT(`${ baseUrl }/api/data`, { onChunk: 123 })).toThrow(/onChunk callback must be a function/);
+        });
+
+        it('should throw error for invalid retry delay', () => {
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: 1, delay: -100 } })).toThrow(/Retry delay must be a non-negative number/);
+            // @ts-expect-error Testing invalid delay type
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: 1, delay: 'slow' } })).toThrow(/Retry delay must be a number or a function/);
+        });
+
+        it('should throw error for invalid retry when', () => {
+            // @ts-expect-error Testing invalid when type
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: 1, when: 'always' } })).toThrow(/Retry when condition must be an array of status codes or a function/);
+        });
+
+        it('should throw error for invalid onRetry', () => {
+            // @ts-expect-error Testing invalid onRetry type
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: 1, onRetry: 'callback' } })).toThrow(/Retry onRetry callback must be a function/);
+        });
+
         it('should throw error for zero timeout', () => {
             expect(() => fetchT(`${ baseUrl }/api/data`, { timeout: 0 })).toThrow();
         });

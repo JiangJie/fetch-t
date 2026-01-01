@@ -252,9 +252,24 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         ...rest
     } = init ?? {};
 
+    // start validate options
+
+    if (responseType != null) {
+        const validTypes = ['text', 'arraybuffer', 'blob', 'json', 'stream'];
+        invariant(validTypes.includes(responseType), () => `responseType must be one of ${ validTypes.join(', ') } but received ${ responseType }`);
+    }
+
     const shouldWaitTimeout = timeout != null;
     if (shouldWaitTimeout) {
-        invariant(typeof timeout === 'number' && timeout > 0, () => `Timeout must be a number greater than 0 but received ${ timeout }`);
+        invariant(typeof timeout === 'number' && timeout > 0, () => `timeout must be a number greater than 0 but received ${ timeout }`);
+    }
+
+    if (onProgress != null) {
+        invariant(typeof onProgress === 'function', () => `onProgress callback must be a function but received ${ typeof onProgress }`);
+    }
+
+    if (onChunk != null) {
+        invariant(typeof onChunk === 'function', () => `onChunk callback must be a function but received ${ typeof onChunk }`);
     }
 
     // Parse retry options
@@ -272,6 +287,20 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         onRetry = retryOptions.onRetry;
     }
     invariant(Number.isInteger(retries) && retries >= 0, () => `Retry count must be a non-negative integer but received ${ retries }`);
+
+    if (typeof retryDelay === 'number') {
+        invariant(retryDelay >= 0, () => `Retry delay must be a non-negative number but received ${ retryDelay }`);
+    } else {
+        invariant(typeof retryDelay === 'function', () => `Retry delay must be a number or a function but received ${ typeof retryDelay }`);
+    }
+
+    if (retryWhen != null) {
+        invariant(Array.isArray(retryWhen) || typeof retryWhen === 'function', () => `Retry when condition must be an array of status codes or a function but received ${ typeof retryWhen }`);
+    }
+
+    if (onRetry != null) {
+        invariant(typeof onRetry === 'function', () => `Retry onRetry callback must be a function but received ${ typeof onRetry }`);
+    }
 
     // Master controller for user abort (stops all retries)
     let masterController: AbortController | undefined;
@@ -375,10 +404,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
 
             if (res.body) {
                 // should notify progress or data chunk?
-                const shouldNotifyProgress = typeof onProgress === 'function';
-                const shouldNotifyChunk = typeof onChunk === 'function';
-
-                if ((shouldNotifyProgress || shouldNotifyChunk)) {
+                if ((onProgress || onChunk)) {
                     // tee the original stream to two streams, one for notify progress, another for response
                     const [stream1, stream2] = res.body.tee();
 
@@ -387,7 +413,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                     let totalByteLength: number | null = null;
                     let completedByteLength = 0;
 
-                    if (shouldNotifyProgress) {
+                    if (onProgress) {
                         // Headers.get() is case-insensitive per spec
                         const contentLength = res.headers.get('content-length');
                         if (contentLength == null) {
@@ -408,7 +434,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                         }
 
                         // notify chunk
-                        if (shouldNotifyChunk) {
+                        if (onChunk) {
                             try {
                                 onChunk(value);
                             } catch {
@@ -417,7 +443,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                         }
 
                         // notify progress
-                        if (shouldNotifyProgress && totalByteLength != null) {
+                        if (onProgress && totalByteLength != null) {
                             completedByteLength += value.byteLength;
                             try {
                                 onProgress(Ok({
