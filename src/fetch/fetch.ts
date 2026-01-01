@@ -1,6 +1,6 @@
-import { Err, Ok } from 'happy-rusty';
+import { Err, Ok, type AsyncResult } from 'happy-rusty';
 import invariant from 'tiny-invariant';
-import { TIMEOUT_ERROR } from './constants.ts';
+import { ABORT_ERROR, TIMEOUT_ERROR } from './constants.ts';
 import { FetchError, type FetchInit, type FetchResponse, type FetchTask } from './defines.ts';
 
 /**
@@ -149,6 +149,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchResponse<Respo
  * - **Timeout support**: Set `timeout` in milliseconds to auto-abort long-running requests.
  * - **Progress tracking**: Use `onProgress` callback to track download progress (requires Content-Length header).
  * - **Chunk streaming**: Use `onChunk` callback to receive raw data chunks as they arrive.
+ * - **Retry support**: Use `retry` to automatically retry failed requests with configurable delay and conditions.
  * - **Result type error handling**: Returns `Result<T, Error>` instead of throwing exceptions.
  *
  * @typeParam T - The expected type of the response data.
@@ -221,11 +222,23 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchResponse<Respo
  * const result = await fetchT('https://example.com/stream', {
  *     onChunk: (chunk) => chunks.push(chunk),
  * });
+ *
+ * @example
+ * // Retry with exponential backoff
+ * const result = await fetchT('https://api.example.com/data', {
+ *     retry: {
+ *         retries: 3,
+ *         delay: (attempt) => Math.min(1000 * Math.pow(2, attempt - 1), 10000),
+ *         when: [500, 502, 503, 504],
+ *         onRetry: (error, attempt) => console.log(`Retry ${attempt}: ${error.message}`),
+ *     },
+ *     responseType: 'json',
+ * });
  */
 export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | FetchResponse<T> {
     // Fast path: most URLs are passed as strings
     if (typeof url !== 'string') {
-        invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }.`);
+        invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }`);
     }
 
     const {
@@ -233,160 +246,302 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         abortable = false,
         responseType,
         timeout,
+        retry: retryOptions = 0,
         onProgress,
         onChunk,
         ...rest
     } = init ?? {};
 
     const shouldWaitTimeout = timeout != null;
-    let cancelTimer: (() => void) | null;
-
     if (shouldWaitTimeout) {
-        invariant(typeof timeout === 'number' && timeout > 0, () => `Timeout must be a number greater than 0 but received ${ timeout }.`);
+        invariant(typeof timeout === 'number' && timeout > 0, () => `Timeout must be a number greater than 0 but received ${ timeout }`);
     }
 
-    let controller: AbortController;
+    // Parse retry options
+    let retries = 0;
+    let retryDelay: number | ((attempt: number) => number) = 0;
+    let retryWhen: ((error: Error, attempt: number) => boolean) | number[] | undefined;
+    let onRetry: ((error: Error, attempt: number) => void) | undefined;
 
-    if (abortable || shouldWaitTimeout) {
-        controller = new AbortController();
-        rest.signal = controller.signal;
+    if (typeof retryOptions === 'number') {
+        retries = retryOptions;
+    } else if (retryOptions && typeof retryOptions === 'object') {
+        retries = retryOptions.retries ?? 0;
+        retryDelay = retryOptions.delay ?? 0;
+        retryWhen = retryOptions.when;
+        onRetry = retryOptions.onRetry;
     }
+    invariant(Number.isInteger(retries) && retries >= 0, () => `Retry count must be a non-negative integer but received ${ retries }`);
 
-    const response: FetchResponse<T> = fetch(url, rest).then(async (res): FetchResponse<T> => {
-        cancelTimer?.();
-
-        if (!res.ok) {
-            await res.body?.cancel();
-            return Err(new FetchError(res.statusText, res.status));
-        }
-
-        if (res.body) {
-            // should notify progress or data chunk?
-            const shouldNotifyProgress = typeof onProgress === 'function';
-            const shouldNotifyChunk = typeof onChunk === 'function';
-
-            if ((shouldNotifyProgress || shouldNotifyChunk)) {
-                // tee the original stream to two streams, one for notify progress, another for response
-                const [stream1, stream2] = res.body.tee();
-
-                const reader = stream1.getReader();
-                // Content-Length may not be present in response headers
-                let totalByteLength: number | null = null;
-                let completedByteLength = 0;
-
-                if (shouldNotifyProgress) {
-                    // Headers.get() is case-insensitive per spec
-                    const contentLength = res.headers.get('content-length');
-                    if (contentLength == null) {
-                        // response headers has no content-length
-                        try {
-                            onProgress(Err(new Error('No content-length in response headers.')));
-                        } catch {
-                            // Silently ignore user callback errors
-                        }
-                    } else {
-                        totalByteLength = parseInt(contentLength, 10);
-                    }
-                }
-
-                reader.read().then(function notify({ done, value }) {
-                    if (done) {
-                        return;
-                    }
-
-                    // notify chunk
-                    if (shouldNotifyChunk) {
-                        try {
-                            onChunk(value);
-                        } catch {
-                            // Silently ignore user callback errors
-                        }
-                    }
-
-                    // notify progress
-                    if (shouldNotifyProgress && totalByteLength != null) {
-                        completedByteLength += value.byteLength;
-                        try {
-                            onProgress(Ok({
-                                totalByteLength,
-                                completedByteLength,
-                            }));
-                        } catch {
-                            // Silently ignore user callback errors
-                        }
-                    }
-
-                    // Continue reading the stream
-                    reader.read().then(notify).catch(() => {
-                        // Silently ignore stream read errors (will be handled by main response)
-                    });
-                }).catch(() => {
-                    // Silently ignore initial stream read errors (will be handled by main response)
-                });
-
-                // replace the original response with the new one
-                res = new Response(stream2, {
-                    headers: res.headers,
-                    status: res.status,
-                    statusText: res.statusText,
-                });
-            }
-        }
-
-        switch (responseType) {
-            case 'arraybuffer': {
-                return Ok(await res.arrayBuffer() as T);
-            }
-            case 'blob': {
-                return Ok(await res.blob() as T);
-            }
-            case 'json': {
-                try {
-                    return Ok(await res.json() as T);
-                } catch {
-                    return Err(new Error('Response is invalid json while responseType is json'));
-                }
-            }
-            case 'stream': {
-                return Ok(res.body as T);
-            }
-            case 'text': {
-                return Ok(await res.text() as T);
-            }
-            default: {
-                // default return the Response object
-                return Ok(res as T);
-            }
-        }
-    }).catch((err) => {
-        cancelTimer?.();
-
-        return Err(err);
-    });
-
-    if (shouldWaitTimeout) {
-        const timer = setTimeout(() => {
-            const error = new Error();
-            error.name = TIMEOUT_ERROR;
-            controller.abort(error);
-        }, timeout);
-
-        cancelTimer = (): void => {
-            clearTimeout(timer);
-            cancelTimer = null;
-        };
-    }
-
+    // Master controller for user abort (stops all retries)
+    let masterController: AbortController | undefined;
     if (abortable) {
+        masterController = new AbortController();
+    }
+
+    /**
+     * Determines if the error should trigger a retry.
+     * By default, only network errors (not FetchError) trigger retries.
+     */
+    const shouldRetry = (error: Error, attempt: number): boolean => {
+        // Never retry on user abort
+        if (error.name === ABORT_ERROR) {
+            return false;
+        }
+
+        if (!retryWhen) {
+            // Default: only retry on network errors (not FetchError/HTTP errors)
+            return !(error instanceof FetchError);
+        }
+
+        if (Array.isArray(retryWhen)) {
+            // Retry on specific HTTP status codes
+            return error instanceof FetchError && retryWhen.includes(error.status);
+        }
+
+        // Custom retry condition
+        return retryWhen(error, attempt);
+    };
+
+    /**
+     * Calculates the delay before the next retry attempt.
+     */
+    const getRetryDelay = (attempt: number): number => {
+        return typeof retryDelay === 'function'
+            ? retryDelay(attempt)
+            : retryDelay;
+    };
+
+    /**
+     * Delays execution for the specified number of milliseconds.
+     */
+    const delay = (ms: number): Promise<void> => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    };
+
+    /**
+     * Performs a single fetch attempt with optional timeout.
+     */
+    const doFetch = async (): AsyncResult<T, Error> => {
+        // Create a new controller for this attempt (for timeout)
+        let attemptController: AbortController | undefined;
+        let cancelTimer: (() => void) | null = null;
+        let removeAbortListener: (() => void) | null = null;
+
+        if (shouldWaitTimeout || masterController) {
+            attemptController = new AbortController();
+            rest.signal = attemptController.signal;
+
+            // Link master controller to attempt controller
+            if (masterController) {
+                const controller = attemptController;
+                const onAbort = () => {
+                    controller.abort(masterController.signal.reason);
+                };
+                masterController.signal.addEventListener('abort', onAbort, { once: true });
+                removeAbortListener = () => {
+                    masterController.signal.removeEventListener('abort', onAbort);
+                };
+            }
+        }
+
+        // Setup timeout for this attempt
+        if (shouldWaitTimeout && attemptController) {
+            const controller = attemptController;
+            const timer = setTimeout(() => {
+                const error = new Error();
+                error.name = TIMEOUT_ERROR;
+                controller.abort(error);
+            }, timeout);
+
+            cancelTimer = (): void => {
+                clearTimeout(timer);
+                cancelTimer = null;
+            };
+        }
+
+        try {
+            const res = await fetch(url, rest);
+
+            cancelTimer?.();
+            removeAbortListener?.();
+
+            if (!res.ok) {
+                await res.body?.cancel();
+                return Err(new FetchError(res.statusText, res.status));
+            }
+
+            let response = res;
+
+            if (res.body) {
+                // should notify progress or data chunk?
+                const shouldNotifyProgress = typeof onProgress === 'function';
+                const shouldNotifyChunk = typeof onChunk === 'function';
+
+                if ((shouldNotifyProgress || shouldNotifyChunk)) {
+                    // tee the original stream to two streams, one for notify progress, another for response
+                    const [stream1, stream2] = res.body.tee();
+
+                    const reader = stream1.getReader();
+                    // Content-Length may not be present in response headers
+                    let totalByteLength: number | null = null;
+                    let completedByteLength = 0;
+
+                    if (shouldNotifyProgress) {
+                        // Headers.get() is case-insensitive per spec
+                        const contentLength = res.headers.get('content-length');
+                        if (contentLength == null) {
+                            // response headers has no content-length
+                            try {
+                                onProgress(Err(new Error('No content-length in response headers.')));
+                            } catch {
+                                // Silently ignore user callback errors
+                            }
+                        } else {
+                            totalByteLength = parseInt(contentLength, 10);
+                        }
+                    }
+
+                    reader.read().then(function notify({ done, value }) {
+                        if (done) {
+                            return;
+                        }
+
+                        // notify chunk
+                        if (shouldNotifyChunk) {
+                            try {
+                                onChunk(value);
+                            } catch {
+                                // Silently ignore user callback errors
+                            }
+                        }
+
+                        // notify progress
+                        if (shouldNotifyProgress && totalByteLength != null) {
+                            completedByteLength += value.byteLength;
+                            try {
+                                onProgress(Ok({
+                                    totalByteLength,
+                                    completedByteLength,
+                                }));
+                            } catch {
+                                // Silently ignore user callback errors
+                            }
+                        }
+
+                        // Continue reading the stream
+                        reader.read().then(notify).catch(() => {
+                            // Silently ignore stream read errors (will be handled by main response)
+                        });
+                    }).catch(() => {
+                        // Silently ignore initial stream read errors (will be handled by main response)
+                    });
+
+                    // replace the original response with the new one
+                    response = new Response(stream2, {
+                        headers: res.headers,
+                        status: res.status,
+                        statusText: res.statusText,
+                    });
+                }
+            }
+
+            switch (responseType) {
+                case 'arraybuffer': {
+                    return Ok(await response.arrayBuffer() as T);
+                }
+                case 'blob': {
+                    return Ok(await response.blob() as T);
+                }
+                case 'json': {
+                    try {
+                        return Ok(await response.json() as T);
+                    } catch {
+                        return Err(new Error('Response is invalid json while responseType is json'));
+                    }
+                }
+                case 'stream': {
+                    return Ok(response.body as T);
+                }
+                case 'text': {
+                    return Ok(await response.text() as T);
+                }
+                default: {
+                    // default return the Response object
+                    return Ok(response as T);
+                }
+            }
+        } catch (err) {
+            cancelTimer?.();
+            removeAbortListener?.();
+            return Err(err as Error);
+        }
+    };
+
+    /**
+     * Performs fetch with retry logic.
+     */
+    const fetchWithRetry = async (): FetchResponse<T> => {
+        let lastError: Error = new Error('Unknown error');
+        let attempt = 0;
+
+        do {
+            // Before retry (not first attempt), call onRetry and wait for delay
+            if (attempt > 0) {
+                // Check if user aborted before retry
+                if (masterController?.signal.aborted) {
+                    const error = new Error('Aborted');
+                    error.name = ABORT_ERROR;
+                    return Err(error);
+                }
+
+                try {
+                    onRetry?.(lastError, attempt);
+                } catch {
+                    // Silently ignore user callback errors
+                }
+
+                const delayMs = getRetryDelay(attempt);
+                // Wait for delay if necessary
+                if (delayMs > 0) {
+                    await delay(delayMs);
+                }
+
+                // Check again after delay in case user aborted during delay
+                if (masterController?.signal.aborted) {
+                    const error = new Error('Aborted');
+                    error.name = ABORT_ERROR;
+                    return Err(error);
+                }
+            }
+
+            const result = await doFetch();
+
+            if (result.isOk()) {
+                return result;
+            }
+
+            lastError = result.unwrapErr();
+            attempt++;
+
+            // Check if we should retry
+        } while (attempt <= retries && shouldRetry(lastError, attempt));
+
+        // No more retries or should not retry
+        return Err(lastError);
+    };
+
+    const response = fetchWithRetry();
+
+    if (abortable && masterController) {
         return {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             abort(reason?: any): void {
-                cancelTimer?.();
-                controller.abort(reason);
+                masterController.abort(reason);
             },
 
             get aborted(): boolean {
-                return controller.signal.aborted;
+                return masterController.signal.aborted;
             },
 
             get response(): FetchResponse<T> {

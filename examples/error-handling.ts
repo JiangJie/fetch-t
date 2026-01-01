@@ -126,10 +126,10 @@ async function comprehensiveErrorHandling() {
 }
 
 /**
- * Example 5: Retry on failure
+ * Example 5: Manual retry on failure (before built-in retry feature)
  */
-async function retryOnFailure() {
-    console.log('\n--- Example 5: Retry on Failure ---');
+async function manualRetryOnFailure() {
+    console.log('\n--- Example 5: Manual Retry on Failure ---');
 
     async function fetchWithRetry(
         url: string,
@@ -176,7 +176,125 @@ async function retryOnFailure() {
 }
 
 /**
- * Example 6: Using Result methods for chaining
+ * Example 6: Built-in retry feature
+ * Demonstrates the retry option with retries, delay, when, and onRetry properties.
+ */
+async function builtInRetry() {
+    console.log('\n--- Example 6: Built-in Retry Feature ---');
+
+    interface Post {
+        id: number;
+        title: string;
+    }
+
+    // Basic retry - retries on network errors by default
+    console.log('\n6a. Basic retry (network errors only):');
+    const result1 = await fetchT<Post>(`${API_BASE}/posts/1`, {
+        retry: 3,
+        responseType: 'json',
+    });
+    result1
+        .inspect((post) => console.log('  Got post:', post.id))
+        .inspectErr((err) => console.log('  Error:', err.message));
+
+    // Retry with static delay
+    console.log('\n6b. Retry with 500ms delay:');
+    const result2 = await fetchT<Post>(`${API_BASE}/posts/2`, {
+        retry: {
+            retries: 2,
+            delay: 500,
+        },
+        responseType: 'json',
+    });
+    result2
+        .inspect((post) => console.log('  Got post:', post.id))
+        .inspectErr((err) => console.log('  Error:', err.message));
+
+    // Retry with exponential backoff
+    console.log('\n6c. Retry with exponential backoff:');
+    const result3 = await fetchT<Post>(`${API_BASE}/posts/3`, {
+        retry: {
+            retries: 3,
+            delay: (attempt) => {
+                const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+                console.log(`  Backoff delay for attempt ${attempt}: ${delay}ms`);
+                return delay;
+            },
+        },
+        responseType: 'json',
+    });
+    result3
+        .inspect((post) => console.log('  Got post:', post.id))
+        .inspectErr((err) => console.log('  Error:', err.message));
+
+    // Retry on specific HTTP status codes
+    console.log('\n6d. Retry on specific HTTP status codes (500, 502, 503, 504):');
+    const result4 = await fetchT<Post>(`${API_BASE}/posts/4`, {
+        retry: {
+            retries: 3,
+            when: [500, 502, 503, 504],
+        },
+        responseType: 'json',
+    });
+    result4
+        .inspect((post) => console.log('  Got post:', post.id))
+        .inspectErr((err) => console.log('  Error:', err.message));
+
+    // Retry with custom condition
+    console.log('\n6e. Retry with custom condition:');
+    const result5 = await fetchT<Post>(`${API_BASE}/posts/5`, {
+        retry: {
+            retries: 3,
+            when: (error, attempt) => {
+                console.log(`  Checking retry condition for attempt ${attempt}`);
+                // Retry on network errors or 5xx status codes
+                if (error instanceof FetchError) {
+                    return error.status >= 500;
+                }
+                // Retry on all non-abort errors
+                return error.name !== ABORT_ERROR;
+            },
+        },
+        responseType: 'json',
+    });
+    result5
+        .inspect((post) => console.log('  Got post:', post.id))
+        .inspectErr((err) => console.log('  Error:', err.message));
+
+    // Retry with onRetry callback for logging
+    console.log('\n6f. Retry with onRetry callback:');
+    const result6 = await fetchT<Post>(`${API_BASE}/posts/6`, {
+        retry: {
+            retries: 3,
+            delay: 100,
+            onRetry: (error, attempt) => {
+                console.log(`  [onRetry] Attempt ${attempt} starting after error: ${error.message}`);
+            },
+        },
+        responseType: 'json',
+    });
+    result6
+        .inspect((post) => console.log('  Got post:', post.id))
+        .inspectErr((err) => console.log('  Error:', err.message));
+
+    // Retry with timeout per attempt
+    console.log('\n6g. Retry with per-attempt timeout:');
+    const result7 = await fetchT<Post>(`${API_BASE}/posts/7`, {
+        retry: {
+            retries: 2,
+            when: (error) => error.name === TIMEOUT_ERROR,
+            onRetry: (_error, attempt) => console.log(`  Retrying after timeout, attempt ${attempt}`),
+        },
+        timeout: 5000, // 5 seconds per attempt
+        responseType: 'json',
+    });
+    result7
+        .inspect((post) => console.log('  Got post:', post.id))
+        .inspectErr((err) => console.log('  Error:', err.message));
+}
+
+/**
+ * Example 7: Using Result methods for chaining
  */
 async function resultChaining() {
     console.log('\n--- Example 6: Result Chaining ---');
@@ -214,7 +332,7 @@ async function resultChaining() {
 }
 
 /**
- * Example 7: Unwrap with default value
+ * Example 8: Unwrap with default value
  */
 async function unwrapWithDefault() {
     console.log('\n--- Example 7: Unwrap with Default ---');
@@ -253,6 +371,7 @@ await handleHttpErrors();
 await handleNetworkErrors();
 await handleInvalidJson();
 await comprehensiveErrorHandling();
-await retryOnFailure();
+await manualRetryOnFailure();
+await builtInRetry();
 await resultChaining();
 await unwrapWithDefault();

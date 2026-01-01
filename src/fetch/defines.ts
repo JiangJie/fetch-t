@@ -144,6 +144,46 @@ export interface FetchProgress {
 }
 
 /**
+ * Options for configuring retry behavior.
+ */
+export interface FetchRetryOptions {
+    /**
+     * Number of times to retry the request on failure.
+     *
+     * By default, only network errors trigger retries. HTTP errors (4xx, 5xx)
+     * require explicit configuration via `when`.
+     *
+     * @default 0 (no retries)
+     */
+    retries?: number;
+
+    /**
+     * Delay between retry attempts in milliseconds.
+     *
+     * Can be a static number or a function for custom strategies like exponential backoff.
+     * The function receives the current attempt number (1-indexed).
+     *
+     * @default 0 (immediate retry)
+     */
+    delay?: number | ((attempt: number) => number);
+
+    /**
+     * Conditions under which to retry the request.
+     *
+     * Can be an array of HTTP status codes or a custom function.
+     * By default, only network errors (not FetchError) trigger retries.
+     */
+    when?: number[] | ((error: Error, attempt: number) => boolean);
+
+    /**
+     * Callback invoked before each retry attempt.
+     *
+     * Useful for logging, metrics, or adjusting request parameters.
+     */
+    onRetry?: (error: Error, attempt: number) => void;
+}
+
+/**
  * Extended fetch options that add additional capabilities to the standard `RequestInit`.
  *
  * @example
@@ -202,6 +242,31 @@ export interface FetchInit extends RequestInit {
      * Must be a positive number.
      */
     timeout?: number;
+
+    /**
+     * Retry options.
+     *
+     * Can be a number (shorthand for retries count) or an options object.
+     *
+     * @example
+     * ```typescript
+     * // Retry up to 3 times on network errors
+     * const result = await fetchT('https://api.example.com/data', {
+     *     retry: 3,
+     * });
+     *
+     * // Detailed configuration
+     * const result = await fetchT('https://api.example.com/data', {
+     *     retry: {
+     *         retries: 3,
+     *         delay: 1000,
+     *         when: [500, 502],
+     *         onRetry: (error, attempt) => console.log(error),
+     *     },
+     * });
+     * ```
+     */
+    retry?: number | FetchRetryOptions;
 
     /**
      * Callback invoked during download to report progress.

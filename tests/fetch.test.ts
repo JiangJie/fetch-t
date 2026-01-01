@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { ABORT_ERROR, FetchError, fetchT, TIMEOUT_ERROR } from '../src/mod.ts';
+import { ABORT_ERROR, FetchError, fetchT, TIMEOUT_ERROR, type FetchTask } from '../src/mod.ts';
 
 // Mock server setup
 const server = setupServer(
@@ -134,8 +134,20 @@ const server = setupServer(
     }),
 );
 
+// Retry test state - track attempt counts per endpoint
+const retryAttemptCounts: Record<string, number> = {};
+
+function resetRetryAttempts(): void {
+    Object.keys(retryAttemptCounts).forEach(key => {
+        retryAttemptCounts[key] = 0;
+    });
+}
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+    server.resetHandlers();
+    resetRetryAttempts();
+});
 afterAll(() => server.close());
 
 describe('fetchT', () => {
@@ -216,17 +228,17 @@ describe('fetchT', () => {
             expect(result.isOk()).toBe(true);
             const stream = result.unwrap();
             expect(stream).toBeInstanceOf(ReadableStream);
-            
+
             const reader = stream.getReader();
             let text = '';
             const decoder = new TextDecoder();
-            
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 text += decoder.decode(value, { stream: true });
             }
-            
+
             expect(text).toBe('Hello Stream');
         });
     });
@@ -325,6 +337,12 @@ describe('fetchT', () => {
 
         it('should throw error for invalid timeout', () => {
             expect(() => fetchT(`${ baseUrl }/api/data`, { timeout: -1 })).toThrow();
+        });
+
+        it('should throw error for invalid retries', () => {
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: -1 })).toThrow(/Retry count must be a non-negative integer/);
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: 1.5 })).toThrow(/Retry count must be a non-negative integer/);
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: -1 } })).toThrow(/Retry count must be a non-negative integer/);
         });
 
         it('should throw error for zero timeout', () => {
@@ -597,6 +615,648 @@ describe('fetchT', () => {
             expect((res.unwrapErr() as Error).message).toBe('Immediate stream error');
             // No chunks should have been received
             expect(chunkCalled).toBe(false);
+        });
+    });
+
+    // ============ Retry Tests ============
+    describe('retry', () => {
+        it('should retry on network error and succeed', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-network', () => {
+                    attemptCount++;
+                    if (attemptCount < 3) {
+                        return HttpResponse.error();
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-network`, {
+                retry: 3,
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(res.unwrap().success).toBe(true);
+            expect(attemptCount).toBe(3);
+        });
+
+        it('should not retry on HTTP error by default', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-http-error', () => {
+                    attemptCount++;
+                    return new HttpResponse(null, { status: 500, statusText: 'Server Error' });
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-http-error`, {
+                retry: 3,
+                responseType: 'json',
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect(res.unwrapErr()).toBeInstanceOf(FetchError);
+            expect((res.unwrapErr() as FetchError).status).toBe(500);
+            // Should only try once (no retry for HTTP errors by default)
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should retry on specific HTTP status codes when configured', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-status', () => {
+                    attemptCount++;
+                    if (attemptCount < 3) {
+                        return new HttpResponse(null, { status: 503, statusText: 'Service Unavailable' });
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-status`, {
+                retry: {
+                    retries: 3,
+                    when: [500, 502, 503, 504],
+                },
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(res.unwrap().success).toBe(true);
+            expect(attemptCount).toBe(3);
+        });
+
+        it('should not retry on non-matching HTTP status codes', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-404', () => {
+                    attemptCount++;
+                    return new HttpResponse(null, { status: 404, statusText: 'Not Found' });
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-404`, {
+                retry: {
+                    retries: 3,
+                    when: [500, 502, 503, 504],
+                },
+                responseType: 'json',
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as FetchError).status).toBe(404);
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should retry with custom condition function', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-custom', () => {
+                    attemptCount++;
+                    if (attemptCount < 2) {
+                        return new HttpResponse(null, { status: 429, statusText: 'Too Many Requests' });
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-custom`, {
+                retry: {
+                    retries: 3,
+                    when: (error, _attempt) => {
+                        return error instanceof FetchError && error.status === 429;
+                    },
+                },
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(res.unwrap().success).toBe(true);
+            expect(attemptCount).toBe(2);
+        });
+
+        it('should apply static retry delay', async () => {
+            let attemptCount = 0;
+            const timestamps: number[] = [];
+
+            server.use(
+                http.get('http://mock.test/api/retry-delay', () => {
+                    attemptCount++;
+                    timestamps.push(Date.now());
+                    if (attemptCount < 3) {
+                        return HttpResponse.error();
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-delay`, {
+                retry: {
+                    retries: 3,
+                    delay: 50,
+                },
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(attemptCount).toBe(3);
+            // Check delays between attempts (with some tolerance)
+            expect(timestamps[1] - timestamps[0]).toBeGreaterThanOrEqual(45);
+            expect(timestamps[2] - timestamps[1]).toBeGreaterThanOrEqual(45);
+        });
+
+        it('should apply dynamic retry delay (exponential backoff)', async () => {
+            let attemptCount = 0;
+            const timestamps: number[] = [];
+
+            server.use(
+                http.get('http://mock.test/api/retry-backoff', () => {
+                    attemptCount++;
+                    timestamps.push(Date.now());
+                    if (attemptCount < 3) {
+                        return HttpResponse.error();
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-backoff`, {
+                retry: {
+                    retries: 3,
+                    delay: (attempt) => 25 * attempt, // 25ms, 50ms, 75ms
+                },
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(attemptCount).toBe(3);
+            // First retry delay should be ~25ms, second should be ~50ms
+            expect(timestamps[1] - timestamps[0]).toBeGreaterThanOrEqual(20);
+            expect(timestamps[2] - timestamps[1]).toBeGreaterThanOrEqual(45);
+        });
+
+        it('should call onRetry callback before each retry', async () => {
+            let attemptCount = 0;
+            const retryCallbacks: { attempt: number; error: Error; }[] = [];
+
+            server.use(
+                http.get('http://mock.test/api/retry-callback', () => {
+                    attemptCount++;
+                    if (attemptCount < 3) {
+                        return HttpResponse.error();
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-callback`, {
+                retry: {
+                    retries: 3,
+                    onRetry: (error, attempt) => {
+                        retryCallbacks.push({ attempt, error });
+                    },
+                },
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(retryCallbacks.length).toBe(2); // Called before 2nd and 3rd attempts
+            expect(retryCallbacks[0].attempt).toBe(1);
+            expect(retryCallbacks[1].attempt).toBe(2);
+        });
+
+        it('should silently ignore onRetry callback errors', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-callback-error', () => {
+                    attemptCount++;
+                    if (attemptCount < 2) {
+                        return HttpResponse.error();
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-callback-error`, {
+                retry: {
+                    retries: 3,
+                    onRetry: () => {
+                        throw new Error('onRetry error');
+                    },
+                },
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(attemptCount).toBe(2);
+        });
+
+        it('should stop retrying when user aborts', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-abort', async () => {
+                    attemptCount++;
+                    // Simulate slow response to give time for abort
+                    await new Promise(r => setTimeout(r, 100));
+                    return HttpResponse.error();
+                }),
+            );
+
+            const task = fetchT(`${ baseUrl }/api/retry-abort`, {
+                abortable: true,
+                retry: 5,
+                responseType: 'json',
+            });
+
+            // Abort after first attempt starts
+            setTimeout(() => task.abort(), 50);
+
+            const res = await task.response;
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should continue retrying after timeout (per-attempt timeout)', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-timeout', async () => {
+                    attemptCount++;
+                    if (attemptCount < 2) {
+                        // First attempt times out
+                        await new Promise(r => setTimeout(r, 200));
+                    }
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const res = await fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-timeout`, {
+                retry: {
+                    retries: 3,
+                    when: (error, _attempt) => error.name === TIMEOUT_ERROR,
+                },
+                timeout: 50,
+                responseType: 'json',
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(res.unwrap().success).toBe(true);
+            expect(attemptCount).toBe(2);
+        });
+
+        it('should return last error when all retries fail', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-all-fail', () => {
+                    attemptCount++;
+                    return HttpResponse.error();
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-all-fail`, {
+                retry: 2,
+                responseType: 'json',
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect(attemptCount).toBe(3); // Initial + 2 retries
+        });
+
+        it('should not retry when retry is 0', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-zero', () => {
+                    attemptCount++;
+                    return HttpResponse.error();
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-zero`, {
+                retry: 0,
+                responseType: 'json',
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should work with progress and chunk callbacks during retry', async () => {
+            let attemptCount = 0;
+            const chunks: Uint8Array[] = [];
+
+            server.use(
+                http.get('http://mock.test/api/retry-with-callbacks', () => {
+                    attemptCount++;
+                    if (attemptCount < 2) {
+                        return HttpResponse.error();
+                    }
+                    return new HttpResponse('success data', {
+                        headers: {
+                            'Content-Type': 'text/plain',
+                            'Content-Length': '12',
+                        },
+                    });
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-with-callbacks`, {
+                retry: 3,
+                responseType: 'text',
+                onChunk: (chunk) => chunks.push(chunk),
+            });
+
+            expect(res.isOk()).toBe(true);
+            expect(res.unwrap()).toBe('success data');
+            expect(attemptCount).toBe(2);
+            // Chunks should be received on successful attempt
+            expect(chunks.length).toBeGreaterThan(0);
+        });
+
+        it('should abort during retry delay', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-abort-delay', () => {
+                    attemptCount++;
+                    return HttpResponse.error();
+                }),
+            );
+
+            const task = fetchT(`${ baseUrl }/api/retry-abort-delay`, {
+                abortable: true,
+                retry: {
+                    retries: 3,
+                    delay: 500, // Long delay
+                },
+                responseType: 'json',
+            });
+
+            // Abort during retry delay (after first attempt fails)
+            setTimeout(() => task.abort(), 100);
+
+            const res = await task.response;
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should abort immediately if aborted before fetch starts', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-abort-immediate', async () => {
+                    attemptCount++;
+                    // Slow response to ensure abort happens during fetch
+                    await new Promise(r => setTimeout(r, 100));
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            const task = fetchT(`${ baseUrl }/api/retry-abort-immediate`, {
+                abortable: true,
+                retry: 3,
+                responseType: 'json',
+            });
+
+            // Abort immediately - the fetch may have started but should abort
+            task.abort();
+
+            const res = await task.response;
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            // First fetch attempt may have started, but should abort
+            expect(attemptCount).toBeLessThanOrEqual(1);
+        });
+
+        it('should abort on second attempt if aborted during first attempt', async () => {
+            let attemptCount = 0;
+            // eslint-disable-next-line prefer-const
+            let task: FetchTask<{ success: boolean; }>;
+
+            server.use(
+                http.get('http://mock.test/api/retry-abort-second', async () => {
+                    attemptCount++;
+                    if (attemptCount === 1) {
+                        // First attempt: abort during this request, then return network error
+                        task.abort();
+                        return HttpResponse.error();
+                    }
+                    // Second attempt should not reach here
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            task = fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-abort-second`, {
+                abortable: true,
+                retry: {
+                    retries: 3,
+                    delay: 0, // No delay to speed up test
+                },
+                responseType: 'json',
+            });
+
+            const res = await task.response;
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            expect(attemptCount).toBe(1); // Only first attempt should run
+        });
+
+        it('should abort before retry delay starts', async () => {
+            let attemptCount = 0;
+            let onRetryCalled = false;
+
+            server.use(
+                http.get('http://mock.test/api/retry-abort-before-delay', () => {
+                    attemptCount++;
+                    return HttpResponse.error();
+                }),
+            );
+
+            const task = fetchT(`${ baseUrl }/api/retry-abort-before-delay`, {
+                abortable: true,
+                retry: {
+                    retries: 3,
+                    delay: 1000, // Long delay - should never reach this
+                    onRetry: () => {
+                        // Abort right when onRetry is called (before delay)
+                        onRetryCalled = true;
+                        task.abort();
+                    },
+                },
+                responseType: 'json',
+            });
+
+            const res = await task.response;
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            expect(attemptCount).toBe(1); // Only first attempt
+            expect(onRetryCalled).toBe(true); // onRetry was called
+        });
+
+        it('should detect abort before doFetch starts on retry attempt (line 328-330)', async () => {
+            // This test covers the abort check at the START of doFetch (lines 328-330)
+            // The key is to abort AFTER first attempt completes but BEFORE second doFetch begins
+            let attemptCount = 0;
+            // eslint-disable-next-line prefer-const
+            let task: FetchTask<{ success: boolean; }>;
+
+            server.use(
+                http.get('http://mock.test/api/retry-abort-before-dofetch', async () => {
+                    attemptCount++;
+                    if (attemptCount === 1) {
+                        // First attempt: return network error to trigger retry
+                        // But abort right before returning so abort is set when retry loop checks
+                        task.abort();
+                        return HttpResponse.error();
+                    }
+                    // Should not reach here
+                    return HttpResponse.json({ success: true });
+                }),
+            );
+
+            task = fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-abort-before-dofetch`, {
+                abortable: true,
+                retry: {
+                    retries: 3,
+                    delay: 0, // No delay
+                },
+                responseType: 'json',
+            });
+
+            const res = await task.response;
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should detect abort at start of retry loop (line 483-485)', async () => {
+            // This test specifically covers lines 483-485: abort check at START of retry loop
+            // Strategy:
+            // 1. First request fails with network error (not abort)
+            // 2. shouldRetry returns true, attempt++, loop continues
+            // 3. At the check point (line 483), abort should already be true
+            //
+            // The trick: abort in the retryOn callback (which runs AFTER shouldRetry check in while condition)
+            // Then next iteration will hit line 483-485
+            let attemptCount = 0;
+            let onRetryCalled = false;
+            let retryOnCallCount = 0;
+            let taskRef: FetchTask<{ success: boolean; }> | null = null;
+
+            server.use(
+                http.get('http://mock.test/api/retry-abort-at-loop-start', () => {
+                    attemptCount++;
+                    // Always return network error
+                    return HttpResponse.error();
+                }),
+            );
+
+            const task = fetchT<{ success: boolean; }>(`${ baseUrl }/api/retry-abort-at-loop-start`, {
+                abortable: true,
+                retry: {
+                    retries: 3,
+                    delay: 0,
+                    when: (_error, _attempt) => {
+                        retryOnCallCount++;
+                        if (retryOnCallCount === 1) {
+                            // First retry check: abort synchronously and return true
+                            // This way: shouldRetry returns true, but abort is set
+                            // Next iteration of the loop will hit the abort check at line 483
+                            taskRef?.abort();
+                            return true;
+                        }
+                        return true;
+                    },
+                    onRetry: () => {
+                        onRetryCalled = true;
+                    },
+                },
+                responseType: 'json',
+            });
+
+            taskRef = task;
+
+            const res = await task.response;
+
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
+            expect(attemptCount).toBe(1);
+            // onRetry should NOT be called because abort was detected before it
+            expect(onRetryCalled).toBe(false);
+        });
+
+        it('should default to 0 retries when retry option is missing', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-missing', () => {
+                    attemptCount++;
+                    return HttpResponse.error();
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-missing`, {
+                responseType: 'json',
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should ignore invalid retry option type', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-invalid-type', () => {
+                    attemptCount++;
+                    return HttpResponse.error();
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-invalid-type`, {
+                responseType: 'json',
+                retry: 'invalid' as unknown as number,
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect(attemptCount).toBe(1);
+        });
+
+        it('should handle empty retry object (defaults to 0 retries)', async () => {
+            let attemptCount = 0;
+
+            server.use(
+                http.get('http://mock.test/api/retry-empty', () => {
+                    attemptCount++;
+                    return HttpResponse.error();
+                }),
+            );
+
+            const res = await fetchT(`${ baseUrl }/api/retry-empty`, {
+                retry: {},
+                responseType: 'json',
+            });
+
+            expect(res.isErr()).toBe(true);
+            expect(attemptCount).toBe(1);
         });
     });
 });
