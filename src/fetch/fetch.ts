@@ -1,7 +1,7 @@
 import { Err, Ok, type AsyncResult } from 'happy-rusty';
 import invariant from 'tiny-invariant';
-import { ABORT_ERROR, TIMEOUT_ERROR } from './constants.ts';
-import { FetchError, type FetchInit, type FetchResponse, type FetchTask } from './defines.ts';
+import { ABORT_ERROR } from './constants.ts';
+import { FetchError, type FetchInit, type FetchResponse, type FetchRetryOptions, type FetchTask } from './defines.ts';
 
 /**
  * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
@@ -241,71 +241,29 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
         invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }`);
     }
 
+    const fetchInit = init ?? {};
+
+    const {
+        retries,
+        delay: retryDelay,
+        when: retryWhen,
+        onRetry,
+    } = validateOptions(fetchInit);
+
     const {
         // default not abortable
         abortable = false,
         responseType,
         timeout,
-        retry: retryOptions = 0,
         onProgress,
         onChunk,
         ...rest
-    } = init ?? {};
+    } = fetchInit;
 
-    // start validate options
-
-    if (responseType != null) {
-        const validTypes = ['text', 'arraybuffer', 'blob', 'json', 'stream'];
-        invariant(validTypes.includes(responseType), () => `responseType must be one of ${ validTypes.join(', ') } but received ${ responseType }`);
-    }
-
-    const shouldWaitTimeout = timeout != null;
-    if (shouldWaitTimeout) {
-        invariant(typeof timeout === 'number' && timeout > 0, () => `timeout must be a number greater than 0 but received ${ timeout }`);
-    }
-
-    if (onProgress != null) {
-        invariant(typeof onProgress === 'function', () => `onProgress callback must be a function but received ${ typeof onProgress }`);
-    }
-
-    if (onChunk != null) {
-        invariant(typeof onChunk === 'function', () => `onChunk callback must be a function but received ${ typeof onChunk }`);
-    }
-
-    // Parse retry options
-    let retries = 0;
-    let retryDelay: number | ((attempt: number) => number) = 0;
-    let retryWhen: ((error: Error, attempt: number) => boolean) | number[] | undefined;
-    let onRetry: ((error: Error, attempt: number) => void) | undefined;
-
-    if (typeof retryOptions === 'number') {
-        retries = retryOptions;
-    } else if (retryOptions && typeof retryOptions === 'object') {
-        retries = retryOptions.retries ?? 0;
-        retryDelay = retryOptions.delay ?? 0;
-        retryWhen = retryOptions.when;
-        onRetry = retryOptions.onRetry;
-    }
-    invariant(Number.isInteger(retries) && retries >= 0, () => `Retry count must be a non-negative integer but received ${ retries }`);
-
-    if (typeof retryDelay === 'number') {
-        invariant(retryDelay >= 0, () => `Retry delay must be a non-negative number but received ${ retryDelay }`);
-    } else {
-        invariant(typeof retryDelay === 'function', () => `Retry delay must be a number or a function but received ${ typeof retryDelay }`);
-    }
-
-    if (retryWhen != null) {
-        invariant(Array.isArray(retryWhen) || typeof retryWhen === 'function', () => `Retry when condition must be an array of status codes or a function but received ${ typeof retryWhen }`);
-    }
-
-    if (onRetry != null) {
-        invariant(typeof onRetry === 'function', () => `Retry onRetry callback must be a function but received ${ typeof onRetry }`);
-    }
-
-    // Master controller for user abort (stops all retries)
-    let masterController: AbortController | undefined;
+    // User controller for manual abort (stops all retries)
+    let userController: AbortController | undefined;
     if (abortable) {
-        masterController = new AbortController();
+        userController = new AbortController();
     }
 
     /**
@@ -342,211 +300,175 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     };
 
     /**
-     * Delays execution for the specified number of milliseconds.
-     */
-    const delay = (ms: number): Promise<void> => {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    };
-
-    /**
      * Performs a single fetch attempt with optional timeout.
      */
     const doFetch = async (): AsyncResult<T, Error> => {
-        // Create a new controller for this attempt (for timeout)
-        let attemptController: AbortController | undefined;
-        let cancelTimer: (() => void) | null = null;
-        let removeAbortListener: (() => void) | null = null;
+        const signals: AbortSignal[] = [];
 
-        if (shouldWaitTimeout || masterController) {
-            attemptController = new AbortController();
-            rest.signal = attemptController.signal;
-
-            // Link master controller to attempt controller
-            if (masterController) {
-                const controller = attemptController;
-                const onAbort = () => {
-                    controller.abort(masterController.signal.reason);
-                };
-                masterController.signal.addEventListener('abort', onAbort, { once: true });
-                removeAbortListener = () => {
-                    masterController.signal.removeEventListener('abort', onAbort);
-                };
-            }
+        if (userController) {
+            signals.push(userController.signal);
         }
 
-        // Setup timeout for this attempt
-        if (shouldWaitTimeout && attemptController) {
-            const controller = attemptController;
-            const timer = setTimeout(() => {
-                const error = new Error();
-                error.name = TIMEOUT_ERROR;
-                controller.abort(error);
-            }, timeout);
+        if (typeof timeout === 'number') {
+            signals.push(AbortSignal.timeout(timeout));
+        }
 
-            cancelTimer = (): void => {
-                clearTimeout(timer);
-                cancelTimer = null;
-            };
+        if (signals.length > 0) {
+            rest.signal = signals.length === 1
+                ? signals[0]
+                : AbortSignal.any(signals);
         }
 
         try {
             const res = await fetch(url, rest);
-
-            cancelTimer?.();
-            removeAbortListener?.();
 
             if (!res.ok) {
                 await res.body?.cancel();
                 return Err(new FetchError(res.statusText, res.status));
             }
 
-            let response = res;
-
-            if (res.body) {
-                // should notify progress or data chunk?
-                if ((onProgress || onChunk)) {
-                    // tee the original stream to two streams, one for notify progress, another for response
-                    const [stream1, stream2] = res.body.tee();
-
-                    const reader = stream1.getReader();
-                    // Content-Length may not be present in response headers
-                    let totalByteLength: number | null = null;
-                    let completedByteLength = 0;
-
-                    if (onProgress) {
-                        // Headers.get() is case-insensitive per spec
-                        const contentLength = res.headers.get('content-length');
-                        if (contentLength == null) {
-                            // response headers has no content-length
-                            try {
-                                onProgress(Err(new Error('No content-length in response headers.')));
-                            } catch {
-                                // Silently ignore user callback errors
-                            }
-                        } else {
-                            totalByteLength = parseInt(contentLength, 10);
-                        }
-                    }
-
-                    reader.read().then(function notify({ done, value }) {
-                        if (done) {
-                            return;
-                        }
-
-                        // notify chunk
-                        if (onChunk) {
-                            try {
-                                onChunk(value);
-                            } catch {
-                                // Silently ignore user callback errors
-                            }
-                        }
-
-                        // notify progress
-                        if (onProgress && totalByteLength != null) {
-                            completedByteLength += value.byteLength;
-                            try {
-                                onProgress(Ok({
-                                    totalByteLength,
-                                    completedByteLength,
-                                }));
-                            } catch {
-                                // Silently ignore user callback errors
-                            }
-                        }
-
-                        // Continue reading the stream
-                        reader.read().then(notify).catch(() => {
-                            // Silently ignore stream read errors (will be handled by main response)
-                        });
-                    }).catch(() => {
-                        // Silently ignore initial stream read errors (will be handled by main response)
-                    });
-
-                    // replace the original response with the new one
-                    response = new Response(stream2, {
-                        headers: res.headers,
-                        status: res.status,
-                        statusText: res.statusText,
-                    });
-                }
-            }
-
-            switch (responseType) {
-                case 'arraybuffer': {
-                    return Ok(await response.arrayBuffer() as T);
-                }
-                case 'blob': {
-                    return Ok(await response.blob() as T);
-                }
-                case 'json': {
-                    try {
-                        return Ok(await response.json() as T);
-                    } catch {
-                        return Err(new Error('Response is invalid json while responseType is json'));
-                    }
-                }
-                case 'stream': {
-                    return Ok(response.body as T);
-                }
-                case 'text': {
-                    return Ok(await response.text() as T);
-                }
-                default: {
-                    // default return the Response object
-                    return Ok(response as T);
-                }
-            }
+            return await processResponse(res);
         } catch (err) {
-            cancelTimer?.();
-            removeAbortListener?.();
+            return Err(err instanceof Error
+                ? err
+                // Non-Error type, most likely an abort reason
+                : wrapAbortReason(err),
+            );
+        }
+    };
 
-            if (err instanceof Error) {
-                return Err(err);
+    /**
+     * Processes the response based on responseType and callbacks.
+     */
+    const processResponse = async (res: Response): AsyncResult<T, Error> => {
+        let response = res;
+
+        // should notify progress or data chunk?
+        if (res.body && (onProgress || onChunk)) {
+            // tee the original stream to two streams, one for notify progress, another for response
+            const [stream1, stream2] = res.body.tee();
+
+            const reader = stream1.getReader();
+            // Content-Length may not be present in response headers
+            let totalByteLength: number | null = null;
+            let completedByteLength = 0;
+
+            if (onProgress) {
+                // Headers.get() is case-insensitive per spec
+                const contentLength = res.headers.get('content-length');
+                if (contentLength == null) {
+                    // response headers has no content-length
+                    try {
+                        onProgress(Err(new Error('No content-length in response headers.')));
+                    } catch {
+                        // Silently ignore user callback errors
+                    }
+                } else {
+                    totalByteLength = parseInt(contentLength, 10);
+                }
             }
 
-            // Non-Error type, most likely an abort reason
-            const error = new Error(typeof err === 'string' ? err : String(err));
-            error.name = ABORT_ERROR;
-            error.cause = err;
-            return Err(error);
+            reader.read().then(function notify({ done, value }) {
+                if (done) {
+                    return;
+                }
+
+                // notify chunk
+                if (onChunk) {
+                    try {
+                        onChunk(value);
+                    } catch {
+                        // Silently ignore user callback errors
+                    }
+                }
+
+                // notify progress
+                if (onProgress && totalByteLength != null) {
+                    completedByteLength += value.byteLength;
+                    try {
+                        onProgress(Ok({
+                            totalByteLength,
+                            completedByteLength,
+                        }));
+                    } catch {
+                        // Silently ignore user callback errors
+                    }
+                }
+
+                // Continue reading the stream
+                reader.read().then(notify).catch(() => {
+                    // Silently ignore stream read errors (will be handled by main response)
+                });
+            }).catch(() => {
+                // Silently ignore initial stream read errors (will be handled by main response)
+            });
+
+            // replace the original response with the new one
+            response = new Response(stream2, {
+                headers: res.headers,
+                status: res.status,
+                statusText: res.statusText,
+            });
+        }
+
+        switch (responseType) {
+            case 'arraybuffer': {
+                return Ok(await response.arrayBuffer() as T);
+            }
+            case 'blob': {
+                return Ok(await response.blob() as T);
+            }
+            case 'json': {
+                try {
+                    return Ok(await response.json() as T);
+                } catch {
+                    return Err(new Error('Response is invalid json while responseType is json'));
+                }
+            }
+            case 'stream': {
+                return Ok(response.body as T);
+            }
+            case 'text': {
+                return Ok(await response.text() as T);
+            }
+            default: {
+                // default return the Response object
+                return Ok(response as T);
+            }
         }
     };
 
     /**
      * Performs fetch with retry logic.
      */
-    const fetchWithRetry = async (): FetchResponse<T> => {
-        let lastError: Error = new Error('Unknown error');
+    const fetchWithRetry = async (): FetchResponse<T, Error> => {
+        let lastError: Error | undefined;
         let attempt = 0;
 
         do {
-            // Before retry (not first attempt), call onRetry and wait for delay
+            // Before retry (not first attempt), wait for delay
             if (attempt > 0) {
-                // Check if user aborted before retry
-                if (masterController?.signal.aborted) {
-                    const error = new Error('Aborted');
-                    error.name = ABORT_ERROR;
-                    return Err(error);
-                }
-
-                try {
-                    onRetry?.(lastError, attempt);
-                } catch {
-                    // Silently ignore user callback errors
+                // Check if user aborted before delay (e.g., aborted in `when` callback)
+                if (userController?.signal.aborted) {
+                    return Err(userController.signal.reason as Error);
                 }
 
                 const delayMs = getRetryDelay(attempt);
                 // Wait for delay if necessary
                 if (delayMs > 0) {
                     await delay(delayMs);
+
+                    // Check if user aborted during delay
+                    if (userController?.signal.aborted) {
+                        return Err(userController.signal.reason as Error);
+                    }
                 }
 
-                // Check again after delay in case user aborted during delay
-                if (masterController?.signal.aborted) {
-                    const error = new Error('Aborted');
-                    error.name = ABORT_ERROR;
-                    return Err(error);
+                // Call onRetry right before the actual retry request
+                try {
+                    onRetry?.(lastError as Error, attempt);
+                } catch {
+                    // Silently ignore user callback errors
                 }
             }
 
@@ -568,24 +490,21 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
 
     const response = fetchWithRetry();
 
-    if (abortable && masterController) {
+    if (abortable && userController) {
         return {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             abort(reason?: any): void {
                 if (reason instanceof Error) {
-                    masterController.abort(reason);
+                    userController.abort(reason);
                 } else if (reason != null) {
-                    const error = new Error(typeof reason === 'string' ? reason : String(reason));
-                    error.name = ABORT_ERROR;
-                    error.cause = reason;
-                    masterController.abort(error);
+                    userController.abort(wrapAbortReason(reason));
                 } else {
-                    masterController.abort();
+                    userController.abort();
                 }
             },
 
             get aborted(): boolean {
-                return masterController.signal.aborted;
+                return userController.signal.aborted;
             },
 
             get response(): FetchResponse<T> {
@@ -595,4 +514,89 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     }
 
     return response;
+}
+
+/**
+ * Delays execution for the specified number of milliseconds.
+ */
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Wraps a non-Error abort reason into an Error with ABORT_ERROR name.
+ */
+function wrapAbortReason(reason: unknown): Error {
+    const error = new Error(typeof reason === 'string' ? reason : String(reason));
+    error.name = ABORT_ERROR;
+    error.cause = reason;
+    return error;
+}
+
+interface ParsedRetryOptions extends FetchRetryOptions {
+    retries: number;
+    delay: number | ((attempt: number) => number);
+}
+
+/**
+ * Validates fetch options and parses retry configuration.
+ */
+function validateOptions(init: FetchInit): ParsedRetryOptions {
+    const {
+        responseType,
+        timeout,
+        retry: retryOptions = 0,
+        onProgress,
+        onChunk,
+    } = init;
+
+    if (responseType != null) {
+        const validTypes = ['text', 'arraybuffer', 'blob', 'json', 'stream'];
+        invariant(validTypes.includes(responseType), () => `responseType must be one of ${ validTypes.join(', ') } but received ${ responseType }`);
+    }
+
+    if (timeout != null) {
+        invariant(typeof timeout === 'number' && timeout > 0, () => `timeout must be a number greater than 0 but received ${ timeout }`);
+    }
+
+    if (onProgress != null) {
+        invariant(typeof onProgress === 'function', () => `onProgress callback must be a function but received ${ typeof onProgress }`);
+    }
+
+    if (onChunk != null) {
+        invariant(typeof onChunk === 'function', () => `onChunk callback must be a function but received ${ typeof onChunk }`);
+    }
+
+    // Parse retry options
+    let retries = 0;
+    let delay: number | ((attempt: number) => number) = 0;
+    let when: ((error: Error, attempt: number) => boolean) | number[] | undefined;
+    let onRetry: ((error: Error, attempt: number) => void) | undefined;
+
+    if (typeof retryOptions === 'number') {
+        retries = retryOptions;
+    } else if (retryOptions && typeof retryOptions === 'object') {
+        retries = retryOptions.retries ?? 0;
+        delay = retryOptions.delay ?? 0;
+        when = retryOptions.when;
+        onRetry = retryOptions.onRetry;
+    }
+
+    invariant(Number.isInteger(retries) && retries >= 0, () => `Retry count must be a non-negative integer but received ${ retries }`);
+
+    if (typeof delay === 'number') {
+        invariant(delay >= 0, () => `Retry delay must be a non-negative number but received ${ delay }`);
+    } else {
+        invariant(typeof delay === 'function', () => `Retry delay must be a number or a function but received ${ typeof delay }`);
+    }
+
+    if (when != null) {
+        invariant(Array.isArray(when) || typeof when === 'function', () => `Retry when condition must be an array of status codes or a function but received ${ typeof when }`);
+    }
+
+    if (onRetry != null) {
+        invariant(typeof onRetry === 'function', () => `Retry onRetry callback must be a function but received ${ typeof onRetry }`);
+    }
+
+    return { retries, delay, when, onRetry };
 }

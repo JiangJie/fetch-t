@@ -398,6 +398,19 @@ describe('fetchT', () => {
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(TIMEOUT_ERROR);
         });
+
+        it('should abort abortable fetch by timeout', async () => {
+            const fetchTask = fetchT(`${ baseUrl }/api/slow`, {
+                abortable: true,
+                timeout: 50,
+            });
+
+            const res = await fetchTask.response;
+            expect(res.isErr()).toBe(true);
+            expect((res.unwrapErr() as Error).name).toBe(TIMEOUT_ERROR);
+            // Note: aborted remains false because timeout signal is separate from masterController
+            // The timeout is handled by AbortSignal.timeout(), not by calling fetchTask.abort()
+        });
     });
 
     // ============ Abort Tests ============
