@@ -62,7 +62,7 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'stream';
-}): FetchTask<ReadableStream<Uint8Array>>;
+}): FetchTask<ReadableStream<Uint8Array<ArrayBuffer>>>;
 
 /**
  * Fetches a resource from the network as a text string.
