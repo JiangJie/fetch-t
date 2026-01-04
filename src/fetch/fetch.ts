@@ -359,7 +359,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                     // Silently ignore user callback errors
                 }
             } else {
-                totalByteLength = parseInt(contentLength, 10);
+                totalByteLength = Number.parseInt(contentLength, 10);
             }
         }
 
