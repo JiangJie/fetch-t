@@ -338,77 +338,79 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     };
 
     /**
+     * Multiplexes a response stream for progress tracking and chunk callbacks.
+     * Uses ReadableStream.tee() to split the stream into two:
+     * - One stream for progress/chunk notifications
+     * - Another stream for the response body
+     */
+    const multiplexStream = (res: Response): Response => {
+        const [notifyStream, responseStream] = (res.body as ReadableStream<Uint8Array<ArrayBuffer>>).tee();
+
+        const reader = notifyStream.getReader();
+        let totalByteLength: number | null = null;
+        let completedByteLength = 0;
+
+        if (onProgress) {
+            const contentLength = res.headers.get('content-length');
+            if (contentLength == null) {
+                try {
+                    onProgress(Err(new Error('No content-length in response headers.')));
+                } catch {
+                    // Silently ignore user callback errors
+                }
+            } else {
+                totalByteLength = parseInt(contentLength, 10);
+            }
+        }
+
+        reader.read().then(function notify({ done, value }) {
+            if (done) {
+                return;
+            }
+
+            if (onChunk) {
+                try {
+                    onChunk(value);
+                } catch {
+                    // Silently ignore user callback errors
+                }
+            }
+
+            if (onProgress && totalByteLength != null) {
+                completedByteLength += value.byteLength;
+                try {
+                    onProgress(Ok({
+                        totalByteLength,
+                        completedByteLength,
+                    }));
+                } catch {
+                    // Silently ignore user callback errors
+                }
+            }
+
+            reader.read().then(notify).catch(() => {
+                // Silently ignore stream read errors
+            });
+        }).catch(() => {
+            // Silently ignore initial stream read errors
+        });
+
+        return new Response(responseStream, {
+            headers: res.headers,
+            status: res.status,
+            statusText: res.statusText,
+        });
+    };
+
+    /**
      * Processes the response based on responseType and callbacks.
      */
     const processResponse = async (res: Response): AsyncResult<T, Error> => {
         let response = res;
 
-        // should notify progress or data chunk?
+        // Multiplex stream for progress/chunk callbacks if needed
         if (res.body && (onProgress || onChunk)) {
-            // tee the original stream to two streams, one for notify progress, another for response
-            const [stream1, stream2] = res.body.tee();
-
-            const reader = stream1.getReader();
-            // Content-Length may not be present in response headers
-            let totalByteLength: number | null = null;
-            let completedByteLength = 0;
-
-            if (onProgress) {
-                // Headers.get() is case-insensitive per spec
-                const contentLength = res.headers.get('content-length');
-                if (contentLength == null) {
-                    // response headers has no content-length
-                    try {
-                        onProgress(Err(new Error('No content-length in response headers.')));
-                    } catch {
-                        // Silently ignore user callback errors
-                    }
-                } else {
-                    totalByteLength = parseInt(contentLength, 10);
-                }
-            }
-
-            reader.read().then(function notify({ done, value }) {
-                if (done) {
-                    return;
-                }
-
-                // notify chunk
-                if (onChunk) {
-                    try {
-                        onChunk(value);
-                    } catch {
-                        // Silently ignore user callback errors
-                    }
-                }
-
-                // notify progress
-                if (onProgress && totalByteLength != null) {
-                    completedByteLength += value.byteLength;
-                    try {
-                        onProgress(Ok({
-                            totalByteLength,
-                            completedByteLength,
-                        }));
-                    } catch {
-                        // Silently ignore user callback errors
-                    }
-                }
-
-                // Continue reading the stream
-                reader.read().then(notify).catch(() => {
-                    // Silently ignore stream read errors (will be handled by main response)
-                });
-            }).catch(() => {
-                // Silently ignore initial stream read errors (will be handled by main response)
-            });
-
-            // replace the original response with the new one
-            response = new Response(stream2, {
-                headers: res.headers,
-                status: res.status,
-                statusText: res.statusText,
-            });
+            response = multiplexStream(res);
         }
 
         switch (responseType) {
