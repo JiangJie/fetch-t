@@ -118,7 +118,7 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'stream';
-}): FetchResponse<ReadableStream<Uint8Array>, Error>;
+}): FetchResponse<ReadableStream<Uint8Array<ArrayBuffer>>, Error>;
 
 /**
  * Fetches a resource from the network and returns an abortable `FetchTask` with a generic `Response`.
