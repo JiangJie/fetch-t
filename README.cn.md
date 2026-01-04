@@ -8,7 +8,7 @@
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 
-类型安全的 Fetch API 封装，支持可中止请求、超时、进度追踪和 Rust 风格的 Result 错误处理。
+类型安全的 Fetch API 封装，支持可中止请求、超时、进度追踪、自动重试和 Rust 风格的 Result 错误处理。
 
 ---
 
@@ -23,6 +23,7 @@
 - **超时支持** - 指定毫秒数后自动中止请求
 - **进度追踪** - 通过 `onProgress` 回调监控下载进度
 - **数据流处理** - 通过 `onChunk` 回调访问原始数据块
+- **自动重试** - 通过 `retry` 选项配置失败重试策略
 - **Result 错误处理** - Rust 风格的 `Result` 类型实现显式错误处理
 - **跨平台** - 支持 Deno、Node.js、Bun 和浏览器
 
@@ -80,11 +81,26 @@ setTimeout(() => {
 const result = await task.response;
 ```
 
+### 自动重试
+
+```ts
+const result = await fetchT('https://api.example.com/data', {
+    retry: {
+        retries: 3,
+        delay: (attempt) => Math.min(1000 * Math.pow(2, attempt - 1), 10000),
+        when: [500, 502, 503, 504],
+        onRetry: (error, attempt) => console.log(`重试 ${attempt}: ${error.message}`),
+    },
+    responseType: 'json',
+});
+```
+
 ## 示例
 
 - [基础用法](examples/basic.ts) - 基本请求示例
 - [进度追踪](examples/with-progress.ts) - 下载进度和数据流处理
 - [可中止请求](examples/abortable.ts) - 取消和超时请求
+- [自动重试](examples/with-retry.ts) - 自动重试策略
 - [错误处理](examples/error-handling.ts) - 错误处理模式
 
 ## 许可证

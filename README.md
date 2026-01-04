@@ -8,7 +8,7 @@
 [![JSR Version](https://jsr.io/badges/@happy-ts/fetch-t)](https://jsr.io/@happy-ts/fetch-t)
 [![JSR Score](https://jsr.io/badges/@happy-ts/fetch-t/score)](https://jsr.io/@happy-ts/fetch-t/score)
 
-Type-safe Fetch API wrapper with abortable requests, timeout support, progress tracking, and Rust-like Result error handling.
+Type-safe Fetch API wrapper with abortable requests, timeout support, progress tracking, automatic retry, and Rust-like Result error handling.
 
 ---
 
@@ -23,6 +23,7 @@ Type-safe Fetch API wrapper with abortable requests, timeout support, progress t
 - **Timeout Support** - Auto-abort requests after specified milliseconds
 - **Progress Tracking** - Monitor download progress with `onProgress` callback
 - **Chunk Streaming** - Access raw data chunks via `onChunk` callback
+- **Automatic Retry** - Configurable retry strategies with `retry` option
 - **Result Error Handling** - Rust-like `Result` type for explicit error handling
 - **Cross-platform** - Works with Deno, Node.js, Bun, and browsers
 
@@ -80,11 +81,26 @@ setTimeout(() => {
 const result = await task.response;
 ```
 
+### Automatic Retry
+
+```ts
+const result = await fetchT('https://api.example.com/data', {
+    retry: {
+        retries: 3,
+        delay: (attempt) => Math.min(1000 * Math.pow(2, attempt - 1), 10000),
+        when: [500, 502, 503, 504],
+        onRetry: (error, attempt) => console.log(`Retry ${attempt}: ${error.message}`),
+    },
+    responseType: 'json',
+});
+```
+
 ## Examples
 
 - [Basic](examples/basic.ts) - Basic fetch requests
 - [Progress Tracking](examples/with-progress.ts) - Download progress and chunk streaming
 - [Abortable](examples/abortable.ts) - Cancel and timeout requests
+- [Retry](examples/with-retry.ts) - Automatic retry strategies
 - [Error Handling](examples/error-handling.ts) - Error handling patterns
 
 ## License

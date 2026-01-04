@@ -17,6 +17,9 @@ console.log();
 await import('./abortable.ts');
 console.log();
 
+await import('./with-retry.ts');
+console.log();
+
 await import('./error-handling.ts');
 
 console.log('\n╔════════════════════════════════════════╗');

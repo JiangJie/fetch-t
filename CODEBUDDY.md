@@ -6,9 +6,10 @@ This file provides guidance to CodeBuddy Code when working with code in this rep
 
 **fetchT** is a TypeScript library that wraps the native Fetch API with enhanced capabilities:
 - Abortable requests via `FetchTask.abort()`
-- Type-safe responses with `responseType` parameter ('text' | 'arraybuffer' | 'blob' | 'json')
+- Type-safe responses with `responseType` parameter ('text' | 'arraybuffer' | 'blob' | 'json' | 'stream')
 - Timeout support
 - Progress tracking with streaming
+- Automatic retry with configurable strategies
 - Rust-like Result type error handling via `happy-rusty` library
 
 Published to both NPM (@happy-ts/fetch-t) and JSR registries with support for Deno, Node, Bun, and browsers.
@@ -86,12 +87,13 @@ Documentation is hosted on GitHub Pages at https://jiangjie.github.io/fetch-t/
 │   ├── basic.ts             # Basic fetch requests
 │   ├── with-progress.ts     # Progress tracking examples
 │   ├── abortable.ts         # Abortable request examples
+│   ├── with-retry.ts        # Retry strategy examples
 │   └── error-handling.ts    # Error handling patterns
 ├── src/                      # Source code
 │   ├── fetch/
 │   │   ├── constants.ts      # Error constants (ABORT_ERROR, TIMEOUT_ERROR)
 │   │   ├── defines.ts        # All type definitions and interfaces
-│   │   └── fetch.ts          # Core implementation with 10 function overloads
+│   │   └── fetch.ts          # Core implementation with 12 function overloads
 │   └── mod.ts                # Public API entry point (re-exports)
 ├── tests/
 │   └── fetch.test.ts         # Vitest test suite with MSW mocking
@@ -119,16 +121,16 @@ src/
 └── fetch/
     ├── constants.ts          # Error constants (ABORT_ERROR, TIMEOUT_ERROR)
     ├── defines.ts            # All type definitions and interfaces
-    └── fetch.ts              # Core implementation with 10 function overloads
+    └── fetch.ts              # Core implementation with 12 function overloads
 ```
 
 ### Key Design Patterns
 
 1. **Type-Safe Function Overloads**
-   - The `fetchT` function has 10 distinct overloads to provide compile-time type safety
+   - The `fetchT` function has 12 distinct overloads to provide compile-time type safety
    - Return type varies based on `abortable` and `responseType` parameters
    - When `abortable: true`, returns `FetchTask<T>` instead of `FetchResponse<T>`
-   - Overloads cover all combinations: 4 response types × abortable/non-abortable + fallback overloads
+   - Overloads cover all combinations: 5 response types × abortable/non-abortable + fallback overloads
 
 2. **Result Monad Pattern**
    - Uses `happy-rusty` library's `Result` type for explicit error handling
@@ -144,12 +146,18 @@ src/
    - Creates a new Response object with the teed stream to maintain compatibility
 
 4. **Timeout Mechanism**
-   - Uses `AbortController` + `setTimeout` for timeout implementation
-   - Timer is automatically cancelled when response completes or fails
-   - Timeout errors are named `TIMEOUT_ERROR` for easy identification
-   - `cancelTimer` function ensures cleanup to prevent memory leaks
+   - Uses `AbortSignal.timeout()` for timeout implementation (modern browser API)
+   - Uses `AbortSignal.any()` to combine user abort signal with timeout signal
+   - Timeout errors are named `TimeoutError` (native DOMException)
 
-5. **Custom Error Handling**
+5. **Retry Mechanism**
+   - Configurable via `retry` option (number or `FetchRetryOptions` object)
+   - Supports static delay or exponential backoff via delay function
+   - Customizable retry conditions: network errors (default), specific HTTP status codes, or custom function
+   - `onRetry` callback for logging/metrics before each retry attempt
+   - User abort stops all retry attempts immediately
+
+6. **Custom Error Handling**
    - `FetchError` class extends Error with HTTP status codes
    - Constants for common error types: `ABORT_ERROR`, `TIMEOUT_ERROR`
    - Non-ok responses (e.g., 404, 500) return `Err(FetchError)` instead of throwing
@@ -166,17 +174,23 @@ src/
   - `abortable?: boolean` - Enable abort capability
   - `responseType?: FetchResponseType` - Specify return type
   - `timeout?: number` - Auto-abort after milliseconds
+  - `retry?: number | FetchRetryOptions` - Retry configuration
   - `onProgress?: (progressResult: IOResult<FetchProgress>) => void` - Track download progress
   - `onChunk?: (chunk: Uint8Array) => void` - Receive raw data chunks
+- `FetchRetryOptions` - Retry configuration:
+  - `retries?: number` - Number of retry attempts (default: 0)
+  - `delay?: number | ((attempt: number) => number)` - Delay between retries
+  - `when?: number[] | ((error: Error, attempt: number) => boolean)` - Retry conditions
+  - `onRetry?: (error: Error, attempt: number) => void` - Callback before retry
 - `FetchProgress` - Progress tracking with `totalByteLength` and `completedByteLength`
-- `FetchResponseType` - Union type: `'text' | 'arraybuffer' | 'blob' | 'json'`
+- `FetchResponseType` - Union type: `'text' | 'arraybuffer' | 'blob' | 'json' | 'stream'`
 - `FetchResponse<T, E>` - Type alias for `AsyncResult<T, E>` from happy-rusty
 - `FetchError` - Custom error class with `status: number` property for HTTP status codes
 
 ### Dependencies
 
 **Runtime:**
-- `happy-rusty` (^1.6.1) - Provides Result/AsyncResult types for functional error handling
+- `happy-rusty` (^1.8.0) - Provides Result/AsyncResult types for functional error handling
 - `tiny-invariant` (^1.3.3) - Runtime assertions and validation
 
 **Dev:**
@@ -185,8 +199,8 @@ src/
   - `vite-plugin-dts` (^4.5.4) - Bundles TypeScript definitions
 - Vitest (^4.0.16) - Test framework
   - `@vitest/coverage-v8` (^4.0.16) - Coverage provider
-- MSW (^2.12.4) - Mock Service Worker for API mocking in tests
-- ESLint (^9.39.2) + typescript-eslint (^8.50.0) - Linting
+- MSW (^2.12.7) - Mock Service Worker for API mocking in tests
+- ESLint (^9.39.2) + typescript-eslint (^8.51.0) - Linting
 - TypeDoc (^0.28.15) - Documentation generation
 
 **External dependencies are marked as external in vite.config.ts** - they are not bundled.
@@ -302,16 +316,16 @@ src/
 ### Progress Tracking Details
 - Requires `Content-Length` header to calculate progress
 - If header missing, calls `onProgress(Err(new Error('No content-length...')))` once
-- Compatible with both HTTP/1.1 and HTTP/2 (checks both header formats)
+- Uses case-insensitive header lookup (per HTTP spec)
 - Uses recursive promise chain for reading chunks
 - Progress calculation: `completedByteLength += value.byteLength`
 
 ### AbortController Behavior
-- Shared controller for both timeout and manual abort
-- Timeout abort passes custom Error with `name: TIMEOUT_ERROR`
-- Manual abort can pass any reason value
+- User abort controller created only when `abortable: true`
+- Timeout uses native `AbortSignal.timeout()` API
+- Multiple signals combined via `AbortSignal.any()`
+- Manual abort wraps non-Error reasons in Error with `name: ABORT_ERROR`
 - Signal is added to fetch `RequestInit` automatically
-- Controller only created when needed (`abortable: true` or `timeout` specified)
 
 ## Publishing
 
@@ -335,7 +349,7 @@ The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
 
 ## Known Issues & Gotchas
 
-1. **Progress tracking requires Content-Length header**: If the server doesn't send this header, progress tracking will fail (onProgress receives an Err). The code checks both `content-length` and `Content-Length` for HTTP/2 compatibility.
+1. **Progress tracking requires Content-Length header**: If the server doesn't send this header, progress tracking will fail (onProgress receives an Err). The `Headers.get()` method is case-insensitive per the HTTP spec.
 
 2. **Stream tee() limitation**: Progress/chunk callbacks add overhead due to stream splitting. Each chunk is read twice - once for tracking, once for parsing.
 
@@ -345,11 +359,13 @@ The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
 
 5. **happy-rusty Result API**: Use `isOk()`, `isErr()`, `unwrap()`, `unwrapErr()` methods. Note that `match()` method does NOT exist in happy-rusty.
 
+6. **Retry behavior**: By default, only network errors trigger retries. HTTP errors (4xx, 5xx) require explicit configuration via the `when` option in `FetchRetryOptions`.
+
 ## Key Files Reference
 
 ### Source Code
 - `src/mod.ts` - Main entry point (re-exports from fetch/)
-- `src/fetch/fetch.ts` - Core fetchT implementation function with 10 overloads
+- `src/fetch/fetch.ts` - Core fetchT implementation function with 12 overloads
 - `src/fetch/defines.ts` - All type definitions (FetchTask, FetchInit, FetchError, etc.)
 - `src/fetch/constants.ts` - Error constants (ABORT_ERROR, TIMEOUT_ERROR)
 
@@ -367,6 +383,7 @@ The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
 - `examples/basic.ts` - Basic usage examples
 - `examples/with-progress.ts` - Progress tracking examples
 - `examples/abortable.ts` - Abortable request examples
+- `examples/with-retry.ts` - Retry strategy examples
 - `examples/error-handling.ts` - Error handling examples
 
 ### CI/CD
