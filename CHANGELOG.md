@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2026-01-04
+
+### Fixed
+
+- Fix `ReadableStream<Uint8Array<ArrayBuffer>>` type parameter for abortable stream overload
+- Fix `ReadableStream` generic type parameter
+
+### Changed
+
+- Refactor `multiplexStream` as internal function of `fetchT` for better encapsulation
+- Use `Number.parseInt` instead of global `parseInt` for stricter linting compliance
+- Upgrade `happy-rusty` dependency to ^1.9.0
+
 ## [1.5.0] - 2026-01-04
 
 ### Added
@@ -143,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Timeout support
 - Rust-like Result type error handling via `happy-rusty` library
 
+[1.5.1]: https://github.com/JiangJie/fetch-t/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/JiangJie/fetch-t/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/JiangJie/fetch-t/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/JiangJie/fetch-t/compare/v1.3.3...v1.4.0
