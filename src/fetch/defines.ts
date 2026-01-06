@@ -336,7 +336,7 @@ export class FetchError extends Error {
     /**
      * The HTTP status code of the response (e.g., 404, 500).
      */
-    status = 0;
+    status: number;
 
     /**
      * Creates a new FetchError instance.
