@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ABORT_ERROR, FetchError, fetchT, TIMEOUT_ERROR, type FetchTask } from '../src/mod.ts';
 
 // Mock server setup
@@ -664,6 +664,47 @@ describe('fetchT', () => {
 
             const res = await fetchT(`${ baseUrl }/api/network-error`);
             expect(res.isErr()).toBe(true);
+        });
+
+        it('should silently ignore body.cancel() errors on non-ok response', async () => {
+            // This test verifies that the .catch() on response.body?.cancel() works correctly.
+            // We directly mock fetch to return a Response with a body that rejects on cancel.
+            let catchExecuted = false;
+
+            const mockStream = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(new TextEncoder().encode('error body'));
+                    controller.close();
+                },
+                cancel() {
+                    catchExecuted = true;
+                    return Promise.reject(new Error('Mock cancel error'));
+                },
+            });
+
+            const mockResponse = new Response(mockStream, {
+                status: 500,
+                statusText: 'Internal Server Error',
+            });
+
+            const originalFetch = globalThis.fetch;
+            globalThis.fetch = vi.fn().mockResolvedValue(mockResponse);
+
+            try {
+                const res = await fetchT('http://any-url.test/api/error');
+
+                // Should return FetchError without unhandled rejection
+                expect(res.isErr()).toBe(true);
+                const err = res.unwrapErr();
+                expect(err).toBeInstanceOf(FetchError);
+                expect((err as FetchError).status).toBe(500);
+
+                // Wait for the cancel promise rejection to be handled
+                await new Promise(resolve => setTimeout(resolve, 10));
+                expect(catchExecuted).toBe(true);
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
         });
     });
 

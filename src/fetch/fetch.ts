@@ -358,7 +358,10 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
             const response = await fetch(url, rest);
 
             if (!response.ok) {
-                await response.body?.cancel();
+                // Cancel the response body to free resources
+                response.body?.cancel().catch(() => {
+                    // Silently ignore stream cancel errors
+                });
                 return Err(new FetchError(response.statusText, response.status));
             }
 
