@@ -376,10 +376,8 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
      * Sets up progress tracking and chunk callbacks using a cloned response.
      * The original response is returned unchanged for further processing.
      */
-    const setupProgressCallbacks = (response: Response): void => {
-        const cloned = response.clone();
-        const reader = (cloned.body as ReadableStream<Uint8Array<ArrayBuffer>>).getReader();
-        let totalByteLength: number | null = null;
+    const setupProgressCallbacks = async (response: Response): Promise<void> => {
+        let totalByteLength: number | undefined;
         let completedByteLength = 0;
 
         if (onProgress) {
@@ -395,43 +393,33 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
             }
         }
 
-        reader.read().then(function notify({ done, value }) {
-            if (done) {
-                return;
-            }
+        const body = response.clone().body as ReadableStream<Uint8Array<ArrayBuffer>>;
 
-            if (onChunk) {
-                try {
-                    onChunk(value);
-                } catch {
-                    // Silently ignore user callback errors
+        try {
+            for await (const chunk of body) {
+                if (onChunk) {
+                    try {
+                        onChunk(chunk);
+                    } catch {
+                        // Silently ignore user callback errors
+                    }
+                }
+
+                if (onProgress && totalByteLength != null) {
+                    completedByteLength += chunk.byteLength;
+                    try {
+                        onProgress(Ok({
+                            totalByteLength,
+                            completedByteLength,
+                        }));
+                    } catch {
+                        // Silently ignore user callback errors
+                    }
                 }
             }
-
-            if (onProgress && totalByteLength != null) {
-                completedByteLength += value.byteLength;
-                try {
-                    onProgress(Ok({
-                        totalByteLength,
-                        completedByteLength,
-                    }));
-                } catch {
-                    // Silently ignore user callback errors
-                }
-            }
-
-            reader.read().then(notify).catch(() => {
-                // Cancel the stream to release resources on error
-                reader.cancel().catch(() => {
-                    // Ignore cancel error
-                });
-            });
-        }).catch(() => {
-            // Cancel the stream to release resources on initial read error
-            reader.cancel().catch(() => {
-                // Ignore cancel error
-            });
-        });
+        } catch {
+            // Silently ignore stream read errors
+        }
     };
 
     /**
