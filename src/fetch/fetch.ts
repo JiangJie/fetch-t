@@ -355,14 +355,14 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
         }
 
         try {
-            const res = await fetch(url, rest);
+            const response = await fetch(url, rest);
 
-            if (!res.ok) {
-                await res.body?.cancel();
-                return Err(new FetchError(res.statusText, res.status));
+            if (!response.ok) {
+                await response.body?.cancel();
+                return Err(new FetchError(response.statusText, response.status));
             }
 
-            return await processResponse(res);
+            return await processResponse(response);
         } catch (err) {
             return Err(err instanceof Error
                 ? err
@@ -373,23 +373,20 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
     };
 
     /**
-     * Multiplexes a response stream for progress tracking and chunk callbacks.
-     * Uses ReadableStream.tee() to split the stream into two:
-     * - One stream for progress/chunk notifications
-     * - Another stream for the response body
+     * Sets up progress tracking and chunk callbacks using a cloned response.
+     * The original response is returned unchanged for further processing.
      */
-    const multiplexStream = (res: Response): Response => {
-        const [notifyStream, responseStream] = (res.body as ReadableStream<Uint8Array<ArrayBuffer>>).tee();
-
-        const reader = notifyStream.getReader();
+    const setupProgressCallbacks = (response: Response): void => {
+        const cloned = response.clone();
+        const reader = (cloned.body as ReadableStream<Uint8Array<ArrayBuffer>>).getReader();
         let totalByteLength: number | null = null;
         let completedByteLength = 0;
 
         if (onProgress) {
-            const contentLength = res.headers.get('content-length');
+            const contentLength = response.headers.get('content-length');
             if (contentLength == null) {
                 try {
-                    onProgress(Err(new Error('No content-length in response headers.')));
+                    onProgress(Err(new Error('No content-length in response headers')));
                 } catch {
                     // Silently ignore user callback errors
                 }
@@ -435,23 +432,15 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
                 // Ignore cancel error
             });
         });
-
-        return new Response(responseStream, {
-            headers: res.headers,
-            status: res.status,
-            statusText: res.statusText,
-        });
     };
 
     /**
      * Processes the response based on responseType and callbacks.
      */
-    const processResponse = async (res: Response): AsyncResult<FetchResponseData, Error> => {
-        let response = res;
-
-        // Multiplex stream for progress/chunk callbacks if needed
-        if (res.body && (onProgress || onChunk)) {
-            response = multiplexStream(res);
+    const processResponse = async (response: Response): AsyncResult<FetchResponseData, Error> => {
+        // Setup progress/chunk callbacks if needed (uses cloned response internally)
+        if (response.body && (onProgress || onChunk)) {
+            setupProgressCallbacks(response);
         }
 
         switch (responseType) {
@@ -487,7 +476,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
                 return Ok(response.body);
             }
             default: {
-                // default return the Response object
+                // default return the original Response object to preserve all metadata
                 return Ok(response);
             }
         }
