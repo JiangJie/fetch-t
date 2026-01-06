@@ -5,11 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.1] - 2026-01-04
+## [1.6.0] - 2026-01-06
 
 ### Added
 
 - Add `'bytes'` responseType to return `Uint8Array` via `Response.bytes()` (with fallback for older environments)
+
+### Changed
+
+- Refactor signal handling: extract `configureSignal()` function to ensure fresh timeout signal on retries
+- Refactor progress tracking to use `response.clone()` instead of `stream.tee()`
+- Simplify `setupProgressCallbacks` with `for-await-of` loop
+- Use `AsyncIOResult` type alias for internal consistency
+- Use stricter `Uint8Array<ArrayBuffer>` typing throughout
+- Upgrade `typescript-eslint` to ^8.52.0
+
+### Fixed
+
+- Fix `body.cancel()` rejection handling on non-ok responses
+- Fix stream reader cancellation on error to release resources
+- Fix `json` and `stream` responseType to return `null` for empty body
+
+## [1.5.1] - 2026-01-04
 
 ### Fixed
 
@@ -160,6 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Timeout support
 - Rust-like Result type error handling via `happy-rusty` library
 
+[1.6.0]: https://github.com/JiangJie/fetch-t/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/JiangJie/fetch-t/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/JiangJie/fetch-t/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/JiangJie/fetch-t/compare/v1.4.0...v1.4.1
