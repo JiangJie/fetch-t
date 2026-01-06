@@ -69,6 +69,11 @@ const server = setupServer(
         return new HttpResponse(null, { status: 500, statusText: 'Internal Server Error' });
     }),
 
+    // DELETE /api/data - returns 204 No Content
+    http.delete('http://mock.test/api/data', () => {
+        return new HttpResponse(null, { status: 204 });
+    }),
+
     // GET /api/invalid-json - returns invalid JSON
     http.get('http://mock.test/api/invalid-json', () => {
         return new HttpResponse('<html>Not JSON</html>', {
@@ -250,6 +255,16 @@ describe('fetchT', () => {
             expect(data.byteLength).toBe(5);
             expect(data[0]).toBe(1);
             expect(data[4]).toBe(5);
+        });
+
+        it('should return null stream for HEAD request with stream responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'HEAD',
+                responseType: 'stream',
+            });
+            expect(result.isOk()).toBe(true);
+            // HEAD response has no body, so stream is null
+            expect(result.unwrap()).toBeNull();
         });
     });
 

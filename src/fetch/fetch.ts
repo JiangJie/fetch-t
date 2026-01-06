@@ -1,7 +1,7 @@
 import { Err, Ok, type AsyncResult } from 'happy-rusty';
 import invariant from 'tiny-invariant';
 import { ABORT_ERROR } from './constants.ts';
-import { FetchError, type FetchInit, type FetchResponse, type FetchRetryOptions, type FetchTask } from './defines.ts';
+import { FetchError, type FetchInit, type FetchResponse, type FetchResponseData, type FetchRetryOptions, type FetchTask } from './defines.ts';
 
 /**
  * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
@@ -258,7 +258,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchResponse<Respo
  *     responseType: 'json',
  * });
  */
-export function fetchT(url: string | URL, init?: FetchInit): FetchTask<unknown> | FetchResponse<unknown> {
+export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResponseData> | FetchResponse<FetchResponseData> {
     // Fast path: most URLs are passed as strings
     if (typeof url !== 'string') {
         invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }`);
@@ -325,7 +325,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<unknown> 
     /**
      * Performs a single fetch attempt with optional timeout.
      */
-    const doFetch = async (): AsyncResult<unknown, Error> => {
+    const doFetch = async (): AsyncResult<FetchResponseData, Error> => {
         const signals: AbortSignal[] = [];
 
         if (userController) {
@@ -428,7 +428,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<unknown> 
     /**
      * Processes the response based on responseType and callbacks.
      */
-    const processResponse = async (res: Response): AsyncResult<unknown, Error> => {
+    const processResponse = async (res: Response): AsyncResult<FetchResponseData, Error> => {
         let response = res;
 
         // Multiplex stream for progress/chunk callbacks if needed
@@ -438,36 +438,36 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<unknown> 
 
         switch (responseType) {
             case 'arraybuffer': {
-                return Ok(await response.arrayBuffer() as unknown);
+                return Ok(await response.arrayBuffer());
             }
             case 'blob': {
-                return Ok(await response.blob() as unknown);
+                return Ok(await response.blob());
             }
             case 'bytes': {
                 // Use native bytes() if available, otherwise fallback to arrayBuffer()
                 if (typeof response.bytes === 'function') {
-                    return Ok(await response.bytes() as unknown);
+                    return Ok(await response.bytes());
                 }
                 // Fallback for older environments
                 const buffer = await response.arrayBuffer();
-                return Ok(new Uint8Array(buffer) as unknown);
+                return Ok(new Uint8Array(buffer));
             }
             case 'json': {
                 try {
-                    return Ok(await response.json() as unknown);
+                    return Ok(await response.json());
                 } catch {
                     return Err(new Error('Response is invalid json while responseType is json'));
                 }
             }
             case 'stream': {
-                return Ok(response.body as unknown);
+                return Ok(response.body);
             }
             case 'text': {
-                return Ok(await response.text() as unknown);
+                return Ok(await response.text());
             }
             default: {
                 // default return the Response object
-                return Ok(response as unknown);
+                return Ok(response);
             }
         }
     };
@@ -475,7 +475,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<unknown> 
     /**
      * Performs fetch with retry logic.
      */
-    const fetchWithRetry = async (): FetchResponse<unknown, Error> => {
+    const fetchWithRetry = async (): FetchResponse<FetchResponseData, Error> => {
         let lastError: Error | undefined;
         let attempt = 0;
 
@@ -541,7 +541,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<unknown> 
                 return userController.signal.aborted;
             },
 
-            get response(): FetchResponse<unknown> {
+            get response(): FetchResponse<FetchResponseData> {
                 return response;
             },
         };
