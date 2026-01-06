@@ -57,7 +57,7 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
  * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'stream'`.
- * @returns A `FetchTask` representing the abortable operation with a `ReadableStream<Uint8Array>` response.
+ * @returns A `FetchTask` representing the abortable operation with a `ReadableStream<Uint8Array<ArrayBuffer>>` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
@@ -65,16 +65,16 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchTask<ReadableStream<Uint8Array<ArrayBuffer>>>;
 
 /**
- * Fetches a resource from the network as a Uint8Array and returns an abortable `FetchTask`.
+ * Fetches a resource from the network as a Uint8Array<ArrayBuffer> and returns an abortable `FetchTask`.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
  * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'bytes'`.
- * @returns A `FetchTask` representing the abortable operation with a `Uint8Array` response.
+ * @returns A `FetchTask` representing the abortable operation with a `Uint8Array<ArrayBuffer>` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'bytes';
-}): FetchTask<Uint8Array>;
+}): FetchTask<Uint8Array<ArrayBuffer>>;
 
 /**
  * Fetches a resource from the network as a text string.
@@ -126,22 +126,22 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
  * @param init - Additional options for the fetch operation, must include `responseType: 'stream'`.
- * @returns A `FetchResponse` representing the operation with a `ReadableStream<Uint8Array>` response.
+ * @returns A `FetchResponse` representing the operation with a `ReadableStream<Uint8Array<ArrayBuffer>>` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'stream';
 }): FetchResponse<ReadableStream<Uint8Array<ArrayBuffer>>, Error>;
 
 /**
- * Fetches a resource from the network as a Uint8Array.
+ * Fetches a resource from the network as a Uint8Array<ArrayBuffer>.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
  * @param init - Additional options for the fetch operation, must include `responseType: 'bytes'`.
- * @returns A `FetchResponse` representing the operation with a `Uint8Array` response.
+ * @returns A `FetchResponse` representing the operation with a `Uint8Array<ArrayBuffer>` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'bytes';
-}): FetchResponse<Uint8Array, Error>;
+}): FetchResponse<Uint8Array<ArrayBuffer>, Error>;
 
 /**
  * Fetches a resource from the network and returns an abortable `FetchTask` with a generic `Response`.

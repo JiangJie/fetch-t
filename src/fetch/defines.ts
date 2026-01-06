@@ -94,7 +94,7 @@ export interface FetchTask<T> {
  * - `'text'` - Parse response as string via `Response.text()`
  * - `'json'` - Parse response as JSON via `Response.json()`
  * - `'arraybuffer'` - Parse response as ArrayBuffer via `Response.arrayBuffer()`
- * - `'bytes'` - Parse response as Uint8Array via `Response.bytes()` (with fallback for older environments)
+ * - `'bytes'` - Parse response as Uint8Array<ArrayBuffer> via `Response.bytes()` (with fallback for older environments)
  * - `'blob'` - Parse response as Blob via `Response.blob()`
  * - `'stream'` - Return the raw `ReadableStream` for streaming processing
  *
@@ -230,9 +230,9 @@ export interface FetchInit extends RequestInit {
      * - `'text'` - Returns `string`
      * - `'json'` - Returns parsed JSON (type `T`)
      * - `'arraybuffer'` - Returns `ArrayBuffer`
-     * - `'bytes'` - Returns `Uint8Array` (with fallback for older environments)
+     * - `'bytes'` - Returns `Uint8Array<ArrayBuffer>` (with fallback for older environments)
      * - `'blob'` - Returns `Blob`
-     * - `'stream'` - Returns `ReadableStream<Uint8Array>`
+     * - `'stream'` - Returns `ReadableStream<Uint8Array<ArrayBuffer>>`
      * - `undefined` - Returns raw `Response` object
      */
     responseType?: FetchResponseType;
@@ -285,11 +285,11 @@ export interface FetchInit extends RequestInit {
      * Callback invoked when a chunk of data is received.
      *
      * Useful for streaming or processing data as it arrives.
-     * Each chunk is a `Uint8Array` containing the raw bytes.
+     * Each chunk is a `Uint8Array<ArrayBuffer>` containing the raw bytes.
      *
      * @param chunk - The raw data chunk received from the response stream.
      */
-    onChunk?: (chunk: Uint8Array) => void;
+    onChunk?: (chunk: Uint8Array<ArrayBuffer>) => void;
 }
 
 /**
