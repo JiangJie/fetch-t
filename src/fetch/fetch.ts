@@ -295,6 +295,9 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
         ...rest
     } = fetchInit;
 
+    // Preserve user's original signal before modifications (rest.signal will be reassigned in setSignal)
+    const userSignal = rest.signal;
+
     // User controller for manual abort (stops all retries)
     let userController: AbortController | undefined;
     if (abortable) {
@@ -335,10 +338,22 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
     };
 
     /**
-     * Performs a single fetch attempt with optional timeout.
+     * Configures the abort signal for a fetch attempt.
+     *
+     * Combines multiple signals:
+     * - User's external signal (from init.signal)
+     * - Internal abort controller signal (for abortable requests)
+     * - Timeout signal (creates a new one each call for per-attempt timeout)
+     *
+     * Must be called before each fetch attempt to ensure fresh timeout signal on retries.
      */
-    const doFetch = async (): AsyncIOResult<FetchResponseData> => {
+    const configureSignal = (): void => {
         const signals: AbortSignal[] = [];
+
+        // Merge user's signal from init (if provided)
+        if (userSignal) {
+            signals.push(userSignal);
+        }
 
         if (userController) {
             signals.push(userController.signal);
@@ -348,11 +363,19 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
             signals.push(AbortSignal.timeout(timeout));
         }
 
+        // Combine all signals
         if (signals.length > 0) {
             rest.signal = signals.length === 1
                 ? signals[0]
                 : AbortSignal.any(signals);
         }
+    };
+
+    /**
+     * Performs a single fetch attempt with optional timeout.
+     */
+    const doFetch = async (): AsyncIOResult<FetchResponseData> => {
+        configureSignal();
 
         try {
             const response = await fetch(url, rest);
@@ -520,6 +543,9 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
         } while (attempt <= retries && shouldRetry(lastError, attempt));
 
         // No more retries or should not retry
+        // lastError is guaranteed to be defined here because:
+        // 1. do...while loop executes at least once
+        // 2. We only reach here if result.isErr()
         return Err(lastError);
     };
 
