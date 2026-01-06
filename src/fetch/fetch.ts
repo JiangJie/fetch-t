@@ -1,4 +1,4 @@
-import { Err, Ok, type AsyncResult } from 'happy-rusty';
+import { Err, Ok, type AsyncIOResult } from 'happy-rusty';
 import invariant from 'tiny-invariant';
 import { ABORT_ERROR } from './constants.ts';
 import { FetchError, type FetchInit, type FetchResponse, type FetchRetryOptions, type FetchTask } from './defines.ts';
@@ -337,7 +337,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
     /**
      * Performs a single fetch attempt with optional timeout.
      */
-    const doFetch = async (): AsyncResult<FetchResponseData, Error> => {
+    const doFetch = async (): AsyncIOResult<FetchResponseData> => {
         const signals: AbortSignal[] = [];
 
         if (userController) {
@@ -425,7 +425,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
     /**
      * Processes the response based on responseType and callbacks.
      */
-    const processResponse = async (response: Response): AsyncResult<FetchResponseData, Error> => {
+    const processResponse = async (response: Response): AsyncIOResult<FetchResponseData> => {
         // Setup progress/chunk callbacks if needed (uses cloned response internally)
         if (response.body && (onProgress || onChunk)) {
             setupProgressCallbacks(response);
