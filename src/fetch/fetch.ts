@@ -424,10 +424,16 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
             }
 
             reader.read().then(notify).catch(() => {
-                // Silently ignore stream read errors
+                // Cancel the stream to release resources on error
+                reader.cancel().catch(() => {
+                    // Ignore cancel error
+                });
             });
         }).catch(() => {
-            // Silently ignore initial stream read errors
+            // Cancel the stream to release resources on initial read error
+            reader.cancel().catch(() => {
+                // Ignore cancel error
+            });
         });
 
         return new Response(responseStream, {
