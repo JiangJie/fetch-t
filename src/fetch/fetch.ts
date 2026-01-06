@@ -258,7 +258,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchResponse<Respo
  *     responseType: 'json',
  * });
  */
-export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | FetchResponse<T> {
+export function fetchT(url: string | URL, init?: FetchInit): FetchTask<unknown> | FetchResponse<unknown> {
     // Fast path: most URLs are passed as strings
     if (typeof url !== 'string') {
         invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }`);
@@ -325,7 +325,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     /**
      * Performs a single fetch attempt with optional timeout.
      */
-    const doFetch = async (): AsyncResult<T, Error> => {
+    const doFetch = async (): AsyncResult<unknown, Error> => {
         const signals: AbortSignal[] = [];
 
         if (userController) {
@@ -428,7 +428,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     /**
      * Processes the response based on responseType and callbacks.
      */
-    const processResponse = async (res: Response): AsyncResult<T, Error> => {
+    const processResponse = async (res: Response): AsyncResult<unknown, Error> => {
         let response = res;
 
         // Multiplex stream for progress/chunk callbacks if needed
@@ -438,36 +438,36 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
 
         switch (responseType) {
             case 'arraybuffer': {
-                return Ok(await response.arrayBuffer() as T);
+                return Ok(await response.arrayBuffer() as unknown);
             }
             case 'blob': {
-                return Ok(await response.blob() as T);
+                return Ok(await response.blob() as unknown);
             }
             case 'bytes': {
                 // Use native bytes() if available, otherwise fallback to arrayBuffer()
                 if (typeof response.bytes === 'function') {
-                    return Ok(await response.bytes() as T);
+                    return Ok(await response.bytes() as unknown);
                 }
                 // Fallback for older environments
                 const buffer = await response.arrayBuffer();
-                return Ok(new Uint8Array(buffer) as T);
+                return Ok(new Uint8Array(buffer) as unknown);
             }
             case 'json': {
                 try {
-                    return Ok(await response.json() as T);
+                    return Ok(await response.json() as unknown);
                 } catch {
                     return Err(new Error('Response is invalid json while responseType is json'));
                 }
             }
             case 'stream': {
-                return Ok(response.body as T);
+                return Ok(response.body as unknown);
             }
             case 'text': {
-                return Ok(await response.text() as T);
+                return Ok(await response.text() as unknown);
             }
             default: {
                 // default return the Response object
-                return Ok(response as T);
+                return Ok(response as unknown);
             }
         }
     };
@@ -475,7 +475,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
     /**
      * Performs fetch with retry logic.
      */
-    const fetchWithRetry = async (): FetchResponse<T, Error> => {
+    const fetchWithRetry = async (): FetchResponse<unknown, Error> => {
         let lastError: Error | undefined;
         let attempt = 0;
 
@@ -541,7 +541,7 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
                 return userController.signal.aborted;
             },
 
-            get response(): FetchResponse<T> {
+            get response(): FetchResponse<unknown> {
                 return response;
             },
         };
