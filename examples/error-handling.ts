@@ -91,7 +91,11 @@ async function comprehensiveErrorHandling() {
         });
 
         if (result.isOk()) {
-            return { success: true as const, data: result.unwrap() };
+            const data = result.unwrap();
+            if (data == null) {
+                return { success: false as const, errorType: 'no_body', message: 'Response has no body' };
+            }
+            return { success: true as const, data };
         }
 
         const err = result.unwrapErr();
@@ -194,7 +198,13 @@ async function builtInRetry() {
         responseType: 'json',
     });
     result1
-        .inspect((post) => console.log('  Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('  No body');
+                return;
+            }
+            console.log('  Got post:', post.id);
+        })
         .inspectErr((err) => console.log('  Error:', err.message));
 
     // Retry with static delay
@@ -207,7 +217,13 @@ async function builtInRetry() {
         responseType: 'json',
     });
     result2
-        .inspect((post) => console.log('  Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('  No body');
+                return;
+            }
+            console.log('  Got post:', post.id);
+        })
         .inspectErr((err) => console.log('  Error:', err.message));
 
     // Retry with exponential backoff
@@ -224,7 +240,13 @@ async function builtInRetry() {
         responseType: 'json',
     });
     result3
-        .inspect((post) => console.log('  Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('  No body');
+                return;
+            }
+            console.log('  Got post:', post.id);
+        })
         .inspectErr((err) => console.log('  Error:', err.message));
 
     // Retry on specific HTTP status codes
@@ -237,7 +259,13 @@ async function builtInRetry() {
         responseType: 'json',
     });
     result4
-        .inspect((post) => console.log('  Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('  No body');
+                return;
+            }
+            console.log('  Got post:', post.id);
+        })
         .inspectErr((err) => console.log('  Error:', err.message));
 
     // Retry with custom condition
@@ -258,7 +286,13 @@ async function builtInRetry() {
         responseType: 'json',
     });
     result5
-        .inspect((post) => console.log('  Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('  No body');
+                return;
+            }
+            console.log('  Got post:', post.id);
+        })
         .inspectErr((err) => console.log('  Error:', err.message));
 
     // Retry with onRetry callback for logging
@@ -274,7 +308,13 @@ async function builtInRetry() {
         responseType: 'json',
     });
     result6
-        .inspect((post) => console.log('  Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('  No body');
+                return;
+            }
+            console.log('  Got post:', post.id);
+        })
         .inspectErr((err) => console.log('  Error:', err.message));
 
     // Retry with timeout per attempt
@@ -289,7 +329,13 @@ async function builtInRetry() {
         responseType: 'json',
     });
     result7
-        .inspect((post) => console.log('  Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('  No body');
+                return;
+            }
+            console.log('  Got post:', post.id);
+        })
         .inspectErr((err) => console.log('  Error:', err.message));
 }
 
@@ -312,11 +358,16 @@ async function resultChaining() {
 
     // Chain operations on the result
     const processed = result
-        .map((post) => ({
-            id: post.id,
-            title: post.title.toUpperCase(),
-            preview: post.body.substring(0, 50) + '...',
-        }))
+        .map((post) => {
+            if (post == null) {
+                throw new Error('Response has no body');
+            }
+            return {
+                id: post.id,
+                title: post.title.toUpperCase(),
+                preview: post.body.substring(0, 50) + '...',
+            };
+        })
         .mapErr((err) => new Error(`Failed to fetch post: ${err.message}`));
 
     processed
@@ -353,14 +404,14 @@ async function unwrapWithDefault() {
     });
 
     // Use unwrapOr to get a default value on error
-    const post = result.unwrapOr(defaultPost);
+    const post = result.unwrapOr(defaultPost) ?? defaultPost;
     console.log('Post title:', post.title);
 
     // Or use unwrapOrElse for lazy evaluation
     const post2 = result.unwrapOrElse((err) => {
         console.log('Using default because:', err.message);
         return defaultPost;
-    });
+    }) ?? defaultPost;
     console.log('Post2 title:', post2.title);
 }
 

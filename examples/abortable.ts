@@ -30,6 +30,10 @@ async function manualAbort() {
 
     result
         .inspect((data) => {
+            if (data == null) {
+                console.log('No body');
+                return;
+            }
             console.log('Got', (data as unknown[]).length, 'posts');
         })
         .inspectErr((err) => {
@@ -80,6 +84,10 @@ async function timeoutAbort() {
 
     result
         .inspect((data) => {
+            if (data == null) {
+                console.log('No body');
+                return;
+            }
             console.log('Got', (data as unknown[]).length, 'posts (request was fast!)');
         })
         .inspectErr((err) => {
@@ -122,6 +130,10 @@ async function conditionalAbort() {
 
     result
         .inspect((data) => {
+            if (data == null) {
+                console.log('No body');
+                return;
+            }
             console.log(`Got ${(data as unknown[]).length} posts in ${elapsed}ms`);
         })
         .inspectErr((err) => {
@@ -160,6 +172,10 @@ async function raceRequests() {
 
     winner.result
         .inspect((data) => {
+            if (data == null) {
+                console.log('No body');
+                return;
+            }
             console.log(`Winner: ${winner.name} with ${(data as unknown[]).length} items`);
         })
         .inspectErr((err) => {
@@ -227,6 +243,10 @@ async function abortableStream() {
 
     if (result.isOk()) {
         const stream = result.unwrap();
+        if (!stream) {
+            console.log('No body (stream is null)');
+            return;
+        }
         const reader = stream.getReader();
         let totalBytes = 0;
 

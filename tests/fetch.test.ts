@@ -158,6 +158,14 @@ afterAll(() => server.close());
 describe('fetchT', () => {
     const baseUrl = 'http://mock.test';
 
+    function expectNonNull<T>(value: T | null): T {
+        expect(value).not.toBeNull();
+        if (value == null) {
+            throw new Error('Expected non-null response body');
+        }
+        return value;
+    }
+
     // ============ URL Validation Tests ============
     describe('URL validation', () => {
         it('should throw error for invalid url', () => {
@@ -211,9 +219,9 @@ describe('fetchT', () => {
         });
 
         it('should get json by responseType', async () => {
-            const data = (await fetchT<{ id: number; }>(`${ baseUrl }/api/data`, {
+            const data = expectNonNull((await fetchT<{ id: number; }>(`${ baseUrl }/api/data`, {
                 responseType: 'json',
-            })).unwrap();
+            })).unwrap());
             expect(data.id).toBe(1);
             expect(data).toHaveProperty('title');
         });
@@ -231,7 +239,7 @@ describe('fetchT', () => {
                 responseType: 'stream',
             });
             expect(result.isOk()).toBe(true);
-            const stream = result.unwrap();
+            const stream = expectNonNull(result.unwrap());
             expect(stream).toBeInstanceOf(ReadableStream);
 
             const reader = stream.getReader();
@@ -257,6 +265,31 @@ describe('fetchT', () => {
             expect(data[4]).toBe(5);
         });
 
+        it('should fallback to arrayBuffer when bytes() is not available', async () => {
+            // Save original
+            const originalBytes = Response.prototype.bytes;
+
+            // Mock bytes as undefined to test fallback path
+            // @ts-expect-error - intentionally removing bytes method
+            Response.prototype.bytes = undefined;
+
+            try {
+                const result = await fetchT(`${ baseUrl }/api/binary`, {
+                    responseType: 'bytes',
+                });
+
+                expect(result.isOk()).toBe(true);
+                const data = result.unwrap();
+                expect(data).toBeInstanceOf(Uint8Array);
+                expect(data.byteLength).toBe(5);
+                expect(data[0]).toBe(1);
+                expect(data[4]).toBe(5);
+            } finally {
+                // Restore
+                Response.prototype.bytes = originalBytes;
+            }
+        });
+
         it('should return null stream for HEAD request with stream responseType', async () => {
             const result = await fetchT(`${ baseUrl }/api/data`, {
                 method: 'HEAD',
@@ -264,6 +297,24 @@ describe('fetchT', () => {
             });
             expect(result.isOk()).toBe(true);
             // HEAD response has no body, so stream is null
+            expect(result.unwrap()).toBeNull();
+        });
+
+        it('should return null json for HEAD request with json responseType', async () => {
+            const result = await fetchT<{ id: number; }>(`${ baseUrl }/api/data`, {
+                method: 'HEAD',
+                responseType: 'json',
+            });
+            expect(result.isOk()).toBe(true);
+            expect(result.unwrap()).toBeNull();
+        });
+
+        it('should return null json for 204 response with json responseType', async () => {
+            const result = await fetchT<{ ok: boolean; }>(`${ baseUrl }/api/data`, {
+                method: 'DELETE',
+                responseType: 'json',
+            });
+            expect(result.isOk()).toBe(true);
             expect(result.unwrap()).toBeNull();
         });
     });
@@ -286,12 +337,12 @@ describe('fetchT', () => {
         });
 
         it('should support POST method', async () => {
-            const data = (await fetchT<{ received: { title: string; }; }>(`${ baseUrl }/api/data`, {
+            const data = expectNonNull((await fetchT<{ received: { title: string; }; }>(`${ baseUrl }/api/data`, {
                 responseType: 'json',
                 method: 'POST',
                 body: JSON.stringify({ title: 'test-post' }),
                 headers: { 'Content-Type': 'application/json' },
-            })).unwrap();
+            })).unwrap());
 
             expect(data.received.title).toBe('test-post');
         });
@@ -659,7 +710,7 @@ describe('fetchT', () => {
 
             const res = await fetchTask.response;
             expect(res.isOk()).toBe(true);
-            expect(res.unwrap().id).toBe(1);
+            expect(expectNonNull(res.unwrap()).id).toBe(1);
         });
 
         it('should return FetchTask<ReadableStream> for stream responseType', async () => {
@@ -797,7 +848,7 @@ describe('fetchT', () => {
             });
 
             expect(res.isOk()).toBe(true);
-            expect(res.unwrap().success).toBe(true);
+            expect(expectNonNull(res.unwrap()).success).toBe(true);
             expect(attemptCount).toBe(3);
         });
 
@@ -845,7 +896,7 @@ describe('fetchT', () => {
             });
 
             expect(res.isOk()).toBe(true);
-            expect(res.unwrap().success).toBe(true);
+            expect(expectNonNull(res.unwrap()).success).toBe(true);
             expect(attemptCount).toBe(3);
         });
 
@@ -896,7 +947,7 @@ describe('fetchT', () => {
             });
 
             expect(res.isOk()).toBe(true);
-            expect(res.unwrap().success).toBe(true);
+            expect(expectNonNull(res.unwrap()).success).toBe(true);
             expect(attemptCount).toBe(2);
         });
 
@@ -1069,7 +1120,7 @@ describe('fetchT', () => {
             });
 
             expect(res.isOk()).toBe(true);
-            expect(res.unwrap().success).toBe(true);
+            expect(expectNonNull(res.unwrap()).success).toBe(true);
             expect(attemptCount).toBe(2);
         });
 
@@ -1204,7 +1255,7 @@ describe('fetchT', () => {
         it('should abort on second attempt if aborted during first attempt', async () => {
             let attemptCount = 0;
             // eslint-disable-next-line prefer-const
-            let task: FetchTask<{ success: boolean; }>;
+            let task: FetchTask<{ success: boolean; } | null>;
 
             server.use(
                 http.get('http://mock.test/api/retry-abort-second', async () => {
@@ -1273,7 +1324,7 @@ describe('fetchT', () => {
             // The key is to abort AFTER first attempt completes but BEFORE second doFetch begins
             let attemptCount = 0;
             // eslint-disable-next-line prefer-const
-            let task: FetchTask<{ success: boolean; }>;
+            let task: FetchTask<{ success: boolean; } | null>;
 
             server.use(
                 http.get('http://mock.test/api/retry-abort-before-dofetch', async () => {
@@ -1317,8 +1368,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
             let onRetryCalled = false;
             let retryOnCallCount = 0;
-            let taskRef: FetchTask<{ success: boolean; }> | null = null;
-
+            let taskRef: FetchTask<{ success: boolean; } | null> | null = null;
             server.use(
                 http.get('http://mock.test/api/retry-abort-at-loop-start', () => {
                     attemptCount++;

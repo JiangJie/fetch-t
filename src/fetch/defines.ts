@@ -112,27 +112,6 @@ export interface FetchTask<T> {
 export type FetchResponseType = 'text' | 'arraybuffer' | 'blob' | 'json' | 'bytes' | 'stream';
 
 /**
- * Union type of all possible fetchT response data types.
- *
- * This represents the actual types that can be returned based on `responseType`:
- * - `string` - when `responseType: 'text'`
- * - `ArrayBuffer` - when `responseType: 'arraybuffer'`
- * - `Blob` - when `responseType: 'blob'`
- * - `Uint8Array<ArrayBuffer>` - when `responseType: 'bytes'`
- * - `ReadableStream<Uint8Array<ArrayBuffer>>` - when `responseType: 'stream'`
- * - `Response` - when `responseType` is not specified
- * - `unknown` - when `responseType: 'json'` (user-defined type)
- */
-export type FetchResponseData =
-    | string
-    | ArrayBuffer
-    | Blob
-    | Uint8Array<ArrayBuffer>
-    | ReadableStream<Uint8Array<ArrayBuffer>> | null
-    | Response
-    | unknown;
-
-/**
  * Represents the download progress of a fetch operation.
  *
  * Passed to the `onProgress` callback when tracking download progress.

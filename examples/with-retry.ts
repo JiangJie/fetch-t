@@ -29,7 +29,13 @@ async function basicRetry() {
     });
 
     result
-        .inspect((post) => console.log('Got post:', post.id, '-', post.title.substring(0, 30)))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('No body');
+                return;
+            }
+            console.log('Got post:', post.id, '-', post.title.substring(0, 30));
+        })
         .inspectErr((err) => console.log('Error:', err.message));
 }
 
@@ -48,7 +54,13 @@ async function retryWithDelay() {
     });
 
     result
-        .inspect((post) => console.log('Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('No body');
+                return;
+            }
+            console.log('Got post:', post.id);
+        })
         .inspectErr((err) => console.log('Error:', err.message));
 }
 
@@ -72,7 +84,13 @@ async function retryWithExponentialBackoff() {
     });
 
     result
-        .inspect((post) => console.log('Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('No body');
+                return;
+            }
+            console.log('Got post:', post.id);
+        })
         .inspectErr((err) => console.log('Error:', err.message));
 }
 
@@ -93,7 +111,13 @@ async function retryOnHttpStatusCodes() {
     });
 
     result
-        .inspect((post) => console.log('Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('No body');
+                return;
+            }
+            console.log('Got post:', post.id);
+        })
         .inspectErr((err) => {
             if (err instanceof FetchError) {
                 console.log(`HTTP ${err.status}: ${err.message}`);
@@ -139,7 +163,13 @@ async function retryWithCustomCondition() {
     });
 
     result
-        .inspect((post) => console.log('Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('No body');
+                return;
+            }
+            console.log('Got post:', post.id);
+        })
         .inspectErr((err) => console.log('Final error:', err.message));
 }
 
@@ -165,7 +195,13 @@ async function retryWithCallback() {
 
     const elapsed = Date.now() - startTime;
     result
-        .inspect((post) => console.log(`[${elapsed}ms] Success! Got post:`, post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log(`[${elapsed}ms] No body`);
+                return;
+            }
+            console.log(`[${elapsed}ms] Success! Got post:`, post.id);
+        })
         .inspectErr((err) => console.log(`[${elapsed}ms] All retries failed:`, err.message));
 }
 
@@ -189,7 +225,13 @@ async function retryWithTimeout() {
     });
 
     result
-        .inspect((post) => console.log('Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('No body');
+                return;
+            }
+            console.log('Got post:', post.id);
+        })
         .inspectErr((err) => console.log('Error:', err.message));
 }
 
@@ -222,7 +264,13 @@ async function retryWithAbortable() {
 
     const result = await task.response;
     result
-        .inspect((post) => console.log('Got post:', post.id))
+        .inspect((post) => {
+            if (post == null) {
+                console.log('No body');
+                return;
+            }
+            console.log('Got post:', post.id);
+        })
         .inspectErr((err) => {
             if (err.name === ABORT_ERROR) {
                 console.log('Request was cancelled by user');

@@ -1,7 +1,19 @@
 import { Err, Ok, type AsyncResult } from 'happy-rusty';
 import invariant from 'tiny-invariant';
 import { ABORT_ERROR } from './constants.ts';
-import { FetchError, type FetchInit, type FetchResponse, type FetchResponseData, type FetchRetryOptions, type FetchTask } from './defines.ts';
+import { FetchError, type FetchInit, type FetchResponse, type FetchRetryOptions, type FetchTask } from './defines.ts';
+
+/**
+ * Union type of all possible fetchT response data types.
+ * Internal type used only in the implementation signature.
+ */
+type FetchResponseData =
+    | string
+    | ArrayBuffer
+    | Blob
+    | Uint8Array<ArrayBuffer>
+    | ReadableStream<Uint8Array<ArrayBuffer>> | null
+    | Response;
 
 /**
  * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
@@ -50,7 +62,7 @@ export function fetchT(url: string | URL, init: FetchInit & {
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'json';
-}): FetchTask<T>;
+}): FetchTask<T | null>;
 
 /**
  * Fetches a resource from the network as a ReadableStream and returns an abortable `FetchTask`.
@@ -62,7 +74,7 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
 export function fetchT(url: string | URL, init: FetchInit & {
     abortable: true;
     responseType: 'stream';
-}): FetchTask<ReadableStream<Uint8Array<ArrayBuffer>>>;
+}): FetchTask<ReadableStream<Uint8Array<ArrayBuffer>> | null>;
 
 /**
  * Fetches a resource from the network as a Uint8Array<ArrayBuffer> and returns an abortable `FetchTask`.
@@ -119,7 +131,7 @@ export function fetchT(url: string | URL, init: FetchInit & {
  */
 export function fetchT<T>(url: string | URL, init: FetchInit & {
     responseType: 'json';
-}): FetchResponse<T, Error>;
+}): FetchResponse<T | null, Error>;
 
 /**
  * Fetches a resource from the network as a ReadableStream.
@@ -130,7 +142,7 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
  */
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'stream';
-}): FetchResponse<ReadableStream<Uint8Array<ArrayBuffer>>, Error>;
+}): FetchResponse<ReadableStream<Uint8Array<ArrayBuffer>> | null, Error>;
 
 /**
  * Fetches a resource from the network as a Uint8Array<ArrayBuffer>.
@@ -437,11 +449,19 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
         }
 
         switch (responseType) {
-            case 'arraybuffer': {
-                return Ok(await response.arrayBuffer());
+            case 'json': {
+                // Align with stream behavior: no body yields Ok(null)
+                if (response.body == null) {
+                    return Ok(null);
+                }
+                try {
+                    return Ok(await response.json());
+                } catch {
+                    return Err(new Error('Response is invalid json while responseType is json'));
+                }
             }
-            case 'blob': {
-                return Ok(await response.blob());
+            case 'text': {
+                return Ok(await response.text());
             }
             case 'bytes': {
                 // Use native bytes() if available, otherwise fallback to arrayBuffer()
@@ -449,21 +469,16 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
                     return Ok(await response.bytes());
                 }
                 // Fallback for older environments
-                const buffer = await response.arrayBuffer();
-                return Ok(new Uint8Array(buffer));
+                return Ok(new Uint8Array(await response.arrayBuffer()));
             }
-            case 'json': {
-                try {
-                    return Ok(await response.json());
-                } catch {
-                    return Err(new Error('Response is invalid json while responseType is json'));
-                }
+            case 'arraybuffer': {
+                return Ok(await response.arrayBuffer());
+            }
+            case 'blob': {
+                return Ok(await response.blob());
             }
             case 'stream': {
                 return Ok(response.body);
-            }
-            case 'text': {
-                return Ok(await response.text());
             }
             default: {
                 // default return the Response object

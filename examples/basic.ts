@@ -21,6 +21,10 @@ async function fetchJson() {
 
     result
         .inspect((data) => {
+            if (data == null) {
+                console.log('No body');
+                return;
+            }
             console.log('Post title:', (data as { title: string; }).title);
         })
         .inspectErr((err) => {
@@ -68,6 +72,10 @@ async function postJson() {
 
     result
         .inspect((data) => {
+            if (data == null) {
+                console.log('No body');
+                return;
+            }
             console.log('Created post with id:', (data as { id: number; }).id);
         })
         .inspectErr((err) => {
@@ -124,6 +132,10 @@ async function fetchStream() {
 
     if (result.isOk()) {
         const stream = result.unwrap();
+        if (!stream) {
+            console.log('No body (stream is null)');
+            return;
+        }
         const reader = stream.getReader();
         let totalBytes = 0;
 

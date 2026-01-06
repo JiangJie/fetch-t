@@ -35,6 +35,10 @@ async function trackProgress() {
 
     result
         .inspect((data) => {
+            if (data == null) {
+                console.log('No body');
+                return;
+            }
             console.log('Downloaded', (data as unknown[]).length, 'photos');
         })
         .inspectErr((err) => {
