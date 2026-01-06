@@ -6,7 +6,7 @@ This file provides guidance to CodeBuddy Code when working with code in this rep
 
 **fetchT** is a TypeScript library that wraps the native Fetch API with enhanced capabilities:
 - Abortable requests via `FetchTask.abort()`
-- Type-safe responses with `responseType` parameter ('text' | 'arraybuffer' | 'blob' | 'json' | 'stream')
+- Type-safe responses with `responseType` parameter ('text' | 'arraybuffer' | 'blob' | 'json' | 'bytes' | 'stream')
 - Timeout support
 - Progress tracking with streaming
 - Automatic retry with configurable strategies

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.1] - 2026-01-04
 
+### Added
+
+- Add `'bytes'` responseType to return `Uint8Array` via `Response.bytes()` (with fallback for older environments)
+
 ### Fixed
 
 - Fix `ReadableStream<Uint8Array<ArrayBuffer>>` type parameter for abortable stream overload

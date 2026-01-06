@@ -19,7 +19,7 @@
 ## 特性
 
 - **可中止请求** - 随时通过 `FetchTask.abort()` 取消请求
-- **类型安全响应** - 通过 `responseType` 参数指定返回类型
+- **类型安全响应** - 通过 `responseType` 参数指定返回类型 (`text`, `json`, `arraybuffer`, `bytes`, `blob`, `stream`)
 - **超时支持** - 指定毫秒数后自动中止请求
 - **进度追踪** - 通过 `onProgress` 回调监控下载进度
 - **数据流处理** - 通过 `onChunk` 回调访问原始数据块

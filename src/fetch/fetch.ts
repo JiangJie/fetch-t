@@ -65,6 +65,18 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchTask<ReadableStream<Uint8Array<ArrayBuffer>>>;
 
 /**
+ * Fetches a resource from the network as a Uint8Array and returns an abortable `FetchTask`.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, must include `abortable: true` and `responseType: 'bytes'`.
+ * @returns A `FetchTask` representing the abortable operation with a `Uint8Array` response.
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    abortable: true;
+    responseType: 'bytes';
+}): FetchTask<Uint8Array>;
+
+/**
  * Fetches a resource from the network as a text string.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
@@ -119,6 +131,17 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
 export function fetchT(url: string | URL, init: FetchInit & {
     responseType: 'stream';
 }): FetchResponse<ReadableStream<Uint8Array<ArrayBuffer>>, Error>;
+
+/**
+ * Fetches a resource from the network as a Uint8Array.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'bytes'`.
+ * @returns A `FetchResponse` representing the operation with a `Uint8Array` response.
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    responseType: 'bytes';
+}): FetchResponse<Uint8Array, Error>;
 
 /**
  * Fetches a resource from the network and returns an abortable `FetchTask` with a generic `Response`.
@@ -420,6 +443,15 @@ export function fetchT<T>(url: string | URL, init?: FetchInit): FetchTask<T> | F
             case 'blob': {
                 return Ok(await response.blob() as T);
             }
+            case 'bytes': {
+                // Use native bytes() if available, otherwise fallback to arrayBuffer()
+                if (typeof response.bytes === 'function') {
+                    return Ok(await response.bytes() as T);
+                }
+                // Fallback for older environments
+                const buffer = await response.arrayBuffer();
+                return Ok(new Uint8Array(buffer) as T);
+            }
             case 'json': {
                 try {
                     return Ok(await response.json() as T);
@@ -553,7 +585,7 @@ function validateOptions(init: FetchInit): ParsedRetryOptions {
     } = init;
 
     if (responseType != null) {
-        const validTypes = ['text', 'arraybuffer', 'blob', 'json', 'stream'];
+        const validTypes = ['text', 'arraybuffer', 'blob', 'json', 'bytes', 'stream'];
         invariant(validTypes.includes(responseType), () => `responseType must be one of ${ validTypes.join(', ') } but received ${ responseType }`);
     }
 

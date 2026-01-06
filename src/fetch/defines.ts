@@ -94,6 +94,7 @@ export interface FetchTask<T> {
  * - `'text'` - Parse response as string via `Response.text()`
  * - `'json'` - Parse response as JSON via `Response.json()`
  * - `'arraybuffer'` - Parse response as ArrayBuffer via `Response.arrayBuffer()`
+ * - `'bytes'` - Parse response as Uint8Array via `Response.bytes()` (with fallback for older environments)
  * - `'blob'` - Parse response as Blob via `Response.blob()`
  * - `'stream'` - Return the raw `ReadableStream` for streaming processing
  *
@@ -108,7 +109,7 @@ export interface FetchTask<T> {
  * const result = await fetchT('https://api.example.com/data', { responseType });
  * ```
  */
-export type FetchResponseType = 'text' | 'arraybuffer' | 'blob' | 'json' | 'stream';
+export type FetchResponseType = 'text' | 'arraybuffer' | 'blob' | 'json' | 'bytes' | 'stream';
 
 /**
  * Represents the download progress of a fetch operation.
@@ -229,6 +230,7 @@ export interface FetchInit extends RequestInit {
      * - `'text'` - Returns `string`
      * - `'json'` - Returns parsed JSON (type `T`)
      * - `'arraybuffer'` - Returns `ArrayBuffer`
+     * - `'bytes'` - Returns `Uint8Array` (with fallback for older environments)
      * - `'blob'` - Returns `Blob`
      * - `'stream'` - Returns `ReadableStream<Uint8Array>`
      * - `undefined` - Returns raw `Response` object

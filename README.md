@@ -19,7 +19,7 @@ Type-safe Fetch API wrapper with abortable requests, timeout support, progress t
 ## Features
 
 - **Abortable Requests** - Cancel requests anytime via `FetchTask.abort()`
-- **Type-safe Responses** - Specify return type with `responseType` parameter
+- **Type-safe Responses** - Specify return type with `responseType` parameter (`text`, `json`, `arraybuffer`, `bytes`, `blob`, `stream`)
 - **Timeout Support** - Auto-abort requests after specified milliseconds
 - **Progress Tracking** - Monitor download progress with `onProgress` callback
 - **Chunk Streaming** - Access raw data chunks via `onChunk` callback

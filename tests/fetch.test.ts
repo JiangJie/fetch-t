@@ -241,6 +241,16 @@ describe('fetchT', () => {
 
             expect(text).toBe('Hello Stream');
         });
+
+        it('should get bytes (Uint8Array) by responseType', async () => {
+            const data = (await fetchT(`${ baseUrl }/api/binary`, {
+                responseType: 'bytes',
+            })).unwrap();
+            expect(data).toBeInstanceOf(Uint8Array);
+            expect(data.byteLength).toBe(5);
+            expect(data[0]).toBe(1);
+            expect(data[4]).toBe(5);
+        });
     });
 
     // ============ HTTP Methods Tests ============
@@ -650,6 +660,19 @@ describe('fetchT', () => {
 
             // Clean up stream
             stream?.cancel().catch(() => {});
+        });
+
+        it('should return FetchTask<Uint8Array> for bytes responseType', async () => {
+            const fetchTask = fetchT(`${ baseUrl }/api/binary`, {
+                abortable: true,
+                responseType: 'bytes',
+            });
+
+            const res = await fetchTask.response;
+            expect(res.isOk()).toBe(true);
+            const data = res.unwrap();
+            expect(data).toBeInstanceOf(Uint8Array);
+            expect(data.byteLength).toBe(5);
         });
     });
 
