@@ -2,6 +2,31 @@
 import type { AsyncResult, IOResult } from 'happy-rusty';
 
 /**
+ * Union type of all possible fetchT response data types.
+ *
+ * Used when `responseType` is a dynamic string value rather than a literal type,
+ * as the exact return type cannot be determined at compile time.
+ *
+ * @example
+ * ```typescript
+ * import { fetchT, type FetchResponseData } from '@happy-ts/fetch-t';
+ *
+ * // When responseType is dynamic, return type is FetchResponseData
+ * const responseType = getResponseType(); // returns string
+ * const result = await fetchT('https://api.example.com/data', { responseType });
+ * // result is Result<FetchResponseData, Error>
+ * ```
+ */
+export type FetchResponseData =
+    | string
+    | ArrayBuffer
+    | Blob
+    | Uint8Array<ArrayBuffer>
+    | ReadableStream<Uint8Array<ArrayBuffer>>
+    | Response
+    | null;
+
+/**
  * Represents the response of a fetch operation as an async Result type.
  *
  * This is an alias for `AsyncResult<T, E>` from the `happy-rusty` library,
@@ -234,6 +259,9 @@ export interface FetchInit extends RequestInit {
      * - `'blob'` - Returns `Blob`
      * - `'stream'` - Returns `ReadableStream<Uint8Array<ArrayBuffer>>`
      * - `undefined` - Returns raw `Response` object
+     *
+     * When using a dynamic string value (not a literal type), the return type
+     * will be `FetchResponseData` (union of all possible types).
      */
     responseType?: FetchResponseType;
 

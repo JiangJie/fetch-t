@@ -1,19 +1,7 @@
 import { Err, Ok, type AsyncIOResult } from 'happy-rusty';
 import invariant from 'tiny-invariant';
 import { ABORT_ERROR } from './constants.ts';
-import { FetchError, type FetchInit, type FetchResponse, type FetchRetryOptions, type FetchTask } from './defines.ts';
-
-/**
- * Union type of all possible fetchT response data types.
- * Internal type used only in the implementation signature.
- */
-type FetchResponseData =
-    | string
-    | ArrayBuffer
-    | Blob
-    | Uint8Array<ArrayBuffer>
-    | ReadableStream<Uint8Array<ArrayBuffer>> | null
-    | Response;
+import { FetchError, type FetchInit, type FetchResponse, type FetchResponseData, type FetchResponseType, type FetchRetryOptions, type FetchTask } from './defines.ts';
 
 /**
  * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
@@ -89,13 +77,28 @@ export function fetchT(url: string | URL, init: FetchInit & {
 }): FetchTask<Uint8Array<ArrayBuffer>>;
 
 /**
+ * Fetches a resource from the network and returns an abortable `FetchTask` with a dynamic response type.
+ *
+ * Use this overload when `responseType` is a `FetchResponseType` union type.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation, must include `abortable: true` and a `FetchResponseType`.
+ * @returns A `FetchTask` representing the abortable operation with a `FetchResponseData` response.
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    abortable: true;
+    responseType: FetchResponseType;
+}): FetchTask<FetchResponseData>;
+
+/**
  * Fetches a resource from the network as a text string.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, must include `responseType: 'text'`.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'text'` and `abortable` must be `false` or omitted.
  * @returns A `FetchResponse` representing the operation with a `string` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
+    abortable?: false;
     responseType: 'text';
 }): FetchResponse<string, Error>;
 
@@ -103,10 +106,11 @@ export function fetchT(url: string | URL, init: FetchInit & {
  * Fetches a resource from the network as an ArrayBuffer.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, must include `responseType: 'arraybuffer'`.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'arraybuffer'` and `abortable` must be `false` or omitted.
  * @returns A `FetchResponse` representing the operation with an `ArrayBuffer` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
+    abortable?: false;
     responseType: 'arraybuffer';
 }): FetchResponse<ArrayBuffer, Error>;
 
@@ -114,10 +118,11 @@ export function fetchT(url: string | URL, init: FetchInit & {
  * Fetches a resource from the network as a Blob.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, must include `responseType: 'blob'`.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'blob'` and `abortable` must be `false` or omitted.
  * @returns A `FetchResponse` representing the operation with a `Blob` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
+    abortable?: false;
     responseType: 'blob';
 }): FetchResponse<Blob, Error>;
 
@@ -126,10 +131,11 @@ export function fetchT(url: string | URL, init: FetchInit & {
  *
  * @typeParam T - The expected type of the parsed JSON data.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, must include `responseType: 'json'`.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'json'` and `abortable` must be `false` or omitted.
  * @returns A `FetchResponse` representing the operation with a response parsed as type `T`.
  */
 export function fetchT<T>(url: string | URL, init: FetchInit & {
+    abortable?: false;
     responseType: 'json';
 }): FetchResponse<T | null, Error>;
 
@@ -137,10 +143,11 @@ export function fetchT<T>(url: string | URL, init: FetchInit & {
  * Fetches a resource from the network as a ReadableStream.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, must include `responseType: 'stream'`.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'stream'` and `abortable` must be `false` or omitted.
  * @returns A `FetchResponse` representing the operation with a `ReadableStream<Uint8Array<ArrayBuffer>>` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
+    abortable?: false;
     responseType: 'stream';
 }): FetchResponse<ReadableStream<Uint8Array<ArrayBuffer>> | null, Error>;
 
@@ -148,12 +155,27 @@ export function fetchT(url: string | URL, init: FetchInit & {
  * Fetches a resource from the network as a Uint8Array<ArrayBuffer>.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Additional options for the fetch operation, must include `responseType: 'bytes'`.
+ * @param init - Additional options for the fetch operation, must include `responseType: 'bytes'` and `abortable` must be `false` or omitted.
  * @returns A `FetchResponse` representing the operation with a `Uint8Array<ArrayBuffer>` response.
  */
 export function fetchT(url: string | URL, init: FetchInit & {
+    abortable?: false;
     responseType: 'bytes';
 }): FetchResponse<Uint8Array<ArrayBuffer>, Error>;
+
+/**
+ * Fetches a resource from the network with a dynamic response type (non-abortable).
+ *
+ * Use this overload when `responseType` is a `FetchResponseType` union type.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Additional options for the fetch operation with a `FetchResponseType`, and `abortable` must be `false` or omitted.
+ * @returns A `FetchResponse` representing the operation with a `FetchResponseData` response.
+ */
+export function fetchT(url: string | URL, init: FetchInit & {
+    abortable?: false;
+    responseType: FetchResponseType;
+}): FetchResponse<FetchResponseData, Error>;
 
 /**
  * Fetches a resource from the network and returns an abortable `FetchTask` with a generic `Response`.
@@ -170,10 +192,12 @@ export function fetchT(url: string | URL, init: FetchInit & {
  * Fetches a resource from the network and returns a `FetchResponse` with a generic `Response` object.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
- * @param init - Optional additional options for the fetch operation.
+ * @param init - Optional additional options for the fetch operation, and `abortable` must be `false` or omitted.
  * @returns A `FetchResponse` representing the operation with a `Response` object.
  */
-export function fetchT(url: string | URL, init?: FetchInit): FetchResponse<Response>;
+export function fetchT(url: string | URL, init?: FetchInit & {
+    abortable?: false;
+}): FetchResponse<Response>;
 
 /**
  * Enhanced fetch function that wraps the native Fetch API with additional capabilities.

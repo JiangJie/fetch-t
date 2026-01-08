@@ -422,7 +422,8 @@ describe('fetchT', () => {
         });
 
         it('should throw error for invalid responseType', () => {
-            // @ts-expect-error Testing invalid responseType
+            // Runtime validation throws for invalid responseType values
+            // @ts-expect-error Testing invalid responseType literal (should be compile-time error now)
             expect(() => fetchT(`${ baseUrl }/api/data`, { responseType: 'invalid' })).toThrow(/responseType must be one of/);
         });
 
