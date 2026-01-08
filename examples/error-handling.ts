@@ -5,7 +5,7 @@
  * Or with Deno: deno run --allow-net examples/error-handling.ts
  */
 
-import { fetchT, FetchError, ABORT_ERROR, TIMEOUT_ERROR } from '../src/mod.ts';
+import { ABORT_ERROR, FetchError, fetchT, TIMEOUT_ERROR } from '../src/mod.ts';
 
 const API_BASE = 'https://jsonplaceholder.typicode.com';
 
@@ -365,7 +365,7 @@ async function resultChaining() {
             return {
                 id: post.id,
                 title: post.title.toUpperCase(),
-                preview: post.body.substring(0, 50) + '...',
+                preview: `${ post.body.substring(0, 50) }...`,
             };
         })
         .mapErr((err) => new Error(`Failed to fetch post: ${err.message}`));
