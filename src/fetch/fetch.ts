@@ -4,6 +4,30 @@ import { ABORT_ERROR } from './constants.ts';
 import { FetchError, type FetchInit, type FetchResponse, type FetchResponseData, type FetchResponseType, type FetchRetryOptions, type FetchTask } from './defines.ts';
 
 /**
+ * Validates and parses a URL string or URL object.
+ * In browser environments, relative URLs are resolved against `location.href`.
+ * In non-browser environments (Node/Deno/Bun), only absolute URLs are valid.
+ *
+ * @param url - The URL to validate, either a string or URL object.
+ * @returns The parsed URL object.
+ * @throws {TypeError} If the URL is invalid or cannot be parsed.
+ */
+function validateUrl(url: string | URL): URL {
+    if (url instanceof URL) {
+        return url;
+    }
+
+    try {
+        // In browser, use location.href as base for relative URLs
+        // In Node/Deno/Bun, location is undefined, so relative URLs will fail
+        const base = typeof location !== 'undefined' ? location.href : undefined;
+        return new URL(url, base);
+    } catch {
+        throw new TypeError(`Invalid URL: ${ url }`);
+    }
+}
+
+/**
  * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
  *
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
@@ -295,10 +319,8 @@ export function fetchT(url: string | URL, init?: FetchInit & {
  * });
  */
 export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResponseData> | FetchResponse<FetchResponseData> {
-    // Fast path: most URLs are passed as strings
-    if (typeof url !== 'string') {
-        invariant(url instanceof URL, () => `Url must be a string or URL object but received ${ url }`);
-    }
+    // Validate and parse URL
+    const parsedUrl = validateUrl(url);
 
     const fetchInit = init ?? {};
 
@@ -402,7 +424,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
         configureSignal();
 
         try {
-            const response = await fetch(url, rest);
+            const response = await fetch(parsedUrl, rest);
 
             if (!response.ok) {
                 // Cancel the response body to free resources
