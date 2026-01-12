@@ -435,13 +435,16 @@ describe('fetchT', () => {
         });
 
         it('should throw error for invalid timeout', () => {
-            expect(() => fetchT(`${ baseUrl }/api/data`, { timeout: -1 })).toThrow();
+            // @ts-expect-error Testing invalid timeout type
+            expect(() => fetchT(`${ baseUrl }/api/data`, { timeout: 'invalid' })).toThrow(/timeout must be a number/);
+            expect(() => fetchT(`${ baseUrl }/api/data`, { timeout: -1 })).toThrow(/timeout must be a number greater than 0/);
+            expect(() => fetchT(`${ baseUrl }/api/data`, { timeout: 0 })).toThrow(/timeout must be a number greater than 0/);
         });
 
         it('should throw error for invalid retries', () => {
-            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: -1 })).toThrow(/Retry count must be a non-negative integer/);
-            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: 1.5 })).toThrow(/Retry count must be a non-negative integer/);
-            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: -1 } })).toThrow(/Retry count must be a non-negative integer/);
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: -1 })).toThrow(/Retry count must be non-negative/);
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: 1.5 })).toThrow(/Retry count must be an integer/);
+            expect(() => fetchT(`${ baseUrl }/api/data`, { retry: { retries: -1 } })).toThrow(/Retry count must be non-negative/);
         });
 
         it('should throw error for invalid responseType', () => {

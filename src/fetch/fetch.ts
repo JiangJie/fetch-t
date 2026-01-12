@@ -1,5 +1,4 @@
 import { Err, Ok, type AsyncIOResult } from 'happy-rusty';
-import invariant from 'tiny-invariant';
 import { ABORT_ERROR } from './constants.ts';
 import { FetchError, type FetchInit, type FetchResponse, type FetchResponseData, type FetchResponseType, type FetchRetryOptions, type FetchTask } from './defines.ts';
 
@@ -635,19 +634,30 @@ function validateOptions(init: FetchInit): ParsedRetryOptions {
 
     if (responseType != null) {
         const validTypes = ['text', 'arraybuffer', 'blob', 'json', 'bytes', 'stream'];
-        invariant(validTypes.includes(responseType), () => `responseType must be one of ${ validTypes.join(', ') } but received ${ responseType }`);
+        if (!validTypes.includes(responseType)) {
+            throw new TypeError(`responseType must be one of ${ validTypes.join(', ') } but received ${ responseType }`);
+        }
     }
 
     if (timeout != null) {
-        invariant(typeof timeout === 'number' && timeout > 0, () => `timeout must be a number greater than 0 but received ${ timeout }`);
+        if (typeof timeout !== 'number') {
+            throw new TypeError(`timeout must be a number but received ${ typeof timeout }`);
+        }
+        if (timeout <= 0) {
+            throw new Error(`timeout must be a number greater than 0 but received ${ timeout }`);
+        }
     }
 
     if (onProgress != null) {
-        invariant(typeof onProgress === 'function', () => `onProgress callback must be a function but received ${ typeof onProgress }`);
+        if (typeof onProgress !== 'function') {
+            throw new TypeError(`onProgress callback must be a function but received ${ typeof onProgress }`);
+        }
     }
 
     if (onChunk != null) {
-        invariant(typeof onChunk === 'function', () => `onChunk callback must be a function but received ${ typeof onChunk }`);
+        if (typeof onChunk !== 'function') {
+            throw new TypeError(`onChunk callback must be a function but received ${ typeof onChunk }`);
+        }
     }
 
     // Parse retry options
@@ -665,20 +675,33 @@ function validateOptions(init: FetchInit): ParsedRetryOptions {
         onRetry = retryOptions.onRetry;
     }
 
-    invariant(Number.isInteger(retries) && retries >= 0, () => `Retry count must be a non-negative integer but received ${ retries }`);
+    if (!Number.isInteger(retries)) {
+        throw new TypeError(`Retry count must be an integer but received ${ retries }`);
+    }
+    if (retries < 0) {
+        throw new Error(`Retry count must be non-negative but received ${ retries }`);
+    }
 
     if (typeof delay === 'number') {
-        invariant(delay >= 0, () => `Retry delay must be a non-negative number but received ${ delay }`);
+        if (delay < 0) {
+            throw new Error(`Retry delay must be a non-negative number but received ${ delay }`);
+        }
     } else {
-        invariant(typeof delay === 'function', () => `Retry delay must be a number or a function but received ${ typeof delay }`);
+        if (typeof delay !== 'function') {
+            throw new TypeError(`Retry delay must be a number or a function but received ${ typeof delay }`);
+        }
     }
 
     if (when != null) {
-        invariant(Array.isArray(when) || typeof when === 'function', () => `Retry when condition must be an array of status codes or a function but received ${ typeof when }`);
+        if (!Array.isArray(when) && typeof when !== 'function') {
+            throw new TypeError(`Retry when condition must be an array of status codes or a function but received ${ typeof when }`);
+        }
     }
 
     if (onRetry != null) {
-        invariant(typeof onRetry === 'function', () => `Retry onRetry callback must be a function but received ${ typeof onRetry }`);
+        if (typeof onRetry !== 'function') {
+            throw new TypeError(`Retry onRetry callback must be a function but received ${ typeof onRetry }`);
+        }
     }
 
     return { retries, delay, when, onRetry };
