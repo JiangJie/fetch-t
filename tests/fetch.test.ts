@@ -168,9 +168,32 @@ describe('fetchT', () => {
 
     // ============ URL Validation Tests ============
     describe('URL validation', () => {
-        it('should throw error for invalid url', () => {
+        it('should throw error for invalid url type', () => {
             const url = {};
             expect(() => fetchT(url as string)).toThrow();
+        });
+
+        it('should throw TypeError for invalid URL string', () => {
+            expect(() => fetchT('not a valid url')).toThrow(TypeError);
+            expect(() => fetchT('not a valid url')).toThrow('Invalid URL: not a valid url');
+        });
+
+        it('should throw TypeError for relative URL in non-browser environment', () => {
+            expect(() => fetchT('/api/data')).toThrow(TypeError);
+            expect(() => fetchT('/api/data')).toThrow('Invalid URL: /api/data');
+        });
+
+        it('should resolve relative URL in browser environment', async () => {
+            // Simulate browser location
+            vi.stubGlobal('location', { href: `${ baseUrl }/page` });
+
+            try {
+                const res = await fetchT('/api/data');
+                expect(res.isOk()).toBe(true);
+                res.unwrap().body?.cancel();
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
 
         it('should accept URL object', async () => {
