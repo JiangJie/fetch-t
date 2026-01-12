@@ -191,7 +191,6 @@ src/
 
 **Runtime:**
 - `happy-rusty` (^1.8.0) - Provides Result/AsyncResult types for functional error handling
-- `tiny-invariant` (^1.3.3) - Runtime assertions and validation
 
 **Dev:**
 - TypeScript (^5.9.3) - Type checking and compilation
@@ -215,7 +214,7 @@ src/
   - `target: 'esnext'` - Modern JavaScript output
   - `minify: false` - No minification for library
   - `sourcemap: true` - Source maps enabled
-- **External dependencies:** happy-rusty, tiny-invariant (not bundled)
+- **External dependencies:** happy-rusty (not bundled)
 - **Tree shaking:** Set to 'smallest' for optimal bundle size
 - **Output formats:** Both CommonJS (.cjs) and ES Module (.mjs)
 
@@ -300,7 +299,7 @@ src/
 ## Implementation Details
 
 ### fetchT Function Flow
-1. **URL validation**: Uses `tiny-invariant` to ensure URL is string or URL object
+1. **URL validation**: Validates URL is string or URL object, throws TypeError for invalid URLs
 2. **Options destructuring**: Extracts custom options from FetchInit
 3. **Abort controller setup**: Creates controller if abortable or timeout specified
 4. **Fetch execution**: Calls native fetch with processed options

@@ -28,7 +28,6 @@ export default defineConfig({
             ],
             external: [
                 'happy-rusty',
-                'tiny-invariant',
             ],
             treeshake: 'smallest',
         },
