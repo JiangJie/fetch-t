@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-01-12
+
+### Added
+
+- Add URL validation with browser relative path support
+  - Validates URLs upfront before calling `fetch`
+  - Supports relative URLs in browser environments (using `location.href` as base)
+  - Throws `TypeError` with unified message for invalid URLs in non-browser environments
+
 ## [1.7.0] - 2026-01-08
 
 ### Added
@@ -190,6 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Timeout support
 - Rust-like Result type error handling via `happy-rusty` library
 
+[1.8.0]: https://github.com/JiangJie/fetch-t/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/JiangJie/fetch-t/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/JiangJie/fetch-t/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/JiangJie/fetch-t/compare/v1.5.0...v1.5.1

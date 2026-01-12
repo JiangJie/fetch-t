@@ -3,7 +3,7 @@
   "description": "Type-safe Fetch API wrapper with abortable requests, timeout support, progress tracking, automatic retry, and Rust-like Result error handling.",
   "author": "jiang115jie@gmail.com",
   "license": "MIT",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "type": "module",
   "main": "dist/main.cjs",
   "module": "dist/main.mjs",
