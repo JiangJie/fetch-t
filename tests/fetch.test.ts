@@ -137,6 +137,16 @@ const server = setupServer(
             },
         });
     }),
+
+    // GET /api/204 - returns 204 No Content for GET request
+    http.get('http://mock.test/api/204', () => {
+        return new HttpResponse(null, { status: 204 });
+    }),
+
+    // GET /api/empty - returns 200 with empty body
+    http.get('http://mock.test/api/empty', () => {
+        return new HttpResponse(null, { status: 200 });
+    }),
 );
 
 // Retry test state - track attempt counts per endpoint
@@ -430,6 +440,22 @@ describe('fetchT', () => {
         it('should return null stream for 204 response with stream responseType', async () => {
             const result = await fetchT(`${ baseUrl }/api/data`, {
                 method: 'DELETE',
+                responseType: 'stream',
+            });
+            expect(result.isOk()).toBe(true);
+            expect(result.unwrap()).toBeNull();
+        });
+
+        it('should return null stream for GET 204 response with stream responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/204`, {
+                responseType: 'stream',
+            });
+            expect(result.isOk()).toBe(true);
+            expect(result.unwrap()).toBeNull();
+        });
+
+        it('should return null stream for GET 200 empty body with stream responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/empty`, {
                 responseType: 'stream',
             });
             expect(result.isOk()).toBe(true);
