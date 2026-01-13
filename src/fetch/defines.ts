@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { AsyncResult, IOResult } from 'happy-rusty';
+import type { AsyncIOResult, IOResult } from 'happy-rusty';
 
 /**
  * Union type of all possible fetchT response data types.
@@ -27,30 +26,29 @@ export type FetchResponseData =
     | null;
 
 /**
- * Represents the response of a fetch operation as an async Result type.
+ * Represents the result of a fetch operation as an async Result type.
  *
- * This is an alias for `AsyncResult<T, E>` from the `happy-rusty` library,
+ * This is an alias for `AsyncIOResult<T>` from the `happy-rusty` library,
  * providing Rust-like error handling without throwing exceptions.
  *
  * @typeParam T - The type of the data expected in a successful response.
- * @typeParam E - The type of the error (defaults to `any`). Typically `Error` or `FetchError`.
  *
  * @example
  * ```typescript
- * import { fetchT, type FetchResponse } from '@happy-ts/fetch-t';
+ * import { fetchT, type FetchResult } from '@happy-ts/fetch-t';
  *
- * // FetchResponse is a Promise that resolves to Result<T, E>
- * const response: FetchResponse<string> = fetchT('https://api.example.com', {
+ * // FetchResult is a Promise that resolves to Result<T, Error>
+ * const result: FetchResult<string> = fetchT('https://api.example.com', {
  *     responseType: 'text',
  * });
  *
- * const result = await response;
- * result
+ * const res = await result;
+ * res
  *     .inspect((text) => console.log('Success:', text))
  *     .inspectErr((err) => console.error('Error:', err));
  * ```
  */
-export type FetchResponse<T, E = any> = AsyncResult<T, E>;
+export type FetchResult<T> = AsyncIOResult<T>;
 
 /**
  * Represents an abortable fetch operation with control methods.
@@ -96,6 +94,7 @@ export interface FetchTask<T> {
      * @param reason - An optional value indicating why the task was aborted.
      *                 This can be an Error, string, or any other value.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     abort(reason?: any): void;
 
     /**
@@ -110,7 +109,7 @@ export interface FetchTask<T> {
      *
      * Resolves to `Ok<T>` on success, or `Err<Error>` on failure (including abort).
      */
-    readonly response: FetchResponse<T>;
+    readonly response: FetchResult<T>;
 }
 
 /**
@@ -241,7 +240,7 @@ export interface FetchRetryOptions {
  */
 export interface FetchInit extends RequestInit {
     /**
-     * When `true`, returns a `FetchTask` instead of `FetchResponse`.
+     * When `true`, returns a `FetchTask` instead of `FetchResult`.
      *
      * The `FetchTask` provides `abort()` method and `aborted` status.
      *
