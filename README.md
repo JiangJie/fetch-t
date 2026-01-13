@@ -78,7 +78,7 @@ setTimeout(() => {
     task.abort('User cancelled');
 }, 5000);
 
-const result = await task.response;
+const result = await task.result;
 ```
 
 ### Automatic Retry

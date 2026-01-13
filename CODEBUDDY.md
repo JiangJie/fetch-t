@@ -129,7 +129,7 @@ src/
 1. **Type-Safe Function Overloads**
    - The `fetchT` function has 12 distinct overloads to provide compile-time type safety
    - Return type varies based on `abortable` and `responseType` parameters
-   - When `abortable: true`, returns `FetchTask<T>` instead of `FetchResponse<T>`
+   - When `abortable: true`, returns `FetchTask<T>` instead of `FetchResult<T>`
    - Overloads cover all combinations: 5 response types × abortable/non-abortable + fallback overloads
 
 2. **Result Monad Pattern**
@@ -169,7 +169,7 @@ src/
 - `FetchTask<T>` - Abortable fetch with:
   - `abort(reason?: any): void` - Cancels the request
   - `readonly aborted: boolean` - Check if aborted
-  - `readonly response: FetchResponse<T>` - Get the response promise
+  - `readonly result: FetchResult<T>` - Get the result promise
 - `FetchInit` - Extends RequestInit with custom options:
   - `abortable?: boolean` - Enable abort capability
   - `responseType?: FetchResponseType` - Specify return type
@@ -184,7 +184,7 @@ src/
   - `onRetry?: (error: Error, attempt: number) => void` - Callback before retry
 - `FetchProgress` - Progress tracking with `totalByteLength` and `completedByteLength`
 - `FetchResponseType` - Union type: `'text' | 'arraybuffer' | 'blob' | 'json' | 'bytes' | 'stream'`
-- `FetchResponse<T, E>` - Type alias for `AsyncResult<T, E>` from happy-rusty
+- `FetchResult<T>` - Type alias for `AsyncIOResult<T>` from happy-rusty
 - `FetchError` - Custom error class with `status: number` property for HTTP status codes
 
 ### Dependencies
@@ -310,7 +310,7 @@ src/
    - Default to returning Response object
 6. **Error handling**: Catch and wrap in Err()
 7. **Timeout setup**: Schedule abort if timeout specified
-8. **Return value**: FetchTask if abortable, otherwise FetchResponse
+8. **Return value**: FetchTask if abortable, otherwise FetchResult
 
 ### Progress Tracking Details
 - Requires `Content-Length` header to calculate progress

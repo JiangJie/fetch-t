@@ -78,7 +78,7 @@ setTimeout(() => {
     task.abort('用户取消');
 }, 5000);
 
-const result = await task.response;
+const result = await task.result;
 ```
 
 ### 自动重试
