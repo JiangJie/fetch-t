@@ -103,6 +103,36 @@ const result = await fetchT('https://api.example.com/data', {
 - [Retry](examples/with-retry.ts) - Automatic retry strategies
 - [Error Handling](examples/error-handling.ts) - Error handling patterns
 
+## Error Handling Design
+
+`fetchT` distinguishes between two types of errors:
+
+### Programming Errors (Synchronous)
+
+Invalid parameters throw immediately for fail-fast behavior:
+
+```ts
+// These throw synchronously - no try/catch around await needed
+fetchT('https://example.com', { timeout: -1 });     // Error: timeout must be > 0
+fetchT('https://example.com', { timeout: 'bad' });  // TypeError: timeout must be a number
+fetchT('not-a-url');                                // TypeError: Invalid URL
+```
+
+This differs from native `fetch`, which returns rejected Promises for parameter errors. Synchronous throws provide clearer stack traces and catch bugs during development.
+
+### Runtime Errors (Result Type)
+
+Network failures and HTTP errors are wrapped in `Result` type:
+
+```ts
+const result = await fetchT('https://api.example.com/data', { responseType: 'json' });
+
+if (result.isErr()) {
+    const error = result.unwrapErr();
+    // FetchError with status code, or network Error
+}
+```
+
 ## License
 
 [MIT](LICENSE)

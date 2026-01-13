@@ -103,6 +103,36 @@ const result = await fetchT('https://api.example.com/data', {
 - [自动重试](examples/with-retry.ts) - 自动重试策略
 - [错误处理](examples/error-handling.ts) - 错误处理模式
 
+## 错误处理设计
+
+`fetchT` 区分两类错误：
+
+### 编程错误（同步抛出）
+
+无效参数会立即抛出异常，实现快速失败：
+
+```ts
+// 以下代码同步抛出异常 - 不需要 try/catch 包裹 await
+fetchT('https://example.com', { timeout: -1 });     // Error: timeout 必须 > 0
+fetchT('https://example.com', { timeout: 'bad' });  // TypeError: timeout 必须是数字
+fetchT('not-a-url');                                // TypeError: 无效的 URL
+```
+
+这与原生 `fetch` 不同，原生 `fetch` 对参数错误返回 rejected Promise。同步抛出提供更清晰的调用栈，帮助在开发阶段发现问题。
+
+### 运行时错误（Result 类型）
+
+网络故障和 HTTP 错误通过 `Result` 类型包装：
+
+```ts
+const result = await fetchT('https://api.example.com/data', { responseType: 'json' });
+
+if (result.isErr()) {
+    const error = result.unwrapErr();
+    // FetchError（包含状态码）或网络 Error
+}
+```
+
 ## 许可证
 
 [MIT](LICENSE)
