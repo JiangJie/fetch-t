@@ -203,19 +203,31 @@ export function fetchT(url: string | URL, init?: FetchInit & {
  *
  * Features:
  * - **Abortable requests**: Set `abortable: true` to get a `FetchTask` with `abort()` method.
- * - **Type-safe responses**: Use `responseType` to automatically parse responses as text, JSON, ArrayBuffer, or Blob.
+ * - **Type-safe responses**: Use `responseType` to automatically parse responses as text, JSON, ArrayBuffer, Blob, bytes, or stream.
  * - **Timeout support**: Set `timeout` in milliseconds to auto-abort long-running requests.
  * - **Progress tracking**: Use `onProgress` callback to track download progress (requires Content-Length header).
  * - **Chunk streaming**: Use `onChunk` callback to receive raw data chunks as they arrive.
  * - **Retry support**: Use `retry` to automatically retry failed requests with configurable delay and conditions.
- * - **Result type error handling**: Returns `Result<T, Error>` instead of throwing exceptions.
+ * - **Result type error handling**: Returns `Result<T, Error>` instead of throwing exceptions for runtime errors.
+ *
+ * **Note**: Invalid parameters throw synchronously (fail-fast) rather than returning rejected Promises.
+ * This differs from native `fetch` behavior and helps catch programming errors during development.
  *
  * @typeParam T - The expected type of the response data.
  * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
  * @param init - Additional options for the fetch operation, extending standard `RequestInit` with custom properties.
  * @returns A `FetchTask<T>` if `abortable: true`, otherwise a `FetchResponse<T>` (which is `AsyncResult<T, Error>`).
- * @throws {Error} If `url` is not a string or URL object.
- * @throws {Error} If `timeout` is specified but is not a positive number.
+ * @throws {TypeError} If `url` is invalid or a relative URL in non-browser environment.
+ * @throws {TypeError} If `responseType` is not a valid response type.
+ * @throws {TypeError} If `timeout` is not a number.
+ * @throws {Error} If `timeout` is not greater than 0.
+ * @throws {TypeError} If `onProgress` or `onChunk` is provided but not a function.
+ * @throws {TypeError} If `retry.retries` is not an integer.
+ * @throws {Error} If `retry.retries` is negative.
+ * @throws {TypeError} If `retry.delay` is not a number or function.
+ * @throws {Error} If `retry.delay` is a negative number.
+ * @throws {TypeError} If `retry.when` is not an array or function.
+ * @throws {TypeError} If `retry.onRetry` is provided but not a function.
  *
  * @example
  * // Basic GET request - returns Response object wrapped in Result
