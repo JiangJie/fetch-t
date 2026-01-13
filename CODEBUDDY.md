@@ -252,7 +252,7 @@ src/
 - Tests are in `tests/fetch.test.ts`
 - Uses Vitest as test framework
 - Uses MSW (Mock Service Worker) for HTTP mocking
-- 83 test cases with 100% coverage
+- 92 test cases with 100% coverage
 - Coverage includes:
   - All response types (text, arraybuffer, blob, JSON)
   - HTTP methods (GET, POST, PUT, PATCH, DELETE)
