@@ -11,7 +11,7 @@
  * const task = fetchT('https://api.example.com/data', { abortable: true });
  * task.abort();
  *
- * const result = await task.response;
+ * const result = await task.result;
  * result.inspectErr((err) => {
  *     if (err.name === ABORT_ERROR) {
  *         console.log('Request was aborted');

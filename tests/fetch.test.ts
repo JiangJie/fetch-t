@@ -629,7 +629,7 @@ describe('fetchT', () => {
                 timeout: 50,
             });
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(TIMEOUT_ERROR);
             // Note: aborted remains false because timeout signal is separate from masterController
@@ -646,7 +646,7 @@ describe('fetchT', () => {
 
             setTimeout(() => fetchTask.abort(), 50);
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
             expect(fetchTask.aborted).toBe(true);
         });
@@ -658,7 +658,7 @@ describe('fetchT', () => {
 
             setTimeout(() => fetchTask.abort('custom-cancel'), 50);
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             const err = res.unwrapErr() as Error;
             expect(err.name).toBe(ABORT_ERROR);
             expect(err.message).toBe('custom-cancel');
@@ -673,7 +673,7 @@ describe('fetchT', () => {
 
             setTimeout(() => fetchTask.abort(), 50);
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
             expect(fetchTask.aborted).toBe(true);
@@ -687,7 +687,7 @@ describe('fetchT', () => {
 
             setTimeout(() => fetchTask.abort('stream-cancelled'), 50);
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isErr()).toBe(true);
             const err = res.unwrapErr() as Error;
             expect(err.name).toBe(ABORT_ERROR);
@@ -702,7 +702,7 @@ describe('fetchT', () => {
 
             expect(fetchTask).toHaveProperty('abort');
             expect(fetchTask).toHaveProperty('aborted');
-            expect(fetchTask).toHaveProperty('response');
+            expect(fetchTask).toHaveProperty('result');
             expect(typeof fetchTask.abort).toBe('function');
             expect(typeof fetchTask.aborted).toBe('boolean');
             expect(fetchTask.aborted).toBe(false);
@@ -720,7 +720,7 @@ describe('fetchT', () => {
             customError.name = 'CustomError';
             setTimeout(() => fetchTask.abort(customError), 50);
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             const err = res.unwrapErr() as Error;
             expect(err).toBe(customError);
             expect(err.name).toBe('CustomError');
@@ -774,7 +774,7 @@ describe('fetchT', () => {
             const reason = { code: 'CANCELLED', id: 123 };
             setTimeout(() => fetchTask.abort(reason), 50);
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             const err = res.unwrapErr() as Error;
             expect(err.name).toBe(ABORT_ERROR);
             expect(err.message).toBe('[object Object]');
@@ -864,7 +864,7 @@ describe('fetchT', () => {
                 responseType: 'text',
             });
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isOk()).toBe(true);
             expect(res.unwrap()).toBe('Hello World');
         });
@@ -875,7 +875,7 @@ describe('fetchT', () => {
                 responseType: 'arraybuffer',
             });
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isOk()).toBe(true);
             expect(res.unwrap()).toBeInstanceOf(ArrayBuffer);
         });
@@ -886,7 +886,7 @@ describe('fetchT', () => {
                 responseType: 'blob',
             });
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isOk()).toBe(true);
             expect(res.unwrap()).toBeInstanceOf(Blob);
         });
@@ -897,7 +897,7 @@ describe('fetchT', () => {
                 responseType: 'json',
             });
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isOk()).toBe(true);
             expect(expectNonNull(res.unwrap()).id).toBe(1);
         });
@@ -908,7 +908,7 @@ describe('fetchT', () => {
                 responseType: 'stream',
             });
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isOk()).toBe(true);
             const stream = res.unwrap();
             expect(stream).toBeInstanceOf(ReadableStream);
@@ -923,7 +923,7 @@ describe('fetchT', () => {
                 responseType: 'bytes',
             });
 
-            const res = await fetchTask.response;
+            const res = await fetchTask.result;
             expect(res.isOk()).toBe(true);
             const data = res.unwrap();
             expect(data).toBeInstanceOf(Uint8Array);
@@ -1278,7 +1278,7 @@ describe('fetchT', () => {
             // Abort after first attempt starts
             setTimeout(() => task.abort(), 50);
 
-            const res = await task.response;
+            const res = await task.result;
 
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
@@ -1405,7 +1405,7 @@ describe('fetchT', () => {
             // Abort during retry delay (after first attempt fails)
             setTimeout(() => task.abort(), 100);
 
-            const res = await task.response;
+            const res = await task.result;
 
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
@@ -1433,7 +1433,7 @@ describe('fetchT', () => {
             // Abort immediately - the fetch may have started but should abort
             task.abort();
 
-            const res = await task.response;
+            const res = await task.result;
 
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
@@ -1468,7 +1468,7 @@ describe('fetchT', () => {
                 responseType: 'json',
             });
 
-            const res = await task.response;
+            const res = await task.result;
 
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
@@ -1500,7 +1500,7 @@ describe('fetchT', () => {
                 responseType: 'json',
             });
 
-            const res = await task.response;
+            const res = await task.result;
 
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
@@ -1538,7 +1538,7 @@ describe('fetchT', () => {
                 responseType: 'json',
             });
 
-            const res = await task.response;
+            const res = await task.result;
 
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);
@@ -1591,7 +1591,7 @@ describe('fetchT', () => {
 
             taskRef = task;
 
-            const res = await task.response;
+            const res = await task.result;
 
             expect(res.isErr()).toBe(true);
             expect((res.unwrapErr() as Error).name).toBe(ABORT_ERROR);

@@ -78,8 +78,8 @@ export type FetchResult<T> = AsyncIOResult<T>;
  * // Abort with optional reason
  * task.abort('User navigated away');
  *
- * // Access the response (will be an error after abort)
- * const result = await task.response;
+ * // Access the result (will be an error after abort)
+ * const result = await task.result;
  * result.inspectErr((err) => console.log('Aborted:', err.message));
  * ```
  */
@@ -87,7 +87,7 @@ export interface FetchTask<T> {
     /**
      * Aborts the fetch task, optionally with a reason.
      *
-     * Once aborted, the `response` promise will resolve to an `Err` containing
+     * Once aborted, the `result` promise will resolve to an `Err` containing
      * an `AbortError`. The abort reason can be any value and will be passed
      * to the underlying `AbortController.abort()`.
      *
@@ -105,11 +105,11 @@ export interface FetchTask<T> {
     readonly aborted: boolean;
 
     /**
-     * The response promise of the fetch task.
+     * The result promise of the fetch task.
      *
      * Resolves to `Ok<T>` on success, or `Err<Error>` on failure (including abort).
      */
-    readonly response: FetchResult<T>;
+    readonly result: FetchResult<T>;
 }
 
 /**

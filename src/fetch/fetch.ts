@@ -1,6 +1,6 @@
 import { Err, Ok, type AsyncIOResult } from 'happy-rusty';
 import { ABORT_ERROR } from './constants.ts';
-import { FetchError, type FetchInit, type FetchResult, type FetchResponseData, type FetchResponseType, type FetchRetryOptions, type FetchTask } from './defines.ts';
+import { FetchError, type FetchInit, type FetchResponseData, type FetchResponseType, type FetchResult, type FetchRetryOptions, type FetchTask } from './defines.ts';
 
 /**
  * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
@@ -269,8 +269,8 @@ export function fetchT(url: string | URL, init?: FetchInit & {
  * // Check if aborted
  * console.log('Aborted:', task.aborted);
  *
- * // Wait for response
- * const result = await task.response;
+ * // Wait for result
+ * const result = await task.result;
  *
  * @example
  * // Track download progress
@@ -582,7 +582,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
         return Err(lastError);
     };
 
-    const response = fetchWithRetry();
+    const result = fetchWithRetry();
 
     if (abortable && userController) {
         return {
@@ -601,13 +601,13 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
                 return userController.signal.aborted;
             },
 
-            get response(): FetchResult<FetchResponseData> {
-                return response;
+            get result(): FetchResult<FetchResponseData> {
+                return result;
             },
         };
     }
 
-    return response;
+    return result;
 }
 
 /**

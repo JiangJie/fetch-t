@@ -26,7 +26,7 @@ async function manualAbort() {
         task.abort();
     }, 10);
 
-    const result = await task.response;
+    const result = await task.result;
 
     result
         .inspect((data) => {
@@ -63,7 +63,7 @@ async function abortWithReason() {
         task.abort(new Error('User cancelled the operation'));
     }, 10);
 
-    const result = await task.response;
+    const result = await task.result;
 
     result.inspectErr((err) => {
         console.log('Abort reason:', err.message);
@@ -123,7 +123,7 @@ async function conditionalAbort() {
         }
     }, 10);
 
-    const result = await task.response;
+    const result = await task.result;
     clearInterval(checkInterval);
 
     const elapsed = Date.now() - startTime;
@@ -157,7 +157,7 @@ async function raceRequests() {
     // Race to see which completes first
     const winner = await Promise.race(
         tasks.map(async ({ name, task }) => {
-            const result = await task.response;
+            const result = await task.result;
             return { name, result, task };
         }),
     );
@@ -205,7 +205,7 @@ async function abortableWithProgress() {
         },
     });
 
-    const result = await task.response;
+    const result = await task.result;
 
     result
         .inspect(() => {
@@ -239,7 +239,7 @@ async function abortableStream() {
         }
     }, 50);
 
-    const result = await task.response;
+    const result = await task.result;
 
     if (result.isOk()) {
         const stream = result.unwrap();

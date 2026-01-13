@@ -262,7 +262,7 @@ async function retryWithAbortable() {
         }
     }, 500);
 
-    const result = await task.response;
+    const result = await task.result;
     result
         .inspect((post) => {
             if (post == null) {
