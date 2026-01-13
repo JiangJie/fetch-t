@@ -139,11 +139,10 @@ src/
    - Use `.isOk()`, `.isErr()`, `.unwrap()`, `.unwrapErr()` for conditional handling
    - Example: `result.inspect(data => console.log(data)).inspectErr(err => console.error(err))`
 
-3. **Stream Multiplexing**
-   - Uses `ReadableStream.tee()` to split response streams
-   - One stream for progress/chunk tracking, another for response body parsing
-   - Enables progress callbacks without consuming the response
-   - Creates a new Response object with the teed stream to maintain compatibility
+3. **Response Cloning for Progress Tracking**
+   - Uses `response.clone()` to create a separate copy for progress/chunk tracking
+   - Original response is used for body parsing, clone is consumed for progress
+   - Enables progress callbacks without affecting the response consumption
 
 4. **Timeout Mechanism**
    - Uses `AbortSignal.timeout()` for timeout implementation (modern browser API)
@@ -364,7 +363,7 @@ Network failures and HTTP errors are wrapped in `Result` type via `happy-rusty`.
 
 1. **Progress tracking requires Content-Length header**: If the server doesn't send this header, progress tracking will fail (onProgress receives an Err). The `Headers.get()` method is case-insensitive per the HTTP spec.
 
-2. **Stream tee() limitation**: Progress/chunk callbacks add overhead due to stream splitting. Each chunk is read twice - once for tracking, once for parsing.
+2. **Response cloning overhead**: Progress/chunk callbacks clone the response, which may have memory implications for very large responses.
 
 3. **Import extensions**: Source code uses `.ts` extensions in imports which is non-standard but enabled by TypeScript bundler mode.
 
