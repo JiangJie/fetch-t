@@ -340,6 +340,101 @@ describe('fetchT', () => {
             expect(result.isOk()).toBe(true);
             expect(result.unwrap()).toBeNull();
         });
+
+        // Empty body tests for HEAD requests
+        it('should return empty string for HEAD request with text responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'HEAD',
+                responseType: 'text',
+            });
+            expect(result.isOk()).toBe(true);
+            expect(result.unwrap()).toBe('');
+        });
+
+        it('should return empty ArrayBuffer for HEAD request with arraybuffer responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'HEAD',
+                responseType: 'arraybuffer',
+            });
+            expect(result.isOk()).toBe(true);
+            const buffer = result.unwrap();
+            expect(buffer).toBeInstanceOf(ArrayBuffer);
+            expect(buffer.byteLength).toBe(0);
+        });
+
+        it('should return empty Blob for HEAD request with blob responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'HEAD',
+                responseType: 'blob',
+            });
+            expect(result.isOk()).toBe(true);
+            const blob = result.unwrap();
+            expect(blob).toBeInstanceOf(Blob);
+            expect(blob.size).toBe(0);
+        });
+
+        it('should return empty Uint8Array for HEAD request with bytes responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'HEAD',
+                responseType: 'bytes',
+            });
+            expect(result.isOk()).toBe(true);
+            const bytes = result.unwrap();
+            expect(bytes).toBeInstanceOf(Uint8Array);
+            expect(bytes.length).toBe(0);
+        });
+
+        // Empty body tests for 204 No Content responses
+        it('should return empty string for 204 response with text responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'DELETE',
+                responseType: 'text',
+            });
+            expect(result.isOk()).toBe(true);
+            expect(result.unwrap()).toBe('');
+        });
+
+        it('should return empty ArrayBuffer for 204 response with arraybuffer responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'DELETE',
+                responseType: 'arraybuffer',
+            });
+            expect(result.isOk()).toBe(true);
+            const buffer = result.unwrap();
+            expect(buffer).toBeInstanceOf(ArrayBuffer);
+            expect(buffer.byteLength).toBe(0);
+        });
+
+        it('should return empty Blob for 204 response with blob responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'DELETE',
+                responseType: 'blob',
+            });
+            expect(result.isOk()).toBe(true);
+            const blob = result.unwrap();
+            expect(blob).toBeInstanceOf(Blob);
+            expect(blob.size).toBe(0);
+        });
+
+        it('should return empty Uint8Array for 204 response with bytes responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'DELETE',
+                responseType: 'bytes',
+            });
+            expect(result.isOk()).toBe(true);
+            const bytes = result.unwrap();
+            expect(bytes).toBeInstanceOf(Uint8Array);
+            expect(bytes.length).toBe(0);
+        });
+
+        it('should return null stream for 204 response with stream responseType', async () => {
+            const result = await fetchT(`${ baseUrl }/api/data`, {
+                method: 'DELETE',
+                responseType: 'stream',
+            });
+            expect(result.isOk()).toBe(true);
+            expect(result.unwrap()).toBeNull();
+        });
     });
 
     // ============ HTTP Methods Tests ============
