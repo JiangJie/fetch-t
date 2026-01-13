@@ -183,24 +183,24 @@ src/
   - `when?: number[] | ((error: Error, attempt: number) => boolean)` - Retry conditions
   - `onRetry?: (error: Error, attempt: number) => void` - Callback before retry
 - `FetchProgress` - Progress tracking with `totalByteLength` and `completedByteLength`
-- `FetchResponseType` - Union type: `'text' | 'arraybuffer' | 'blob' | 'json' | 'stream'`
+- `FetchResponseType` - Union type: `'text' | 'arraybuffer' | 'blob' | 'json' | 'bytes' | 'stream'`
 - `FetchResponse<T, E>` - Type alias for `AsyncResult<T, E>` from happy-rusty
 - `FetchError` - Custom error class with `status: number` property for HTTP status codes
 
 ### Dependencies
 
 **Runtime:**
-- `happy-rusty` (^1.8.0) - Provides Result/AsyncResult types for functional error handling
+- `happy-rusty` (^1.9.0) - Provides Result/AsyncResult types for functional error handling
 
 **Dev:**
 - TypeScript (^5.9.3) - Type checking and compilation
-- Vite (^7.3.0) - Build tool and dev server
+- Vite (^7.3.1) - Build tool and dev server
   - `vite-plugin-dts` (^4.5.4) - Bundles TypeScript definitions
-- Vitest (^4.0.16) - Test framework
-  - `@vitest/coverage-v8` (^4.0.16) - Coverage provider
+- Vitest (^4.0.17) - Test framework
+  - `@vitest/coverage-v8` (^4.0.17) - Coverage provider
 - MSW (^2.12.7) - Mock Service Worker for API mocking in tests
-- ESLint (^9.39.2) + typescript-eslint (^8.51.0) - Linting
-- TypeDoc (^0.28.15) - Documentation generation
+- ESLint (^9.39.2) + typescript-eslint (^8.53.0) - Linting
+- TypeDoc (^0.28.16) - Documentation generation
 
 **External dependencies are marked as external in vite.config.ts** - they are not bundled.
 
@@ -252,7 +252,7 @@ src/
 - Tests are in `tests/fetch.test.ts`
 - Uses Vitest as test framework
 - Uses MSW (Mock Service Worker) for HTTP mocking
-- 28 test cases with 100% coverage
+- 83 test cases with 100% coverage
 - Coverage includes:
   - All response types (text, arraybuffer, blob, JSON)
   - HTTP methods (GET, POST, PUT, PATCH, DELETE)
@@ -345,6 +345,20 @@ The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
 - README.cn.md
 - CHANGELOG.md
 - dist/
+
+## Error Handling Design
+
+`fetchT` distinguishes between two types of errors:
+
+### Programming Errors (Synchronous)
+Invalid parameters throw immediately for fail-fast behavior:
+- `TypeError` for type validation (wrong type, not a function, invalid enum value)
+- `Error` for value range validation (negative numbers, zero/negative timeout)
+
+This differs from native `fetch`, which returns rejected Promises for parameter errors. Synchronous throws provide clearer stack traces and catch bugs during development.
+
+### Runtime Errors (Result Type)
+Network failures and HTTP errors are wrapped in `Result` type via `happy-rusty`. Use `.isOk()`, `.isErr()`, `.unwrap()`, `.unwrapErr()` for conditional handling.
 
 ## Known Issues & Gotchas
 
