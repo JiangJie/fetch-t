@@ -3,22 +3,24 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ABORT_ERROR, FetchError, fetchT, TIMEOUT_ERROR, type FetchTask } from '../src/mod.ts';
 
+const baseUrl = 'http://mock.test';
+
 // Mock server setup
 const server = setupServer(
     // GET /api/data - returns JSON
-    http.get('http://mock.test/api/data', () => {
+    http.get(`${baseUrl}/api/data`, () => {
         return HttpResponse.json({ id: 1, title: 'Test Data' });
     }),
 
     // GET /api/text - returns text
-    http.get('http://mock.test/api/text', () => {
+    http.get(`${baseUrl}/api/text`, () => {
         return new HttpResponse('Hello World', {
             headers: { 'Content-Type': 'text/plain' },
         });
     }),
 
     // GET /api/binary - returns binary data
-    http.get('http://mock.test/api/binary', () => {
+    http.get(`${baseUrl}/api/binary`, () => {
         const buffer = new Uint8Array([1, 2, 3, 4, 5]).buffer;
         return new HttpResponse(buffer, {
             headers: { 'Content-Type': 'application/octet-stream' },
@@ -26,7 +28,7 @@ const server = setupServer(
     }),
 
     // GET /api/with-content-length - returns data with Content-Length header
-    http.get('http://mock.test/api/with-content-length', () => {
+    http.get(`${baseUrl}/api/with-content-length`, () => {
         const data = JSON.stringify({ id: 1 });
         return new HttpResponse(data, {
             headers: {
@@ -37,7 +39,7 @@ const server = setupServer(
     }),
 
     // GET /api/no-content-length - returns data without Content-Length header
-    http.get('http://mock.test/api/no-content-length', () => {
+    http.get(`${baseUrl}/api/no-content-length`, () => {
         const data = JSON.stringify({ id: 1 });
         return new HttpResponse(data, {
             headers: {
@@ -47,48 +49,48 @@ const server = setupServer(
     }),
 
     // POST /api/data - returns posted data
-    http.post('http://mock.test/api/data', async ({ request }) => {
+    http.post(`${baseUrl}/api/data`, async ({ request }) => {
         const body = await request.json() as Record<string, unknown>;
         return HttpResponse.json({ received: body });
     }),
 
     // HEAD /api/data - returns headers only
-    http.head('http://mock.test/api/data', () => {
+    http.head(`${baseUrl}/api/data`, () => {
         return new HttpResponse(null, {
             headers: { 'X-Custom-Header': 'test' },
         });
     }),
 
     // GET /api/404 - returns 404 error (no body)
-    http.get('http://mock.test/api/404', () => {
+    http.get(`${baseUrl}/api/404`, () => {
         return new HttpResponse(null, { status: 404, statusText: 'Not Found' });
     }),
 
     // GET /api/500 - returns 500 error (no body)
-    http.get('http://mock.test/api/500', () => {
+    http.get(`${baseUrl}/api/500`, () => {
         return new HttpResponse(null, { status: 500, statusText: 'Internal Server Error' });
     }),
 
     // DELETE /api/data - returns 204 No Content
-    http.delete('http://mock.test/api/data', () => {
+    http.delete(`${baseUrl}/api/data`, () => {
         return new HttpResponse(null, { status: 204 });
     }),
 
     // GET /api/invalid-json - returns invalid JSON
-    http.get('http://mock.test/api/invalid-json', () => {
+    http.get(`${baseUrl}/api/invalid-json`, () => {
         return new HttpResponse('<html>Not JSON</html>', {
             headers: { 'Content-Type': 'text/html' },
         });
     }),
 
     // GET /api/slow - slow response for timeout testing
-    http.get('http://mock.test/api/slow', async () => {
+    http.get(`${baseUrl}/api/slow`, async () => {
         await new Promise(resolve => setTimeout(resolve, 5000));
         return HttpResponse.json({ id: 1 });
     }),
 
     // GET /api/stream-error - stream that errors mid-way
-    http.get('http://mock.test/api/stream-error', () => {
+    http.get(`${baseUrl}/api/stream-error`, () => {
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
             async start(controller) {
@@ -106,7 +108,7 @@ const server = setupServer(
     }),
 
     // GET /api/stream-error-immediate - stream that errors immediately on first read
-    http.get('http://mock.test/api/stream-error-immediate', () => {
+    http.get(`${baseUrl}/api/stream-error-immediate`, () => {
         const stream = new ReadableStream({
             start(controller) {
                 controller.error(new Error('Immediate stream error'));
@@ -121,7 +123,7 @@ const server = setupServer(
     }),
 
     // GET /api/stream - returns a proper streaming response
-    http.get('http://mock.test/api/stream', () => {
+    http.get(`${baseUrl}/api/stream`, () => {
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
             start(controller) {
@@ -139,12 +141,12 @@ const server = setupServer(
     }),
 
     // GET /api/204 - returns 204 No Content for GET request
-    http.get('http://mock.test/api/204', () => {
+    http.get(`${baseUrl}/api/204`, () => {
         return new HttpResponse(null, { status: 204 });
     }),
 
     // GET /api/empty - returns 200 with empty body
-    http.get('http://mock.test/api/empty', () => {
+    http.get(`${baseUrl}/api/empty`, () => {
         return new HttpResponse(null, { status: 200 });
     }),
 );
@@ -166,7 +168,6 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('fetchT', () => {
-    const baseUrl = 'http://mock.test';
 
     function expectNonNull<T>(value: T | null): T {
         expect(value).not.toBeNull();
@@ -805,7 +806,7 @@ describe('fetchT', () => {
 
         it('should handle network errors', async () => {
             server.use(
-                http.get('http://mock.test/api/network-error', () => {
+                http.get(`${baseUrl}/api/network-error`, () => {
                     return HttpResponse.error();
                 }),
             );
@@ -1022,7 +1023,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-network', () => {
+                http.get(`${baseUrl}/api/retry-network`, () => {
                     attemptCount++;
                     if (attemptCount < 3) {
                         return HttpResponse.error();
@@ -1045,7 +1046,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-http-error', () => {
+                http.get(`${baseUrl}/api/retry-http-error`, () => {
                     attemptCount++;
                     return new HttpResponse(null, { status: 500, statusText: 'Server Error' });
                 }),
@@ -1067,7 +1068,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-status', () => {
+                http.get(`${baseUrl}/api/retry-status`, () => {
                     attemptCount++;
                     if (attemptCount < 3) {
                         return new HttpResponse(null, { status: 503, statusText: 'Service Unavailable' });
@@ -1093,7 +1094,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-404', () => {
+                http.get(`${baseUrl}/api/retry-404`, () => {
                     attemptCount++;
                     return new HttpResponse(null, { status: 404, statusText: 'Not Found' });
                 }),
@@ -1116,7 +1117,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-custom', () => {
+                http.get(`${baseUrl}/api/retry-custom`, () => {
                     attemptCount++;
                     if (attemptCount < 2) {
                         return new HttpResponse(null, { status: 429, statusText: 'Too Many Requests' });
@@ -1145,7 +1146,7 @@ describe('fetchT', () => {
             const timestamps: number[] = [];
 
             server.use(
-                http.get('http://mock.test/api/retry-delay', () => {
+                http.get(`${baseUrl}/api/retry-delay`, () => {
                     attemptCount++;
                     timestamps.push(Date.now());
                     if (attemptCount < 3) {
@@ -1175,7 +1176,7 @@ describe('fetchT', () => {
             const timestamps: number[] = [];
 
             server.use(
-                http.get('http://mock.test/api/retry-backoff', () => {
+                http.get(`${baseUrl}/api/retry-backoff`, () => {
                     attemptCount++;
                     timestamps.push(Date.now());
                     if (attemptCount < 3) {
@@ -1205,7 +1206,7 @@ describe('fetchT', () => {
             const retryCallbacks: { attempt: number; error: Error; }[] = [];
 
             server.use(
-                http.get('http://mock.test/api/retry-callback', () => {
+                http.get(`${baseUrl}/api/retry-callback`, () => {
                     attemptCount++;
                     if (attemptCount < 3) {
                         return HttpResponse.error();
@@ -1234,7 +1235,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-callback-error', () => {
+                http.get(`${baseUrl}/api/retry-callback-error`, () => {
                     attemptCount++;
                     if (attemptCount < 2) {
                         return HttpResponse.error();
@@ -1261,7 +1262,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-abort', async () => {
+                http.get(`${baseUrl}/api/retry-abort`, async () => {
                     attemptCount++;
                     // Simulate slow response to give time for abort
                     await new Promise(r => setTimeout(r, 100));
@@ -1289,7 +1290,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-timeout', async () => {
+                http.get(`${baseUrl}/api/retry-timeout`, async () => {
                     attemptCount++;
                     if (attemptCount < 2) {
                         // First attempt times out
@@ -1317,7 +1318,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-all-fail', () => {
+                http.get(`${baseUrl}/api/retry-all-fail`, () => {
                     attemptCount++;
                     return HttpResponse.error();
                 }),
@@ -1336,7 +1337,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-zero', () => {
+                http.get(`${baseUrl}/api/retry-zero`, () => {
                     attemptCount++;
                     return HttpResponse.error();
                 }),
@@ -1356,7 +1357,7 @@ describe('fetchT', () => {
             const chunks: Uint8Array[] = [];
 
             server.use(
-                http.get('http://mock.test/api/retry-with-callbacks', () => {
+                http.get(`${baseUrl}/api/retry-with-callbacks`, () => {
                     attemptCount++;
                     if (attemptCount < 2) {
                         return HttpResponse.error();
@@ -1387,7 +1388,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-abort-delay', () => {
+                http.get(`${baseUrl}/api/retry-abort-delay`, () => {
                     attemptCount++;
                     return HttpResponse.error();
                 }),
@@ -1416,7 +1417,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-abort-immediate', async () => {
+                http.get(`${baseUrl}/api/retry-abort-immediate`, async () => {
                     attemptCount++;
                     // Slow response to ensure abort happens during fetch
                     await new Promise(r => setTimeout(r, 100));
@@ -1447,7 +1448,7 @@ describe('fetchT', () => {
             let task: FetchTask<{ success: boolean; } | null>;
 
             server.use(
-                http.get('http://mock.test/api/retry-abort-second', async () => {
+                http.get(`${baseUrl}/api/retry-abort-second`, async () => {
                     attemptCount++;
                     if (attemptCount === 1) {
                         // First attempt: abort during this request, then return network error
@@ -1480,7 +1481,7 @@ describe('fetchT', () => {
             let onRetryCalled = false;
 
             server.use(
-                http.get('http://mock.test/api/retry-abort-before-delay', () => {
+                http.get(`${baseUrl}/api/retry-abort-before-delay`, () => {
                     attemptCount++;
                     return HttpResponse.error();
                 }),
@@ -1516,7 +1517,7 @@ describe('fetchT', () => {
             let task: FetchTask<{ success: boolean; } | null>;
 
             server.use(
-                http.get('http://mock.test/api/retry-abort-before-dofetch', async () => {
+                http.get(`${baseUrl}/api/retry-abort-before-dofetch`, async () => {
                     attemptCount++;
                     if (attemptCount === 1) {
                         // First attempt: return network error to trigger retry
@@ -1559,7 +1560,7 @@ describe('fetchT', () => {
             let retryOnCallCount = 0;
             let taskRef: FetchTask<{ success: boolean; } | null> | null = null;
             server.use(
-                http.get('http://mock.test/api/retry-abort-at-loop-start', () => {
+                http.get(`${baseUrl}/api/retry-abort-at-loop-start`, () => {
                     attemptCount++;
                     // Always return network error
                     return HttpResponse.error();
@@ -1604,7 +1605,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-missing', () => {
+                http.get(`${baseUrl}/api/retry-missing`, () => {
                     attemptCount++;
                     return HttpResponse.error();
                 }),
@@ -1622,7 +1623,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-invalid-type', () => {
+                http.get(`${baseUrl}/api/retry-invalid-type`, () => {
                     attemptCount++;
                     return HttpResponse.error();
                 }),
@@ -1641,7 +1642,7 @@ describe('fetchT', () => {
             let attemptCount = 0;
 
             server.use(
-                http.get('http://mock.test/api/retry-empty', () => {
+                http.get(`${baseUrl}/api/retry-empty`, () => {
                     attemptCount++;
                     return HttpResponse.error();
                 }),
