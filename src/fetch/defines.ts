@@ -304,6 +304,11 @@ export interface FetchInit extends RequestInit {
      * - `Ok(FetchProgress)` - Progress update with byte counts
      * - `Err(Error)` - If `Content-Length` header is missing (called once)
      *
+     * **Note**: This feature uses `response.clone()` internally. The cloned stream shares
+     * the same underlying data source (via `tee()`), so it does NOT double memory usage.
+     * However, if the two streams consume data at different speeds, chunks may be buffered
+     * temporarily until both streams have read them.
+     *
      * @param progressResult - The progress result, either success with progress data or error.
      */
     onProgress?: (progressResult: IOResult<FetchProgress>) => void;
@@ -313,6 +318,11 @@ export interface FetchInit extends RequestInit {
      *
      * Useful for streaming or processing data as it arrives.
      * Each chunk is a `Uint8Array<ArrayBuffer>` containing the raw bytes.
+     *
+     * **Note**: This feature uses `response.clone()` internally. The cloned stream shares
+     * the same underlying data source (via `tee()`), so it does NOT double memory usage.
+     * However, if the two streams consume data at different speeds, chunks may be buffered
+     * temporarily until both streams have read them.
      *
      * @param chunk - The raw data chunk received from the response stream.
      */

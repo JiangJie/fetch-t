@@ -143,6 +143,7 @@ src/
    - Uses `response.clone()` to create a separate copy for progress/chunk tracking
    - Original response is used for body parsing, clone is consumed for progress
    - Enables progress callbacks without affecting the response consumption
+   - **Design note**: `response.clone()` internally uses `ReadableStream.tee()`, so using `tee()` directly would not reduce overhead. Both streams share the same underlying data source; data is only buffered in memory when consumption speeds differ between the two streams. This is a reasonable trade-off between code simplicity and performance.
 
 4. **Timeout Mechanism**
    - Uses `AbortSignal.timeout()` for timeout implementation (modern browser API)
@@ -363,7 +364,7 @@ Network failures and HTTP errors are wrapped in `Result` type via `happy-rusty`.
 
 1. **Progress tracking requires Content-Length header**: If the server doesn't send this header, progress tracking will fail (onProgress receives an Err). The `Headers.get()` method is case-insensitive per the HTTP spec.
 
-2. **Response cloning overhead**: Progress/chunk callbacks clone the response, which may have memory implications for very large responses.
+2. **Response cloning overhead**: Progress/chunk callbacks use `response.clone()` which internally calls `ReadableStream.tee()`. The overhead comes from memory buffering when the two streams (progress tracking vs body parsing) consume data at different speeds. For typical API responses this is negligible, but for very large file downloads users should be aware of potential memory implications. Using `tee()` directly would not reduce this overhead since `clone()` already uses it internally.
 
 3. **Import extensions**: Source code uses `.ts` extensions in imports which is non-standard but enabled by TypeScript bundler mode.
 
