@@ -199,6 +199,19 @@ export function fetchT(url: string | URL, init?: FetchInit & {
 }): FetchResult<Response>;
 
 /**
+ * Fallback overload for when `FetchInit` is passed as a variable (not an object literal).
+ *
+ * When TypeScript cannot determine the literal value of `abortable` at compile time
+ * (e.g., when passing a `FetchInit` variable), this overload is matched.
+ * The return type is a union of `FetchTask` and `FetchResult`.
+ *
+ * @param url - The resource to fetch. Can be a URL object or a string representing a URL.
+ * @param init - Optional fetch options. When passed as a `FetchInit` variable, the return type is a union.
+ * @returns Either a `FetchTask` or `FetchResult` depending on the runtime value of `abortable`.
+ */
+export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResponseData> | FetchResult<FetchResponseData>;
+
+/**
  * Enhanced fetch function that wraps the native Fetch API with additional capabilities.
  *
  * Features:

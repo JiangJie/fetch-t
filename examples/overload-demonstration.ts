@@ -1,4 +1,4 @@
-import { fetchT, type FetchResponseType } from '../src/mod.ts';
+import { fetchT, type FetchInit, type FetchResponseType } from '../src/mod.ts';
 
 /**
  * This file demonstrates how different arguments to fetchT match specific function overloads.
@@ -152,6 +152,18 @@ async function main() {
     const dynamicRt = 'text' as string;
     // @ts-expect-error - plain string is no longer accepted directly
     fetchT(url, { responseType: dynamicRt });
+
+
+    // =========================================================================
+    // 6. FetchInit variable (fallback overload)
+    // Matches: fetchT(url, init: FetchInit) -> FetchTask | FetchResult
+    // =========================================================================
+
+    // When passing FetchInit as a variable, TypeScript cannot determine abortable's literal value
+    // Falls back to union return type: FetchTask<FetchResponseData> | FetchResult<FetchResponseData>
+    let options: FetchInit | undefined;
+    const resOrTask = fetchT(url, options);
+    console.log(resOrTask);
 
     console.log('All overloads demonstrated successfully!');
 }
