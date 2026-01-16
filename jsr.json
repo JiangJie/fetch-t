@@ -5,7 +5,7 @@
   "version": "1.9.0",
   "exports": "./src/mod.ts",
   "imports": {
-    "happy-rusty": "npm:happy-rusty@^1.9.0"
+    "happy-rusty": "npm:happy-rusty@^1.9.1"
   },
   "publish": {
     "include": [

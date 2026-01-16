@@ -68,6 +68,6 @@
     "vitest": "^4.0.17"
   },
   "dependencies": {
-    "happy-rusty": "^1.9.0"
+    "happy-rusty": "^1.9.1"
   }
 }

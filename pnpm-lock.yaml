@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       happy-rusty:
-        specifier: ^1.9.0
-        version: 1.9.0
+        specifier: ^1.9.1
+        version: 1.9.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -987,8 +987,8 @@ packages:
     resolution: {integrity: sha512-DKKrynuQRne0PNpEbzuEdHlYOMksHSUI8Zc9Unei5gTsMNA2/vMpoMz/yKba50pejK56qj98qM0SjYxAKi13gQ==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
-  happy-rusty@1.9.0:
-    resolution: {integrity: sha512-3mAAXawSPJXOjlt8E1TDPU44K7+dDefBKxNK0xuJHYjZH4vQsAunHOE8GK13XjCk4/sHYaSCO4fgZkP171ZlQQ==}
+  happy-rusty@1.9.1:
+    resolution: {integrity: sha512-bsMPcstvxqzG16+67xXbhDoufRLgeX+omACTrzKNZCh5mewclXyc5B1k28DW+gba1G5vqVt/FYEFlCxu0IGrug==}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -1396,8 +1396,8 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
-  type-fest@5.4.0:
-    resolution: {integrity: sha512-wfkA6r0tBpVfGiyO+zbf9e10QkRQSlK9F2UvyfnjoCmrvH2bjHyhPzhugSBOuq1dog3P0+FKckqe+Xf6WKVjwg==}
+  type-fest@5.4.1:
+    resolution: {integrity: sha512-xygQcmneDyzsEuKZrFbRMne5HDqMs++aFzefrJTgEIKjQ3rekM+RPfFCVq2Gp1VIDqddoYeppCj4Pcb+RZW0GQ==}
     engines: {node: '>=20'}
 
   typedoc@0.28.16:
@@ -1427,8 +1427,8 @@ packages:
   uc.micro@2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
-  ufo@1.6.2:
-    resolution: {integrity: sha512-heMioaxBcG9+Znsda5Q8sQbWnLJSl98AFDXTO80wELWEzX3hordXsTdxrIfMQoO9IY1MEnoGoPjpoKpMj+Yx0Q==}
+  ufo@1.6.3:
+    resolution: {integrity: sha512-yDJTmhydvl5lJzBmy/hyOAA0d+aqCBuwl818haVdYCRrWV84o7YyeVm4QlVHStqNrrJSTb6jKuFAVqAFsr+K3Q==}
 
   universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
@@ -2477,7 +2477,7 @@ snapshots:
 
   graphql@16.12.0: {}
 
-  happy-rusty@1.9.0: {}
+  happy-rusty@1.9.1: {}
 
   has-flag@4.0.0: {}
 
@@ -2632,7 +2632,7 @@ snapshots:
       acorn: 8.15.0
       pathe: 2.0.3
       pkg-types: 1.3.1
-      ufo: 1.6.2
+      ufo: 1.6.3
 
   ms@2.1.3: {}
 
@@ -2653,7 +2653,7 @@ snapshots:
       statuses: 2.0.2
       strict-event-emitter: 0.5.1
       tough-cookie: 6.0.0
-      type-fest: 5.4.0
+      type-fest: 5.4.1
       until-async: 3.0.2
       yargs: 17.7.2
     optionalDependencies:
@@ -2866,7 +2866,7 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-fest@5.4.0:
+  type-fest@5.4.1:
     dependencies:
       tagged-tag: 1.0.0
 
@@ -2896,7 +2896,7 @@ snapshots:
 
   uc.micro@2.1.0: {}
 
-  ufo@1.6.2: {}
+  ufo@1.6.3: {}
 
   universalify@2.0.1: {}
 
