@@ -2,6 +2,8 @@ import { Err, Ok, type AsyncIOResult } from 'happy-rusty';
 import { ABORT_ERROR } from './constants.ts';
 import { FetchError, type FetchInit, type FetchResponseData, type FetchResponseType, type FetchResult, type FetchRetryOptions, type FetchTask } from './defines.ts';
 
+// #region Overload Declarations
+
 /**
  * Fetches a resource from the network as a text string and returns an abortable `FetchTask`.
  *
@@ -211,6 +213,10 @@ export function fetchT(url: string | URL, init?: FetchInit & {
  */
 export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResponseData> | FetchResult<FetchResponseData>;
 
+// #endregion
+
+// #region Main Implementation
+
 /**
  * Enhanced fetch function that wraps the native Fetch API with additional capabilities.
  *
@@ -241,7 +247,7 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
  * @throws {Error} If `retry.delay` is a negative number.
  * @throws {TypeError} If `retry.when` is not an array or function.
  * @throws {TypeError} If `retry.onRetry` is provided but not a function.
- *
+ * @since 1.0.0
  * @example
  * // Basic GET request - returns Response object wrapped in Result
  * const result = await fetchT('https://api.example.com/data');
@@ -623,6 +629,10 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
     return result;
 }
 
+// #endregion
+
+// #region Internal Functions
+
 /**
  * Delays execution for the specified number of milliseconds.
  */
@@ -640,6 +650,9 @@ function wrapAbortReason(reason: unknown): Error {
     return error;
 }
 
+/**
+ * Parsed retry options with defaults applied.
+ */
 interface ParsedRetryOptions extends FetchRetryOptions {
     retries: number;
     delay: number | ((attempt: number) => number);
@@ -736,10 +749,6 @@ function validateOptions(init: FetchInit): ParsedRetryOptions {
  * Validates and parses a URL string or URL object.
  * In browser environments, relative URLs are resolved against `location.href`.
  * In non-browser environments (Node/Deno/Bun), only absolute URLs are valid.
- *
- * @param url - The URL to validate, either a string or URL object.
- * @returns The parsed URL object.
- * @throws {TypeError} If the URL is invalid or cannot be parsed.
  */
 function validateUrl(url: string | URL): URL {
     if (url instanceof URL) {
@@ -755,3 +764,5 @@ function validateUrl(url: string | URL): URL {
         throw new TypeError(`Invalid URL: ${ url }`);
     }
 }
+
+// #endregion

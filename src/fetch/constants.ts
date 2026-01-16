@@ -4,6 +4,7 @@
  * This matches the standard `AbortError` name used by the Fetch API when a request
  * is cancelled via `AbortController.abort()`.
  *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, ABORT_ERROR } from '@happy-ts/fetch-t';
@@ -27,6 +28,7 @@ export const ABORT_ERROR = 'AbortError' as const;
  * This is set on the `Error.name` property when a request exceeds the specified
  * `timeout` duration and is automatically aborted.
  *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, TIMEOUT_ERROR } from '@happy-ts/fetch-t';

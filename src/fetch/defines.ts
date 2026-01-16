@@ -6,6 +6,7 @@ import type { AsyncIOResult, IOResult } from 'happy-rusty';
  * Used when `responseType` is a dynamic string value rather than a literal type,
  * as the exact return type cannot be determined at compile time.
  *
+ * @since 1.9.0
  * @example
  * ```typescript
  * import { fetchT, type FetchResponseData } from '@happy-ts/fetch-t';
@@ -32,7 +33,7 @@ export type FetchResponseData =
  * providing Rust-like error handling without throwing exceptions.
  *
  * @typeParam T - The type of the data expected in a successful response.
- *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, type FetchResult } from '@happy-ts/fetch-t';
@@ -57,7 +58,7 @@ export type FetchResult<T> = AsyncIOResult<T>;
  * the ability to cancel the request and check its abort status.
  *
  * @typeParam T - The type of the data expected in the response.
- *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, type FetchTask } from '@happy-ts/fetch-t';
@@ -124,6 +125,7 @@ export interface FetchTask<T> {
  *
  * If not specified, the raw `Response` object is returned.
  *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, type FetchResponseType } from '@happy-ts/fetch-t';
@@ -141,6 +143,7 @@ export type FetchResponseType = 'text' | 'arraybuffer' | 'blob' | 'json' | 'byte
  * Passed to the `onProgress` callback when tracking download progress.
  * Note: Progress tracking requires the server to send a `Content-Length` header.
  *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, type FetchProgress } from '@happy-ts/fetch-t';
@@ -170,6 +173,8 @@ export interface FetchProgress {
 
 /**
  * Options for configuring retry behavior.
+ *
+ * @since 1.8.0
  */
 export interface FetchRetryOptions {
     /**
@@ -211,6 +216,7 @@ export interface FetchRetryOptions {
 /**
  * Extended fetch options that add additional capabilities to the standard `RequestInit`.
  *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, type FetchInit } from '@happy-ts/fetch-t';
@@ -335,6 +341,7 @@ export interface FetchInit extends RequestInit {
  * Thrown when `Response.ok` is `false`. Contains the HTTP status code
  * for programmatic error handling.
  *
+ * @since 1.0.0
  * @example
  * ```typescript
  * import { fetchT, FetchError } from '@happy-ts/fetch-t';
