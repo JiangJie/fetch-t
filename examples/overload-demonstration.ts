@@ -146,8 +146,12 @@ async function main() {
     // These should not match any overload and cause compile-time errors.
     // =========================================================================
 
-    // @ts-expect-error - 'invalid' is not a FetchResponseType
-    fetchT(url, { responseType: 'invalid' });
+    try {
+        // @ts-expect-error - 'invalid' is not a FetchResponseType
+        fetchT(url, { responseType: 'invalid' });
+    } catch {
+        // Ignore
+    }
 
     const dynamicRt = 'text' as string;
     // @ts-expect-error - plain string is no longer accepted directly
