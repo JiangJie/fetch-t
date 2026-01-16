@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] - 2026-01-16
+
+### Added
+
+- Add fallback overload to support passing `FetchInit` as a variable (returns union type `FetchTask | FetchResult`)
+- Add `@since` tags to all public APIs for version tracking
+
+### Changed
+
+- Upgrade `happy-rusty` dependency to ^1.9.1
+- Trigger JSR publish workflow on release instead of push to main
+
+### Documentation
+
+- Fix JSDoc format (tag order, spacing between tags)
+- Clarify `response.clone()` memory overhead for progress tracking in CODEBUDDY.md
+
 ## [1.9.0] - 2026-01-13
 
 ### Changed
@@ -231,6 +248,7 @@ const result = await task.result;
 - Timeout support
 - Rust-like Result type error handling via `happy-rusty` library
 
+[1.9.1]: https://github.com/JiangJie/fetch-t/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/JiangJie/fetch-t/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/JiangJie/fetch-t/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/JiangJie/fetch-t/compare/v1.7.0...v1.8.0

@@ -190,7 +190,7 @@ src/
 ### Dependencies
 
 **Runtime:**
-- `happy-rusty` (^1.9.0) - Provides Result/AsyncResult types for functional error handling
+- `happy-rusty` (^1.9.1) - Provides Result/AsyncResult types for functional error handling
 
 **Dev:**
 - TypeScript (^5.9.3) - Type checking and compilation
@@ -284,7 +284,7 @@ src/
 
 **npm-publish-github-packages.yml** - GitHub Packages registry
 
-**jsr-publish.yml** - JSR registry publication
+**jsr-publish.yml** - JSR registry publication (triggers on release creation)
 
 ## Code Style & Conventions
 
@@ -342,7 +342,6 @@ The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
 ### Distribution Package Includes (defined in package.json files array)
 - LICENSE
 - README.md
-- README.cn.md
 - CHANGELOG.md
 - dist/
 
