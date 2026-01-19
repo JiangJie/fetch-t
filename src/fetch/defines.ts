@@ -183,7 +183,7 @@ export interface FetchRetryOptions {
      * By default, only network errors trigger retries. HTTP errors (4xx, 5xx)
      * require explicit configuration via `when`.
      *
-     * @default 0 (no retries)
+     * @defaultValue 0 (no retries)
      */
     retries?: number;
 
@@ -193,7 +193,7 @@ export interface FetchRetryOptions {
      * Can be a static number or a function for custom strategies like exponential backoff.
      * The function receives the current attempt number (1-indexed).
      *
-     * @default 0 (immediate retry)
+     * @defaultValue 0 (immediate retry)
      */
     delay?: number | ((attempt: number) => number);
 
@@ -250,7 +250,7 @@ export interface FetchInit extends RequestInit {
      *
      * The `FetchTask` provides `abort()` method and `aborted` status.
      *
-     * @default false
+     * @defaultValue false
      */
     abortable?: boolean;
 
