@@ -1,6 +1,6 @@
-# CODEBUDDY.md
+# AGENTS.md
 
-This file provides guidance to CodeBuddy Code when working with code in this repository.
+This file provides guidance to AI coding agents when working with code in this repository.
 
 ## Project Overview
 
@@ -98,7 +98,7 @@ Documentation is hosted on GitHub Pages at https://jiangjie.github.io/fetch-t/
 ├── tests/
 │   └── fetch.test.ts         # Vitest test suite with MSW mocking
 ├── .gitignore                # Excludes: node_modules, dist, coverage
-├── CODEBUDDY.md              # This file
+├── AGENTS.md                 # This file
 ├── eslint.config.mjs         # ESLint configuration (strict + stylistic)
 ├── jsr.json                  # JSR registry metadata
 ├── LICENSE                   # MIT
@@ -190,17 +190,17 @@ src/
 ### Dependencies
 
 **Runtime:**
-- `happy-rusty` (^1.9.1) - Provides Result/AsyncResult types for functional error handling
+- `happy-rusty` (^1.9.2) - Provides Result/AsyncResult types for functional error handling
 
 **Dev:**
 - TypeScript (^5.9.3) - Type checking and compilation
-- Vite (^7.3.1) - Build tool and dev server
+- Vite (^8.0.8) - Build tool and dev server
   - `vite-plugin-dts` (^4.5.4) - Bundles TypeScript definitions
-- Vitest (^4.0.17) - Test framework
-  - `@vitest/coverage-v8` (^4.0.17) - Coverage provider
-- MSW (^2.12.7) - Mock Service Worker for API mocking in tests
-- ESLint (^9.39.2) + typescript-eslint (^8.53.0) - Linting
-- TypeDoc (^0.28.16) - Documentation generation
+- Vitest (^4.1.4) - Test framework
+  - `@vitest/coverage-v8` (^4.1.4) - Coverage provider
+- MSW (^2.13.2) - Mock Service Worker for API mocking in tests
+- ESLint (^10.2.0) + typescript-eslint (^8.58.1) - Linting
+- TypeDoc (^0.28.19) - Documentation generation
 
 **External dependencies are marked as external in vite.config.ts** - they are not bundled.
 
@@ -215,7 +215,7 @@ src/
   - `minify: false` - No minification for library
   - `sourcemap: true` - Source maps enabled
 - **External dependencies:** happy-rusty (not bundled)
-- **Tree shaking:** Set to 'smallest' for optimal bundle size
+- **Tree shaking:** Custom config with `moduleSideEffects: false` and `propertyReadSideEffects: false`
 - **Output formats:** Both CommonJS (.cjs) and ES Module (.mjs)
 
 ### Vitest Configuration (in vite.config.ts)
