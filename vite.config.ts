@@ -21,15 +21,20 @@ export default defineConfig({
             output: [
                 {
                     format: 'cjs',
+                    topLevelVar: false,
                 },
                 {
                     format: 'esm',
+                    topLevelVar: false,
                 },
             ],
+            treeshake: {
+                moduleSideEffects: false,
+                propertyReadSideEffects: false,
+            },
             external: [
                 'happy-rusty',
             ],
-            treeshake: 'smallest',
         },
     },
     test: {

@@ -165,7 +165,7 @@ async function main() {
 
     // When passing FetchInit as a variable, TypeScript cannot determine abortable's literal value
     // Falls back to union return type: FetchTask<FetchResponseData> | FetchResult<FetchResponseData>
-    let options: FetchInit | undefined;
+    const options: FetchInit | undefined = undefined;
     const resOrTask = fetchT(url, options);
     console.log(resOrTask);
 
