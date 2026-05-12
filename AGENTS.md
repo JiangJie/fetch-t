@@ -51,14 +51,17 @@ pnpm run test:watch
 pnpm run test:ui
 
 # Run a specific test by name pattern
-pnpm exec vitest run --filter "test name pattern"
+pnpm exec vitest run -t "test name pattern"
+
+# Run a specific test file
+pnpm exec vitest run tests/fetch.test.ts
 ```
 
 **Note:** Tests use Vitest with MSW (Mock Service Worker) for API mocking. The test file is located at `tests/fetch.test.ts`.
 
 ### Examples
 ```bash
-# Run example files
+# Run example files (requires Node.js >= 22 for native TypeScript execution)
 pnpm run eg
 ```
 
@@ -72,57 +75,27 @@ Documentation is hosted on GitHub Pages at https://jiangjie.github.io/fetch-t/
 
 ## Repository Structure
 
-```
-/data/workspace/fetch-t/
-├── .github/workflows/         # CI/CD pipelines
-│   ├── test.yml              # Run tests with Vitest + Codecov
-│   ├── npm-publish.yml       # NPM registry publication
-│   ├── npm-publish-github-packages.yml
-│   └── jsr-publish.yml       # JSR registry publication
-├── .vscode/
-│   └── settings.json         # VSCode settings
-├── docs/                     # Generated TypeDoc documentation (GitHub Pages)
-├── examples/                 # Runnable usage examples
-│   ├── main.ts              # Entry point (runs all examples)
-│   ├── basic.ts             # Basic fetch requests
-│   ├── with-progress.ts     # Progress tracking examples
-│   ├── abortable.ts         # Abortable request examples
-│   ├── with-retry.ts        # Retry strategy examples
-│   └── error-handling.ts    # Error handling patterns
-├── src/                      # Source code
-│   ├── fetch/
-│   │   ├── constants.ts      # Error constants (ABORT_ERROR, TIMEOUT_ERROR)
-│   │   ├── defines.ts        # All type definitions and interfaces
-│   │   └── fetch.ts          # Core implementation with 12 function overloads
-│   └── mod.ts                # Public API entry point (re-exports)
-├── tests/
-│   └── fetch.test.ts         # Vitest test suite with MSW mocking
-├── .gitignore                # Excludes: node_modules, dist, coverage
-├── AGENTS.md                 # This file
-├── eslint.config.mjs         # ESLint configuration (strict + stylistic)
-├── jsr.json                  # JSR registry metadata
-├── LICENSE                   # MIT
-├── package.json              # NPM metadata and scripts
-├── pnpm-lock.yaml            # Dependency lockfile
-├── README.md                 # English documentation
-├── README.cn.md              # Chinese documentation
-├── tsconfig.json             # TypeScript compiler options
-├── typedoc.json              # TypeDoc documentation config
-└── vite.config.ts            # Vite build + Vitest test configuration
-```
-
-## Code Architecture
-
-### Source Structure
+Only the directories needed for daily work are listed; configuration files and CI workflows are discoverable via `ls`.
 
 ```
 src/
-├── mod.ts                    # Public API entry point (re-exports)
+├── mod.ts                # Public API entry point (re-exports)
 └── fetch/
-    ├── constants.ts          # Error constants (ABORT_ERROR, TIMEOUT_ERROR)
-    ├── defines.ts            # All type definitions and interfaces
-    └── fetch.ts              # Core implementation with 12 function overloads
+    ├── constants.ts      # Error constants (ABORT_ERROR, TIMEOUT_ERROR)
+    ├── defines.ts        # All type definitions and interfaces
+    └── fetch.ts          # Core implementation with 12 function overloads
+
+tests/
+└── fetch.test.ts         # Vitest test suite with MSW mocking
+
+examples/                 # Runnable usage examples (main.ts is the entry)
 ```
+
+### pnpm 10 build script approval
+
+`pnpm-workspace.yaml` declares `allowBuilds.msw: true` to explicitly permit `msw`'s postinstall (it injects `mockServiceWorker.js`). pnpm 10 blocks postinstall scripts by default, so when adding any new dependency that ships build scripts, update `allowBuilds` accordingly — otherwise `pnpm i` will pause waiting for manual approval.
+
+## Code Architecture
 
 ### Key Design Patterns
 
@@ -131,6 +104,7 @@ src/
    - Return type varies based on `abortable` and `responseType` parameters
    - When `abortable: true`, returns `FetchTask<T>` instead of `FetchResult<T>`
    - Overloads cover all combinations: 5 response types × abortable/non-abortable + fallback overloads
+   - **Ordering constraint**: overloads are arranged from most-specific to most-generic (specific `abortable: true` × `responseType` first, fallbacks last). When editing `src/fetch/fetch.ts`, preserve this order — TypeScript picks the first matching signature, so reordering causes calls to silently fall through to the generic one and lose narrow return types.
 
 2. **Result Monad Pattern**
    - Uses `happy-rusty` library's `Result` type for explicit error handling
@@ -189,32 +163,31 @@ src/
 
 ### Dependencies
 
+Exact versions live in `package.json` — only the ecosystem roles are documented here to avoid drift.
+
 **Runtime:**
-- `happy-rusty` (^1.9.2) - Provides Result/AsyncResult types for functional error handling
+- `happy-rusty` — provides `Result` / `AsyncResult` types for functional error handling. Marked `external` in `vite.config.ts`, not bundled.
 
 **Dev:**
-- TypeScript (^5.9.3) - Type checking and compilation
-- Vite (^8.0.8) - Build tool and dev server
-  - `vite-plugin-dts` (^4.5.4) - Bundles TypeScript definitions
-- Vitest (^4.1.4) - Test framework
-  - `@vitest/coverage-v8` (^4.1.4) - Coverage provider
-- MSW (^2.13.2) - Mock Service Worker for API mocking in tests
-- ESLint (^10.2.0) + typescript-eslint (^8.58.1) - Linting
-- TypeDoc (^0.28.19) - Documentation generation
-
-**External dependencies are marked as external in vite.config.ts** - they are not bundled.
+- TypeScript — type checking only (no emit; build is Vite's job)
+- Vite — library build tool
+  - `unplugin-dts` (with `bundleTypes: true`) + `@microsoft/api-extractor` — bundles `.d.ts` into a single `dist/types.d.ts` (replaced `vite-plugin-dts`)
+- Vitest + `@vitest/coverage-v8` — test framework + v8 coverage
+- MSW — Mock Service Worker for HTTP mocking in tests
+- ESLint + typescript-eslint + `@stylistic/eslint-plugin` — linting (flat config)
+- TypeDoc — API documentation generation
 
 ## Build System
 
 ### Vite Configuration
 - **Entry point:** `src/mod.ts`
 - **Plugins:**
-  - `vite-plugin-dts` - Bundles TypeScript definitions with `rollupTypes: true`
+  - `unplugin-dts/vite` with `bundleTypes: true` — bundles all `.d.ts` into a single file via `@microsoft/api-extractor`
 - **Build options:**
   - `target: 'esnext'` - Modern JavaScript output
   - `minify: false` - No minification for library
   - `sourcemap: true` - Source maps enabled
-- **External dependencies:** happy-rusty (not bundled)
+- **External dependencies:** `happy-rusty` (not bundled)
 - **Tree shaking:** Custom config with `moduleSideEffects: false` and `propertyReadSideEffects: false`
 - **Output formats:** Both CommonJS (.cjs) and ES Module (.mjs)
 
@@ -252,7 +225,7 @@ src/
 - Tests are in `tests/fetch.test.ts`
 - Uses Vitest as test framework
 - Uses MSW (Mock Service Worker) for HTTP mocking
-- 94 test cases with 100% coverage
+- Coverage target is near-100%; see Codecov or the local `coverage/` HTML report for the current numbers
 - Coverage includes:
   - All response types (text, arraybuffer, blob, JSON)
   - HTTP methods (GET, POST, PUT, PATCH, DELETE)
@@ -296,6 +269,11 @@ src/
 6. **Type Safety:** Leverage function overloads for compile-time safety
 7. **Editor:** VSCode configured for format on save and organize imports
 
+### Commit Convention
+
+- Follow **Conventional Commits** (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`, `style`)
+- **Write commit messages in English** for this repository (this overrides any global Chinese-default preference). The project is an open-source library published to NPM/JSR with English-first documentation, so the git history should match.
+
 ## Implementation Details
 
 ### fetchT Function Flow
@@ -328,11 +306,7 @@ src/
 
 ## Publishing
 
-### Pre-publish Checklist
-The `prepublishOnly` script automatically runs `pnpm run build`, which includes:
-1. Type checking (`pnpm run check`)
-2. Linting (`pnpm run lint`)
-3. Vite build
+`prepublishOnly` triggers `pnpm run build`, which itself runs `prebuild` (= `check` + `lint`) before the Vite build. The single source of truth for the pipeline is the `scripts` block in `package.json`.
 
 ### Distribution Targets
 - **NPM:** @happy-ts/fetch-t
@@ -372,38 +346,3 @@ Network failures and HTTP errors are wrapped in `Result` type via `happy-rusty`.
 5. **happy-rusty Result API**: Use `isOk()`, `isErr()`, `unwrap()`, `unwrapErr()` methods. Note that `match()` method does NOT exist in happy-rusty.
 
 6. **Retry behavior**: By default, only network errors trigger retries. HTTP errors (4xx, 5xx) require explicit configuration via the `when` option in `FetchRetryOptions`.
-
-## Key Files Reference
-
-### Source Code
-- `src/mod.ts` - Main entry point (re-exports from fetch/)
-- `src/fetch/fetch.ts` - Core fetchT implementation function with 12 overloads
-- `src/fetch/defines.ts` - All type definitions (FetchTask, FetchInit, FetchError, etc.)
-- `src/fetch/constants.ts` - Error constants (ABORT_ERROR, TIMEOUT_ERROR)
-
-### Configuration
-- `package.json` - NPM metadata, scripts, and dependencies
-- `vite.config.ts` - Vite build configuration + Vitest test configuration
-- `tsconfig.json` - TypeScript compiler options
-- `eslint.config.mjs` - ESLint flat config
-- `typedoc.json` - Documentation generation settings
-- `jsr.json` - JSR registry metadata
-
-### Tests & Examples
-- `tests/fetch.test.ts` - Vitest test suite with MSW mocking
-- `examples/main.ts` - Example entry point
-- `examples/basic.ts` - Basic usage examples
-- `examples/with-progress.ts` - Progress tracking examples
-- `examples/abortable.ts` - Abortable request examples
-- `examples/with-retry.ts` - Retry strategy examples
-- `examples/error-handling.ts` - Error handling examples
-
-### CI/CD
-- `.github/workflows/test.yml` - CI test workflow
-- `.github/workflows/npm-publish.yml` - NPM publication
-- `.github/workflows/jsr-publish.yml` - JSR publication
-
-### Documentation
-- `README.md` - English documentation
-- `README.cn.md` - Chinese documentation
-- `docs/` - Generated TypeDoc documentation (GitHub Pages)
