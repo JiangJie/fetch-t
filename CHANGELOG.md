@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-05-25
+
+### Added
+
+- Add internal polyfills for `AbortSignal.timeout()` and `AbortSignal.any()` with automatic native detection
+  - Improves compatibility with Node.js 18 LTS and older browser environments
+  - Includes `DOMException` fallback for environments without its constructor
+  - Prevents memory leaks via proper event listener cleanup in `signalAny`
+  - Uses `timer.unref()` in Node.js to avoid blocking process exit
+
+### Changed
+
+- Upgrade dev dependencies (vitest, eslint, msw, typescript-eslint, unplugin-dts, vite)
+
 ## [1.9.1] - 2026-01-16
 
 ### Added
@@ -248,6 +262,7 @@ const result = await task.result;
 - Timeout support
 - Rust-like Result type error handling via `happy-rusty` library
 
+[1.10.0]: https://github.com/JiangJie/fetch-t/compare/v1.9.1...v1.10.0
 [1.9.1]: https://github.com/JiangJie/fetch-t/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/JiangJie/fetch-t/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/JiangJie/fetch-t/compare/v1.8.0...v1.8.1
