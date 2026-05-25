@@ -1,6 +1,7 @@
 import { Err, Ok, type AsyncIOResult } from 'happy-rusty';
 import { ABORT_ERROR } from './constants.ts';
 import { FetchError, type FetchInit, type FetchResponseData, type FetchResponseType, type FetchResult, type FetchRetryOptions, type FetchTask } from './defines.ts';
+import { signalAny, signalTimeout } from './polyfills.ts';
 
 // #region Overload Declarations
 
@@ -412,14 +413,14 @@ export function fetchT(url: string | URL, init?: FetchInit): FetchTask<FetchResp
         }
 
         if (typeof timeout === 'number') {
-            signals.push(AbortSignal.timeout(timeout));
+            signals.push(signalTimeout(timeout));
         }
 
         // Combine all signals
         if (signals.length > 0) {
             rest.signal = signals.length === 1
                 ? signals[0]
-                : AbortSignal.any(signals);
+                : signalAny(signals);
         }
     };
 
